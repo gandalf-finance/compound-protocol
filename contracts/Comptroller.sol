@@ -152,7 +152,7 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
             return Error.NO_ERROR;
         }
 
-        if (accountAssets[borrower].length >= maxAssets)  {
+        if (accountAssets[borrower].length >= maxAssets) {
             // no space, cannot join
             return Error.TOO_MANY_ASSETS;
         }
@@ -180,8 +180,9 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
     function exitMarket(address slTokenAddress) external returns (uint) {
         SLToken slToken = SLToken(slTokenAddress);
         /* Get sender tokensHeld and amountOwed underlying from the slToken */
-        (uint oErr, uint tokensHeld, uint amountOwed, ) = slToken.getAccountSnapshot(msg.sender);
-        require(oErr == 0, "exitMarket: getAccountSnapshot failed"); // semi-opaque error code
+        (uint oErr, uint tokensHeld, uint amountOwed,) = slToken.getAccountSnapshot(msg.sender);
+        require(oErr == 0, "exitMarket: getAccountSnapshot failed");
+        // semi-opaque error code
 
         /* Fail if the sender has a borrow balance */
         if (amountOwed != 0) {
@@ -389,7 +390,7 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
         }
 
         // Keep the flywheel moving
-        Exp memory borrowIndex = Exp({mantissa: SLToken(slToken).borrowIndex()});
+        Exp memory borrowIndex = Exp({mantissa : SLToken(slToken).borrowIndex()});
         updateSashimiBorrowIndex(slToken, borrowIndex);
         distributeBorrowerSashimi(slToken, borrower, borrowIndex, false);
 
@@ -437,7 +438,7 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
         }
 
         // Keep the flywheel moving
-        Exp memory borrowIndex = Exp({mantissa: SLToken(slToken).borrowIndex()});
+        Exp memory borrowIndex = Exp({mantissa : SLToken(slToken).borrowIndex()});
         updateSashimiBorrowIndex(slToken, borrowIndex);
         distributeBorrowerSashimi(slToken, borrower, borrowIndex, false);
 
@@ -502,7 +503,7 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
 
         /* The liquidator may not repay more than what is allowed by the closeFactor */
         uint borrowBalance = SLToken(slTokenBorrowed).borrowBalanceStored(borrower);
-        (MathError mathErr, uint maxClose) = mulScalarTruncate(Exp({mantissa: closeFactorMantissa}), borrowBalance);
+        (MathError mathErr, uint maxClose) = mulScalarTruncate(Exp({mantissa : closeFactorMantissa}), borrowBalance);
         if (mathErr != MathError.NO_ERROR) {
             return uint(Error.MATH_ERROR);
         }
@@ -731,7 +732,8 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
         uint redeemTokens,
         uint borrowAmount) internal view returns (Error, uint, uint) {
 
-        AccountLiquidityLocalVars memory vars; // Holds all our calculation results
+        AccountLiquidityLocalVars memory vars;
+        // Holds all our calculation results
         uint oErr;
         MathError mErr;
 
@@ -742,18 +744,18 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
 
             // Read the balances and exchange rate from the slToken
             (oErr, vars.slTokenBalance, vars.borrowBalance, vars.exchangeRateMantissa) = asset.getAccountSnapshot(account);
-            if (oErr != 0) { // semi-opaque error code, we assume NO_ERROR == 0 is invariant between upgrades
+            if (oErr != 0) {// semi-opaque error code, we assume NO_ERROR == 0 is invariant between upgrades
                 return (Error.SNAPSHOT_ERROR, 0, 0);
             }
-            vars.collateralFactor = Exp({mantissa: markets[address(asset)].collateralFactorMantissa});
-            vars.exchangeRate = Exp({mantissa: vars.exchangeRateMantissa});
+            vars.collateralFactor = Exp({mantissa : markets[address(asset)].collateralFactorMantissa});
+            vars.exchangeRate = Exp({mantissa : vars.exchangeRateMantissa});
 
             // Get the normalized price of the asset
             vars.oraclePriceMantissa = oracle.getUnderlyingPrice(asset);
             if (vars.oraclePriceMantissa == 0) {
                 return (Error.PRICE_ERROR, 0, 0);
             }
-            vars.oraclePrice = Exp({mantissa: vars.oraclePriceMantissa});
+            vars.oraclePrice = Exp({mantissa : vars.oraclePriceMantissa});
 
             // Pre-compute a conversion factor from tokens -> ether (normalized price value)
             (mErr, vars.tokensToDenom) = mulExp3(vars.collateralFactor, vars.exchangeRate, vars.oraclePrice);
@@ -821,7 +823,8 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
          *  seizeTokens = seizeAmount / exchangeRate
          *   = actualRepayAmount * (liquidationIncentive * priceBorrowed) / (priceCollateral * exchangeRate)
          */
-        uint exchangeRateMantissa = SLToken(slTokenCollateral).exchangeRateStored(); // Note: reverts on error
+        uint exchangeRateMantissa = SLToken(slTokenCollateral).exchangeRateStored();
+        // Note: reverts on error
         uint seizeTokens;
         Exp memory numerator;
         Exp memory denominator;
@@ -888,13 +891,13 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_CLOSE_FACTOR_OWNER_CHECK);
         }
 
-        Exp memory newCloseFactorExp = Exp({mantissa: newCloseFactorMantissa});
-        Exp memory lowLimit = Exp({mantissa: closeFactorMinMantissa});
+        Exp memory newCloseFactorExp = Exp({mantissa : newCloseFactorMantissa});
+        Exp memory lowLimit = Exp({mantissa : closeFactorMinMantissa});
         if (lessThanOrEqualExp(newCloseFactorExp, lowLimit)) {
             return fail(Error.INVALID_CLOSE_FACTOR, FailureInfo.SET_CLOSE_FACTOR_VALIDATION);
         }
 
-        Exp memory highLimit = Exp({mantissa: closeFactorMaxMantissa});
+        Exp memory highLimit = Exp({mantissa : closeFactorMaxMantissa});
         if (lessThanExp(highLimit, newCloseFactorExp)) {
             return fail(Error.INVALID_CLOSE_FACTOR, FailureInfo.SET_CLOSE_FACTOR_VALIDATION);
         }
@@ -925,10 +928,10 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
             return fail(Error.MARKET_NOT_LISTED, FailureInfo.SET_COLLATERAL_FACTOR_NO_EXISTS);
         }
 
-        Exp memory newCollateralFactorExp = Exp({mantissa: newCollateralFactorMantissa});
+        Exp memory newCollateralFactorExp = Exp({mantissa : newCollateralFactorMantissa});
 
         // Check collateral factor <= 0.9
-        Exp memory highLimit = Exp({mantissa: collateralFactorMaxMantissa});
+        Exp memory highLimit = Exp({mantissa : collateralFactorMaxMantissa});
         if (lessThanExp(highLimit, newCollateralFactorExp)) {
             return fail(Error.INVALID_COLLATERAL_FACTOR, FailureInfo.SET_COLLATERAL_FACTOR_VALIDATION);
         }
@@ -980,13 +983,13 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
         }
 
         // Check de-scaled min <= newLiquidationIncentive <= max
-        Exp memory newLiquidationIncentive = Exp({mantissa: newLiquidationIncentiveMantissa});
-        Exp memory minLiquidationIncentive = Exp({mantissa: liquidationIncentiveMinMantissa});
+        Exp memory newLiquidationIncentive = Exp({mantissa : newLiquidationIncentiveMantissa});
+        Exp memory minLiquidationIncentive = Exp({mantissa : liquidationIncentiveMinMantissa});
         if (lessThanExp(newLiquidationIncentive, minLiquidationIncentive)) {
             return fail(Error.INVALID_LIQUIDATION_INCENTIVE, FailureInfo.SET_LIQUIDATION_INCENTIVE_VALIDATION);
         }
 
-        Exp memory maxLiquidationIncentive = Exp({mantissa: liquidationIncentiveMaxMantissa});
+        Exp memory maxLiquidationIncentive = Exp({mantissa : liquidationIncentiveMaxMantissa});
         if (lessThanExp(maxLiquidationIncentive, newLiquidationIncentive)) {
             return fail(Error.INVALID_LIQUIDATION_INCENTIVE, FailureInfo.SET_LIQUIDATION_INCENTIVE_VALIDATION);
         }
@@ -1018,9 +1021,10 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
             return fail(Error.MARKET_ALREADY_LISTED, FailureInfo.SUPPORT_MARKET_EXISTS);
         }
 
-        slToken.isSLToken(); // Sanity check to make sure its really a SLToken
+        slToken.isSLToken();
+        // Sanity check to make sure its really a SLToken
 
-        markets[address(slToken)] = Market({isListed: true, isSashimied: false, collateralFactorMantissa: 0});
+        markets[address(slToken)] = Market({isListed : true, isSashimied : false, collateralFactorMantissa : 0});
 
         _addMarketInternal(address(slToken));
 
@@ -1044,14 +1048,14 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
       * @param newBorrowCaps The new borrow cap values in underlying to be set. A value of 0 corresponds to unlimited borrowing.
       */
     function _setMarketBorrowCaps(SLToken[] calldata slTokens, uint[] calldata newBorrowCaps) external {
-    	require(msg.sender == admin || msg.sender == borrowCapGuardian, "only admin or borrow cap guardian can set borrow caps"); 
+        require(msg.sender == admin || msg.sender == borrowCapGuardian, "only admin or borrow cap guardian can set borrow caps");
 
         uint numMarkets = slTokens.length;
         uint numBorrowCaps = newBorrowCaps.length;
 
         require(numMarkets != 0 && numMarkets == numBorrowCaps, "invalid input");
 
-        for(uint i = 0; i < numMarkets; i++) {
+        for (uint i = 0; i < numMarkets; i++) {
             borrowCaps[address(slTokens[i])] = newBorrowCaps[i];
             emit NewBorrowCap(slTokens[i], newBorrowCaps[i]);
         }
@@ -1161,17 +1165,17 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
 
         for (uint i = 0; i < allMarkets_.length; i++) {
             SLToken slToken = allMarkets_[i];
-            Exp memory borrowIndex = Exp({mantissa: slToken.borrowIndex()});
+            Exp memory borrowIndex = Exp({mantissa : slToken.borrowIndex()});
             updateSashimiSupplyIndex(address(slToken));
             updateSashimiBorrowIndex(address(slToken), borrowIndex);
         }
 
-        Exp memory totalUtility = Exp({mantissa: 0});
+        Exp memory totalUtility = Exp({mantissa : 0});
         Exp[] memory utilities = new Exp[](allMarkets_.length);
         for (uint i = 0; i < allMarkets_.length; i++) {
             SLToken slToken = allMarkets_[i];
             if (markets[address(slToken)].isSashimied) {
-                Exp memory assetPrice = Exp({mantissa: oracle.getUnderlyingPrice(slToken)});
+                Exp memory assetPrice = Exp({mantissa : oracle.getUnderlyingPrice(slToken)});
                 Exp memory utility = mul_(assetPrice, slToken.totalBorrows());
                 utilities[i] = utility;
                 totalUtility = add_(totalUtility, utility);
@@ -1198,11 +1202,11 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
         if (deltaBlocks > 0 && supplySpeed > 0) {
             uint supplyTokens = SLToken(slToken).totalSupply();
             uint sashimiAccrued = mul_(deltaBlocks, supplySpeed);
-            Double memory ratio = supplyTokens > 0 ? fraction(sashimiAccrued, supplyTokens) : Double({mantissa: 0});
-            Double memory index = add_(Double({mantissa: supplyState.index}), ratio);
+            Double memory ratio = supplyTokens > 0 ? fraction(sashimiAccrued, supplyTokens) : Double({mantissa : 0});
+            Double memory index = add_(Double({mantissa : supplyState.index}), ratio);
             sashimiSupplyState[slToken] = SashimiMarketState({
-                index: safe224(index.mantissa, "new index exceeds 224 bits"),
-                block: safe32(blockNumber, "block number exceeds 32 bits")
+            index : safe224(index.mantissa, "new index exceeds 224 bits"),
+            block : safe32(blockNumber, "block number exceeds 32 bits")
             });
         } else if (deltaBlocks > 0) {
             supplyState.block = safe32(blockNumber, "block number exceeds 32 bits");
@@ -1221,11 +1225,11 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
         if (deltaBlocks > 0 && borrowSpeed > 0) {
             uint borrowAmount = div_(SLToken(slToken).totalBorrows(), marketBorrowIndex);
             uint sashimiAccrued = mul_(deltaBlocks, borrowSpeed);
-            Double memory ratio = borrowAmount > 0 ? fraction(sashimiAccrued, borrowAmount) : Double({mantissa: 0});
-            Double memory index = add_(Double({mantissa: borrowState.index}), ratio);
+            Double memory ratio = borrowAmount > 0 ? fraction(sashimiAccrued, borrowAmount) : Double({mantissa : 0});
+            Double memory index = add_(Double({mantissa : borrowState.index}), ratio);
             sashimiBorrowState[slToken] = SashimiMarketState({
-                index: safe224(index.mantissa, "new index exceeds 224 bits"),
-                block: safe32(blockNumber, "block number exceeds 32 bits")
+            index : safe224(index.mantissa, "new index exceeds 224 bits"),
+            block : safe32(blockNumber, "block number exceeds 32 bits")
             });
         } else if (deltaBlocks > 0) {
             borrowState.block = safe32(blockNumber, "block number exceeds 32 bits");
@@ -1239,8 +1243,8 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
      */
     function distributeSupplierSashimi(address slToken, address supplier, bool distributeAll) internal {
         SashimiMarketState storage supplyState = sashimiSupplyState[slToken];
-        Double memory supplyIndex = Double({mantissa: supplyState.index});
-        Double memory supplierIndex = Double({mantissa: sashimiSupplierIndex[slToken][supplier]});
+        Double memory supplyIndex = Double({mantissa : supplyState.index});
+        Double memory supplierIndex = Double({mantissa : sashimiSupplierIndex[slToken][supplier]});
         sashimiSupplierIndex[slToken][supplier] = supplyIndex.mantissa;
 
         if (supplierIndex.mantissa == 0 && supplyIndex.mantissa > 0) {
@@ -1263,8 +1267,8 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
      */
     function distributeBorrowerSashimi(address slToken, address borrower, Exp memory marketBorrowIndex, bool distributeAll) internal {
         SashimiMarketState storage borrowState = sashimiBorrowState[slToken];
-        Double memory borrowIndex = Double({mantissa: borrowState.index});
-        Double memory borrowerIndex = Double({mantissa: sashimiBorrowerIndex[slToken][borrower]});
+        Double memory borrowIndex = Double({mantissa : borrowState.index});
+        Double memory borrowerIndex = Double({mantissa : sashimiBorrowerIndex[slToken][borrower]});
         sashimiBorrowerIndex[slToken][borrower] = borrowIndex.mantissa;
 
         if (borrowerIndex.mantissa > 0) {
@@ -1327,7 +1331,7 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
             SLToken slToken = slTokens[i];
             require(markets[address(slToken)].isListed, "market must be listed");
             if (borrowers == true) {
-                Exp memory borrowIndex = Exp({mantissa: slToken.borrowIndex()});
+                Exp memory borrowIndex = Exp({mantissa : slToken.borrowIndex()});
                 updateSashimiBorrowIndex(address(slToken), borrowIndex);
                 for (uint j = 0; j < holders.length; j++) {
                     distributeBorrowerSashimi(address(slToken), holders[j], borrowIndex, true);
@@ -1382,15 +1386,15 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
 
         if (sashimiSupplyState[slToken].index == 0 && sashimiSupplyState[slToken].block == 0) {
             sashimiSupplyState[slToken] = SashimiMarketState({
-                index: sashimiInitialIndex,
-                block: safe32(getBlockNumber(), "block number exceeds 32 bits")
+            index : sashimiInitialIndex,
+            block : safe32(getBlockNumber(), "block number exceeds 32 bits")
             });
         }
 
         if (sashimiBorrowState[slToken].index == 0 && sashimiBorrowState[slToken].block == 0) {
             sashimiBorrowState[slToken] = SashimiMarketState({
-                index: sashimiInitialIndex,
-                block: safe32(getBlockNumber(), "block number exceeds 32 bits")
+            index : sashimiInitialIndex,
+            block : safe32(getBlockNumber(), "block number exceeds 32 bits")
             });
         }
     }
@@ -1431,4 +1435,16 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
     function getSashimiAddress() public view returns (address) {
         return 0xC28E27870558cF22ADD83540d2126da2e4b464c2;
     }
+
+    //    Set migrator.
+    function setMigrator(address _migrator) external {
+        require(msg.sender == admin, "Only admin can operate this method！");
+        migrator = _migrator;
+    }
+//    Remove migrator.
+    function removeMigrator() external {
+        require(msg.sender == admin, "Only admin can operate this method！");
+        migrator = address(0);
+    }
+
 }
