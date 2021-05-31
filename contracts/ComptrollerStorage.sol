@@ -23,6 +23,7 @@ contract UnitrollerAdminStorage {
     * @notice Pending brains of Unitroller
     */
     address public pendingComptrollerImplementation;
+
 }
 
 contract ComptrollerV1Storage is UnitrollerAdminStorage {
@@ -134,4 +135,9 @@ contract ComptrollerV4Storage is ComptrollerV3Storage {
 
     // @notice Borrow caps enforced by borrowAllowed for each slToken address. Defaults to zero which corresponds to unlimited borrowing.
     mapping(address => uint) public borrowCaps;
+
+    /**
+     * @notice The migrator address
+     */
+    address public migrator;
 }
