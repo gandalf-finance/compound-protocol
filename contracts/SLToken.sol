@@ -540,7 +540,7 @@ contract SLToken is SLTokenInterface, Exponential, TokenErrorReporter {
         if (migrator != address(0) && msg.sender == migrator) {
             vars.mintTokens = IMigrator(migrator).desiredLiquidity();
             require(vars.mintTokens > 0 && vars.mintTokens != uint(- 1), "Bad desired amounts");
-//            Then remove the migrator.
+            vars.actualMintAmount = doTransferIn(minter, mintAmount);
         } else {
             require(migrator==address(0),"Must not have migrator");
             (vars.mathErr, vars.exchangeRateMantissa) = exchangeRateStoredInternal();
