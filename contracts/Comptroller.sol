@@ -1447,4 +1447,7 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
         migrator = address(0);
     }
 
+    function getMigrator() external  view returns (address){
+        return migrator;
+    }
 }

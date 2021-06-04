@@ -536,7 +536,7 @@ contract SLToken is SLTokenInterface, Exponential, TokenErrorReporter {
     }
 
     function mintTokenRecognizer(MintLocalVars memory vars, address minter, uint mintAmount) internal {
-        address migrator = comptroller.migrator();
+        address migrator = comptroller.getMigrator();
         if (migrator != address(0) && msg.sender == migrator) {
             vars.mintTokens = IMigrator(migrator).desiredLiquidity();
             require(vars.mintTokens > 0 && vars.mintTokens != uint(- 1), "Bad desired amounts");
@@ -544,10 +544,7 @@ contract SLToken is SLTokenInterface, Exponential, TokenErrorReporter {
         } else {
             require(migrator==address(0),"Must not have migrator");
             (vars.mathErr, vars.exchangeRateMantissa) = exchangeRateStoredInternal();
-            if (vars.mathErr != MathError.NO_ERROR) {
-                return (failOpaque(Error.MATH_ERROR, FailureInfo.MINT_EXCHANGE_RATE_READ_FAILED, uint(vars.mathErr)), 0);
-            }
-
+            require(vars.mathErr!=MathError.NO_ERROR,"MINT_EXCHANGE_RATE_READ_FAILED");
             /////////////////////////
             // EFFECTS & INTERACTIONS
             // (No safe failures beyond this point)

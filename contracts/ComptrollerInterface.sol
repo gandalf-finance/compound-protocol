@@ -69,5 +69,5 @@ contract ComptrollerInterface {
         address slTokenCollateral,
         uint repayAmount) external view returns (uint, uint);
 
-    function migrator() external view returns (address);
+    function getMigrator() external view returns (address);
 }
