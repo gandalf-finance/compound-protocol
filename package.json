@@ -26,6 +26,7 @@
   },
   "dependencies": {
     "eth-saddle": "^0.1.17",
+    "fs": "^0.0.1-security",
     "truffle": "^5.1.41",
     "web3": "^1.2.4"
   },

@@ -19,8 +19,8 @@ module.exports = {
       host: "127.0.0.1",     // Localhost (default: none)
       port: 7545,            // Standard Ethereum port (default: none)
       network_id: "*",       // Any network (default: none)
-      // gas: 5002388,
-      // gasPrice: 30000000000
+      gas: 3012388,
+      gasPrice: 30000000000
     }
     // kovan: {
     //   provider: new HDWalletProvider(keys, "https://kovan.infura.io/v3/" + infura_apikey, 0, 4),
