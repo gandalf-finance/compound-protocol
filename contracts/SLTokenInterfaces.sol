@@ -300,8 +300,3 @@ contract SLDelegateInterface is SLDelegationStorage {
      */
     function _resignImplementation() public;
 }
-
-interface IMigrator {
-    // Return the desired amount of liquidity token that the migrator wants.
-    function desiredLiquidity() external view returns (uint256);
-}

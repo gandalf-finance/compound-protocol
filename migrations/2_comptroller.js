@@ -1,11 +1,11 @@
 const Comptroller = artifacts.require("Comptroller");
 const Unitroller = artifacts.require("Unitroller");
 const fs = require('fs');
-const writeAddress = require('../deploy/script/writeAddress');
+const writeAddress = require('../../deploy/script/writeAddress');
 
 module.exports = async function (deployer) {
 
-    deployer.deploy(Comptroller, { gas: 16721975 });
+    deployer.deploy(Comptroller, { gas: 6000000 });
     deployer.deploy(Unitroller, { gas: 6000000 });
 
     deployer.then(function () {

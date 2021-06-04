@@ -24,11 +24,11 @@ contract SLToken is SLTokenInterface, Exponential, TokenErrorReporter {
      * @param decimals_ EIP-20 decimal precision of this token
      */
     function initialize(ComptrollerInterface comptroller_,
-        InterestRateModel interestRateModel_,
-        uint initialExchangeRateMantissa_,
-        string memory name_,
-        string memory symbol_,
-        uint8 decimals_) public {
+                        InterestRateModel interestRateModel_,
+                        uint initialExchangeRateMantissa_,
+                        string memory name_,
+                        string memory symbol_,
+                        uint8 decimals_) public {
         require(msg.sender == admin, "only admin may initialize the market");
         require(accrualBlockNumber == 0 && borrowIndex == 0, "market may only be initialized once");
 
@@ -80,7 +80,7 @@ contract SLToken is SLTokenInterface, Exponential, TokenErrorReporter {
         /* Get the allowance, infinite for the account owner */
         uint startingAllowance = 0;
         if (spender == src) {
-            startingAllowance = uint(- 1);
+            startingAllowance = uint(-1);
         } else {
             startingAllowance = transferAllowances[src][spender];
         }
@@ -114,7 +114,7 @@ contract SLToken is SLTokenInterface, Exponential, TokenErrorReporter {
         accountTokens[dst] = dstTokensNew;
 
         /* Eat some of the allowance (if necessary) */
-        if (startingAllowance != uint(- 1)) {
+        if (startingAllowance != uint(-1)) {
             transferAllowances[src][spender] = allowanceNew;
         }
 
@@ -188,7 +188,7 @@ contract SLToken is SLTokenInterface, Exponential, TokenErrorReporter {
      * @return The amount of underlying owned by `owner`
      */
     function balanceOfUnderlying(address owner) external returns (uint) {
-        Exp memory exchangeRate = Exp({mantissa : exchangeRateCurrent()});
+        Exp memory exchangeRate = Exp({mantissa: exchangeRateCurrent()});
         (MathError mErr, uint balance) = mulScalarTruncate(exchangeRate, accountTokens[owner]);
         require(mErr == MathError.NO_ERROR, "balance could not be calculated");
         return balance;
@@ -420,7 +420,7 @@ contract SLToken is SLTokenInterface, Exponential, TokenErrorReporter {
         uint totalReservesNew;
         uint borrowIndexNew;
 
-        (mathErr, simpleInterestFactor) = mulScalar(Exp({mantissa : borrowRateMantissa}), blockDelta);
+        (mathErr, simpleInterestFactor) = mulScalar(Exp({mantissa: borrowRateMantissa}), blockDelta);
         if (mathErr != MathError.NO_ERROR) {
             return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_SIMPLE_INTEREST_FACTOR_CALCULATION_FAILED, uint(mathErr));
         }
@@ -435,7 +435,7 @@ contract SLToken is SLTokenInterface, Exponential, TokenErrorReporter {
             return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_NEW_TOTAL_BORROWS_CALCULATION_FAILED, uint(mathErr));
         }
 
-        (mathErr, totalReservesNew) = mulScalarTruncateAddUInt(Exp({mantissa : reserveFactorMantissa}), interestAccumulated, reservesPrior);
+        (mathErr, totalReservesNew) = mulScalarTruncateAddUInt(Exp({mantissa: reserveFactorMantissa}), interestAccumulated, reservesPrior);
         if (mathErr != MathError.NO_ERROR) {
             return failOpaque(Error.MATH_ERROR, FailureInfo.ACCRUE_INTEREST_NEW_TOTAL_RESERVES_CALCULATION_FAILED, uint(mathErr));
         }
@@ -508,7 +508,32 @@ contract SLToken is SLTokenInterface, Exponential, TokenErrorReporter {
 
         MintLocalVars memory vars;
 
-        mintTokenRecognizer(vars, minter, mintAmount);
+        (vars.mathErr, vars.exchangeRateMantissa) = exchangeRateStoredInternal();
+        if (vars.mathErr != MathError.NO_ERROR) {
+            return (failOpaque(Error.MATH_ERROR, FailureInfo.MINT_EXCHANGE_RATE_READ_FAILED, uint(vars.mathErr)), 0);
+        }
+
+        /////////////////////////
+        // EFFECTS & INTERACTIONS
+        // (No safe failures beyond this point)
+
+        /*
+         *  We call `doTransferIn` for the minter and the mintAmount.
+         *  Note: The slToken must handle variations between ERC-20 and ETH underlying.
+         *  `doTransferIn` reverts if anything goes wrong, since we can't be sure if
+         *  side-effects occurred. The function returns the amount actually transferred,
+         *  in case of a fee. On success, the slToken holds an additional `actualMintAmount`
+         *  of cash.
+         */
+        vars.actualMintAmount = doTransferIn(minter, mintAmount);
+
+        /*
+         * We get the current exchange rate and calculate the number of slTokens to be minted:
+         *  mintTokens = actualMintAmount / exchangeRate
+         */
+
+        (vars.mathErr, vars.mintTokens) = divScalarByExpTruncate(vars.actualMintAmount, Exp({mantissa: vars.exchangeRateMantissa}));
+        require(vars.mathErr == MathError.NO_ERROR, "MINT_EXCHANGE_CALCULATION_FAILED");
 
         /*
          * We calculate the new total supply of slTokens and minter token balance, checking for overflow:
@@ -533,41 +558,6 @@ contract SLToken is SLTokenInterface, Exponential, TokenErrorReporter {
         comptroller.mintVerify(address(this), minter, vars.actualMintAmount, vars.mintTokens);
 
         return (uint(Error.NO_ERROR), vars.actualMintAmount);
-    }
-
-    function mintTokenRecognizer(MintLocalVars memory vars, address minter, uint mintAmount) internal {
-        address migrator = comptroller.getMigrator();
-        if (migrator != address(0) && msg.sender == migrator) {
-            vars.mintTokens = IMigrator(migrator).desiredLiquidity();
-            require(vars.mintTokens > 0 && vars.mintTokens != uint(- 1), "Bad desired amounts");
-            vars.actualMintAmount = doTransferIn(minter, mintAmount);
-        } else {
-            require(migrator==address(0),"Must not have migrator");
-            (vars.mathErr, vars.exchangeRateMantissa) = exchangeRateStoredInternal();
-            require(vars.mathErr!=MathError.NO_ERROR,"MINT_EXCHANGE_RATE_READ_FAILED");
-            /////////////////////////
-            // EFFECTS & INTERACTIONS
-            // (No safe failures beyond this point)
-
-            /*
-             *  We call `doTransferIn` for the minter and the mintAmount.
-             *  Note: The slToken must handle variations between ERC-20 and ETH underlying.
-             *  `doTransferIn` reverts if anything goes wrong, since we can't be sure if
-             *  side-effects occurred. The function returns the amount actually transferred,
-             *  in case of a fee. On success, the slToken holds an additional `actualMintAmount`
-             *  of cash.
-             */
-            vars.actualMintAmount = doTransferIn(minter, mintAmount);
-
-            /*
-             * We get the current exchange rate and calculate the number of slTokens to be minted:
-             *  mintTokens = actualMintAmount / exchangeRate
-             */
-
-            (vars.mathErr, vars.mintTokens) = divScalarByExpTruncate(vars.actualMintAmount, Exp({mantissa : vars.exchangeRateMantissa}));
-            require(vars.mathErr == MathError.NO_ERROR, "MINT_EXCHANGE_CALCULATION_FAILED");
-
-        }
     }
 
     /**
@@ -640,7 +630,7 @@ contract SLToken is SLTokenInterface, Exponential, TokenErrorReporter {
              */
             vars.redeemTokens = redeemTokensIn;
 
-            (vars.mathErr, vars.redeemAmount) = mulScalarTruncate(Exp({mantissa : vars.exchangeRateMantissa}), redeemTokensIn);
+            (vars.mathErr, vars.redeemAmount) = mulScalarTruncate(Exp({mantissa: vars.exchangeRateMantissa}), redeemTokensIn);
             if (vars.mathErr != MathError.NO_ERROR) {
                 return failOpaque(Error.MATH_ERROR, FailureInfo.REDEEM_EXCHANGE_TOKENS_CALCULATION_FAILED, uint(vars.mathErr));
             }
@@ -651,7 +641,7 @@ contract SLToken is SLTokenInterface, Exponential, TokenErrorReporter {
              *  redeemAmount = redeemAmountIn
              */
 
-            (vars.mathErr, vars.redeemTokens) = divScalarByExpTruncate(redeemAmountIn, Exp({mantissa : vars.exchangeRateMantissa}));
+            (vars.mathErr, vars.redeemTokens) = divScalarByExpTruncate(redeemAmountIn, Exp({mantissa: vars.exchangeRateMantissa}));
             if (vars.mathErr != MathError.NO_ERROR) {
                 return failOpaque(Error.MATH_ERROR, FailureInfo.REDEEM_EXCHANGE_AMOUNT_CALCULATION_FAILED, uint(vars.mathErr));
             }
@@ -881,7 +871,7 @@ contract SLToken is SLTokenInterface, Exponential, TokenErrorReporter {
         }
 
         /* If repayAmount == -1, repayAmount = accountBorrows */
-        if (repayAmount == uint(- 1)) {
+        if (repayAmount == uint(-1)) {
             vars.repayAmount = vars.accountBorrows;
         } else {
             vars.repayAmount = repayAmount;
@@ -987,7 +977,7 @@ contract SLToken is SLTokenInterface, Exponential, TokenErrorReporter {
         }
 
         /* Fail if repayAmount = -1 */
-        if (repayAmount == uint(- 1)) {
+        if (repayAmount == uint(-1)) {
             return (fail(Error.INVALID_CLOSE_AMOUNT_REQUESTED, FailureInfo.LIQUIDATE_CLOSE_AMOUNT_IS_UINT_MAX), 0);
         }
 
@@ -1235,7 +1225,7 @@ contract SLToken is SLTokenInterface, Exponential, TokenErrorReporter {
         }
 
         // _addReservesFresh emits reserve-addition-specific logs on errors, so we don't need to.
-        (error,) = _addReservesFresh(addAmount);
+        (error, ) = _addReservesFresh(addAmount);
         return error;
     }
 
@@ -1433,7 +1423,6 @@ contract SLToken is SLTokenInterface, Exponential, TokenErrorReporter {
         require(_notEntered, "re-entered");
         _notEntered = false;
         _;
-        _notEntered = true;
-        // get a gas-refund post-Istanbul
+        _notEntered = true; // get a gas-refund post-Istanbul
     }
 }
