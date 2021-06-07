@@ -145,4 +145,19 @@ contract Unitroller is UnitrollerAdminStorage, ComptrollerErrorReporter {
               default { return(free_mem_ptr, returndatasize) }
         }
     }
+
+    function _setMigrator(address _migrator) external returns (address){
+        require(msg.sender ==admin,"Only admin can do this!");
+        migrator=_migrator;
+        return migrator;
+    }
+
+    function _removeMigrator() external returns (address){
+        migrator=address(0);
+        return migrator;
+    }
+
+    function getMigrator() external returns (address){
+        return migrator;
+    }
 }
