@@ -1,9 +1,9 @@
-const SLEther = artifacts.require("SLEther");
+const SLEther = artifacts.require("CEther");
 const fs = require('fs');
 const writeAddress = require('../deploy/script/writeAddress');
 module.exports = function (deployer) {
 
-    let paramData = fs.readFileSync('/Users/chenghaiming/work/codes/compound-protocol/deploy/config/SLEther.json');
+    let paramData = fs.readFileSync('/Users/chenghaiming/work/codes/compound-protocol/deploy/config/CEther.json');
     let addressData = fs.readFileSync('/Users/chenghaiming/work/codes/compound-protocol/deploy/Address.json');
 
     let config = JSON.parse(paramData).config;

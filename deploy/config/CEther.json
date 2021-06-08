@@ -1,10 +1,10 @@
 {
-    "name": "SLEther",
+    "name": "CEther",
     "config": {
         "WhitePaperInterestRateModel": "JumpRateModelV2_1",
         "INITIALEXCHANGERATEMANTISSA_": "201651901844513861760148860",
-        "NAME_": "slHT",
-        "SYMBOL_": "slHT",
+        "NAME_": "cETher",
+        "SYMBOL_": "cEther",
         "DECIMALS_": 8,
         "ADMIN_": "0x73b9dc8f51d7144150F324F5313fb4c67EEB852A",
         "newReserveFactorMantissa": "200000000000000000",

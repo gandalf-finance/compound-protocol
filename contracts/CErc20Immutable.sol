@@ -1,13 +1,13 @@
 pragma solidity ^0.5.16;
 
-import "./SLErc20.sol";
+import "./CErc20.sol";
 
 /**
- * @title SashimiLending's SLErc20Immutable Contract
- * @notice SLTokens which wrap an EIP-20 underlying and are immutable
- * @author SashimiLending
+ * @title Compound's CErc20Immutable Contract
+ * @notice CTokens which wrap an EIP-20 underlying and are immutable
+ * @author Compound
  */
-contract SLErc20Immutable is SLErc20 {
+contract CErc20Immutable is CErc20 {
     /**
      * @notice Construct a new money market
      * @param underlying_ The address of the underlying asset

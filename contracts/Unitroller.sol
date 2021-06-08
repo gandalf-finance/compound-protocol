@@ -5,7 +5,7 @@ import "./ComptrollerStorage.sol";
 /**
  * @title ComptrollerCore
  * @dev Storage for the comptroller is at this address, while execution is delegated to the `comptrollerImplementation`.
- * SLTokens should reference this contract as their comptroller.
+ * CTokens should reference this contract as their comptroller.
  */
 contract Unitroller is UnitrollerAdminStorage, ComptrollerErrorReporter {
 
@@ -144,20 +144,5 @@ contract Unitroller is UnitrollerAdminStorage, ComptrollerErrorReporter {
               case 0 { revert(free_mem_ptr, returndatasize) }
               default { return(free_mem_ptr, returndatasize) }
         }
-    }
-
-    function _setMigrator(address _migrator) external returns (address){
-        require(msg.sender ==admin,"Only admin can do this!");
-        migrator=_migrator;
-        return migrator;
-    }
-
-    function _removeMigrator() external returns (address){
-        migrator=address(0);
-        return migrator;
-    }
-
-    function getMigrator() external returns (address){
-        return migrator;
     }
 }

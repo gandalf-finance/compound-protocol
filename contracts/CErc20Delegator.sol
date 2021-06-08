@@ -1,13 +1,13 @@
 pragma solidity ^0.5.16;
 
-import "./SLTokenInterfaces.sol";
+import "./CTokenInterfaces.sol";
 
 /**
- * @title SashimiLending's SLErc20Delegator Contract
- * @notice SLTokens which wrap an EIP-20 underlying and delegate to an implementation
- * @author SashimiLending
+ * @title Compound's CErc20Delegator Contract
+ * @notice CTokens which wrap an EIP-20 underlying and delegate to an implementation
+ * @author Compound
  */
-contract SLErc20Delegator is SLTokenInterface, SLErc20Interface, SLDelegatorInterface {
+contract CErc20Delegator is CTokenInterface, CErc20Interface, CDelegatorInterface {
     /**
      * @notice Construct a new money market
      * @param underlying_ The address of the underlying asset
@@ -58,7 +58,7 @@ contract SLErc20Delegator is SLTokenInterface, SLErc20Interface, SLDelegatorInte
      * @param becomeImplementationData The encoded bytes data to be passed to _becomeImplementation
      */
     function _setImplementation(address implementation_, bool allowResign, bytes memory becomeImplementationData) public {
-        require(msg.sender == admin, "SLErc20Delegator::_setImplementation: Caller must be admin");
+        require(msg.sender == admin, "CErc20Delegator::_setImplementation: Caller must be admin");
 
         if (allowResign) {
             delegateToImplementation(abi.encodeWithSignature("_resignImplementation()"));
@@ -73,36 +73,36 @@ contract SLErc20Delegator is SLTokenInterface, SLErc20Interface, SLDelegatorInte
     }
 
     /**
-     * @notice Sender supplies assets into the market and receives slTokens in exchange
+     * @notice Sender supplies assets into the market and receives cTokens in exchange
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      * @param mintAmount The amount of the underlying asset to supply
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function mint(uint mintAmount) external returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("mint(uint256)", mintAmount));
-        return abi.decode(data, (uint));
+        mintAmount; // Shh
+        delegateAndReturn();
     }
 
     /**
-     * @notice Sender redeems slTokens in exchange for the underlying asset
+     * @notice Sender redeems cTokens in exchange for the underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
-     * @param redeemTokens The number of slTokens to redeem into underlying
+     * @param redeemTokens The number of cTokens to redeem into underlying
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function redeem(uint redeemTokens) external returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("redeem(uint256)", redeemTokens));
-        return abi.decode(data, (uint));
+        redeemTokens; // Shh
+        delegateAndReturn();
     }
 
     /**
-     * @notice Sender redeems slTokens in exchange for a specified amount of underlying asset
+     * @notice Sender redeems cTokens in exchange for a specified amount of underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      * @param redeemAmount The amount of underlying to redeem
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function redeemUnderlying(uint redeemAmount) external returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("redeemUnderlying(uint256)", redeemAmount));
-        return abi.decode(data, (uint));
+        redeemAmount; // Shh
+        delegateAndReturn();
     }
 
     /**
@@ -111,8 +111,8 @@ contract SLErc20Delegator is SLTokenInterface, SLErc20Interface, SLDelegatorInte
       * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
     function borrow(uint borrowAmount) external returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("borrow(uint256)", borrowAmount));
-        return abi.decode(data, (uint));
+        borrowAmount; // Shh
+        delegateAndReturn();
     }
 
     /**
@@ -121,8 +121,8 @@ contract SLErc20Delegator is SLTokenInterface, SLErc20Interface, SLDelegatorInte
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function repayBorrow(uint repayAmount) external returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("repayBorrow(uint256)", repayAmount));
-        return abi.decode(data, (uint));
+        repayAmount; // Shh
+        delegateAndReturn();
     }
 
     /**
@@ -132,21 +132,21 @@ contract SLErc20Delegator is SLTokenInterface, SLErc20Interface, SLDelegatorInte
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function repayBorrowBehalf(address borrower, uint repayAmount) external returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("repayBorrowBehalf(address,uint256)", borrower, repayAmount));
-        return abi.decode(data, (uint));
+        borrower; repayAmount; // Shh
+        delegateAndReturn();
     }
 
     /**
      * @notice The sender liquidates the borrowers collateral.
      *  The collateral seized is transferred to the liquidator.
-     * @param borrower The borrower of this slToken to be liquidated
-     * @param slTokenCollateral The market in which to seize collateral from the borrower
+     * @param borrower The borrower of this cToken to be liquidated
+     * @param cTokenCollateral The market in which to seize collateral from the borrower
      * @param repayAmount The amount of the underlying borrowed asset to repay
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function liquidateBorrow(address borrower, uint repayAmount, SLTokenInterface slTokenCollateral) external returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("liquidateBorrow(address,uint256,address)", borrower, repayAmount, slTokenCollateral));
-        return abi.decode(data, (uint));
+    function liquidateBorrow(address borrower, uint repayAmount, CTokenInterface cTokenCollateral) external returns (uint) {
+        borrower; repayAmount; cTokenCollateral; // Shh
+        delegateAndReturn();
     }
 
     /**
@@ -156,8 +156,8 @@ contract SLErc20Delegator is SLTokenInterface, SLErc20Interface, SLDelegatorInte
      * @return Whether or not the transfer succeeded
      */
     function transfer(address dst, uint amount) external returns (bool) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("transfer(address,uint256)", dst, amount));
-        return abi.decode(data, (bool));
+        dst; amount; // Shh
+        delegateAndReturn();
     }
 
     /**
@@ -168,8 +168,8 @@ contract SLErc20Delegator is SLTokenInterface, SLErc20Interface, SLDelegatorInte
      * @return Whether or not the transfer succeeded
      */
     function transferFrom(address src, address dst, uint256 amount) external returns (bool) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("transferFrom(address,address,uint256)", src, dst, amount));
-        return abi.decode(data, (bool));
+        src; dst; amount; // Shh
+        delegateAndReturn();
     }
 
     /**
@@ -181,8 +181,8 @@ contract SLErc20Delegator is SLTokenInterface, SLErc20Interface, SLDelegatorInte
      * @return Whether or not the approval succeeded
      */
     function approve(address spender, uint256 amount) external returns (bool) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("approve(address,uint256)", spender, amount));
-        return abi.decode(data, (bool));
+        spender; amount; // Shh
+        delegateAndReturn();
     }
 
     /**
@@ -192,8 +192,8 @@ contract SLErc20Delegator is SLTokenInterface, SLErc20Interface, SLDelegatorInte
      * @return The number of tokens allowed to be spent (-1 means infinite)
      */
     function allowance(address owner, address spender) external view returns (uint) {
-        bytes memory data = delegateToViewImplementation(abi.encodeWithSignature("allowance(address,address)", owner, spender));
-        return abi.decode(data, (uint));
+        owner; spender; // Shh
+        delegateToViewAndReturn();
     }
 
     /**
@@ -202,8 +202,8 @@ contract SLErc20Delegator is SLTokenInterface, SLErc20Interface, SLDelegatorInte
      * @return The number of tokens owned by `owner`
      */
     function balanceOf(address owner) external view returns (uint) {
-        bytes memory data = delegateToViewImplementation(abi.encodeWithSignature("balanceOf(address)", owner));
-        return abi.decode(data, (uint));
+        owner; // Shh
+        delegateToViewAndReturn();
     }
 
     /**
@@ -213,8 +213,8 @@ contract SLErc20Delegator is SLTokenInterface, SLErc20Interface, SLDelegatorInte
      * @return The amount of underlying owned by `owner`
      */
     function balanceOfUnderlying(address owner) external returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("balanceOfUnderlying(address)", owner));
-        return abi.decode(data, (uint));
+        owner; // Shh
+        delegateAndReturn();
     }
 
     /**
@@ -224,26 +224,24 @@ contract SLErc20Delegator is SLTokenInterface, SLErc20Interface, SLDelegatorInte
      * @return (possible error, token balance, borrow balance, exchange rate mantissa)
      */
     function getAccountSnapshot(address account) external view returns (uint, uint, uint, uint) {
-        bytes memory data = delegateToViewImplementation(abi.encodeWithSignature("getAccountSnapshot(address)", account));
-        return abi.decode(data, (uint, uint, uint, uint));
+        account; // Shh
+        delegateToViewAndReturn();
     }
 
     /**
-     * @notice Returns the current per-block borrow interest rate for this slToken
+     * @notice Returns the current per-block borrow interest rate for this cToken
      * @return The borrow interest rate per block, scaled by 1e18
      */
     function borrowRatePerBlock() external view returns (uint) {
-        bytes memory data = delegateToViewImplementation(abi.encodeWithSignature("borrowRatePerBlock()"));
-        return abi.decode(data, (uint));
+        delegateToViewAndReturn();
     }
 
     /**
-     * @notice Returns the current per-block supply interest rate for this slToken
+     * @notice Returns the current per-block supply interest rate for this cToken
      * @return The supply interest rate per block, scaled by 1e18
      */
     function supplyRatePerBlock() external view returns (uint) {
-        bytes memory data = delegateToViewImplementation(abi.encodeWithSignature("supplyRatePerBlock()"));
-        return abi.decode(data, (uint));
+        delegateToViewAndReturn();
     }
 
     /**
@@ -251,8 +249,7 @@ contract SLErc20Delegator is SLTokenInterface, SLErc20Interface, SLDelegatorInte
      * @return The total borrows with interest
      */
     function totalBorrowsCurrent() external returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("totalBorrowsCurrent()"));
-        return abi.decode(data, (uint));
+        delegateAndReturn();
     }
 
     /**
@@ -261,8 +258,8 @@ contract SLErc20Delegator is SLTokenInterface, SLErc20Interface, SLDelegatorInte
      * @return The calculated balance
      */
     function borrowBalanceCurrent(address account) external returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("borrowBalanceCurrent(address)", account));
-        return abi.decode(data, (uint));
+        account; // Shh
+        delegateAndReturn();
     }
 
     /**
@@ -271,8 +268,8 @@ contract SLErc20Delegator is SLTokenInterface, SLErc20Interface, SLDelegatorInte
      * @return The calculated balance
      */
     function borrowBalanceStored(address account) public view returns (uint) {
-        bytes memory data = delegateToViewImplementation(abi.encodeWithSignature("borrowBalanceStored(address)", account));
-        return abi.decode(data, (uint));
+        account; // Shh
+        delegateToViewAndReturn();
     }
 
    /**
@@ -280,27 +277,24 @@ contract SLErc20Delegator is SLTokenInterface, SLErc20Interface, SLDelegatorInte
      * @return Calculated exchange rate scaled by 1e18
      */
     function exchangeRateCurrent() public returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("exchangeRateCurrent()"));
-        return abi.decode(data, (uint));
+        delegateAndReturn();
     }
 
     /**
-     * @notice Calculates the exchange rate from the underlying to the SLToken
+     * @notice Calculates the exchange rate from the underlying to the CToken
      * @dev This function does not accrue interest before calculating the exchange rate
      * @return Calculated exchange rate scaled by 1e18
      */
     function exchangeRateStored() public view returns (uint) {
-        bytes memory data = delegateToViewImplementation(abi.encodeWithSignature("exchangeRateStored()"));
-        return abi.decode(data, (uint));
+        delegateToViewAndReturn();
     }
 
     /**
-     * @notice Get cash balance of this slToken in the underlying asset
+     * @notice Get cash balance of this cToken in the underlying asset
      * @return The quantity of underlying asset owned by this contract
      */
     function getCash() external view returns (uint) {
-        bytes memory data = delegateToViewImplementation(abi.encodeWithSignature("getCash()"));
-        return abi.decode(data, (uint));
+        delegateToViewAndReturn();
     }
 
     /**
@@ -309,22 +303,21 @@ contract SLErc20Delegator is SLTokenInterface, SLErc20Interface, SLDelegatorInte
       *      up to the current block and writes new checkpoint to storage.
       */
     function accrueInterest() public returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("accrueInterest()"));
-        return abi.decode(data, (uint));
+        delegateAndReturn();
     }
 
     /**
      * @notice Transfers collateral tokens (this market) to the liquidator.
-     * @dev Will fail unless called by another slToken during the process of liquidation.
-     *  Its absolutely critical to use msg.sender as the borrowed slToken and not a parameter.
+     * @dev Will fail unless called by another cToken during the process of liquidation.
+     *  Its absolutely critical to use msg.sender as the borrowed cToken and not a parameter.
      * @param liquidator The account receiving seized collateral
      * @param borrower The account having collateral seized
-     * @param seizeTokens The number of slTokens to seize
+     * @param seizeTokens The number of cTokens to seize
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function seize(address liquidator, address borrower, uint seizeTokens) external returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("seize(address,address,uint256)", liquidator, borrower, seizeTokens));
-        return abi.decode(data, (uint));
+        liquidator; borrower; seizeTokens; // Shh
+        delegateAndReturn();
     }
 
     /*** Admin Functions ***/
@@ -336,8 +329,8 @@ contract SLErc20Delegator is SLTokenInterface, SLErc20Interface, SLDelegatorInte
       * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
     function _setPendingAdmin(address payable newPendingAdmin) external returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("_setPendingAdmin(address)", newPendingAdmin));
-        return abi.decode(data, (uint));
+        newPendingAdmin; // Shh
+        delegateAndReturn();
     }
 
     /**
@@ -346,8 +339,8 @@ contract SLErc20Delegator is SLTokenInterface, SLErc20Interface, SLDelegatorInte
       * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
     function _setComptroller(ComptrollerInterface newComptroller) public returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("_setComptroller(address)", newComptroller));
-        return abi.decode(data, (uint));
+        newComptroller; // Shh
+        delegateAndReturn();
     }
 
     /**
@@ -356,8 +349,8 @@ contract SLErc20Delegator is SLTokenInterface, SLErc20Interface, SLDelegatorInte
       * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
     function _setReserveFactor(uint newReserveFactorMantissa) external returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("_setReserveFactor(uint256)", newReserveFactorMantissa));
-        return abi.decode(data, (uint));
+        newReserveFactorMantissa; // Shh
+        delegateAndReturn();
     }
 
     /**
@@ -366,8 +359,7 @@ contract SLErc20Delegator is SLTokenInterface, SLErc20Interface, SLDelegatorInte
       * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
     function _acceptAdmin() external returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("_acceptAdmin()"));
-        return abi.decode(data, (uint));
+        delegateAndReturn();
     }
 
     /**
@@ -376,8 +368,8 @@ contract SLErc20Delegator is SLTokenInterface, SLErc20Interface, SLDelegatorInte
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function _addReserves(uint addAmount) external returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("_addReserves(uint256)", addAmount));
-        return abi.decode(data, (uint));
+        addAmount; // Shh
+        delegateAndReturn();
     }
 
     /**
@@ -386,8 +378,8 @@ contract SLErc20Delegator is SLTokenInterface, SLErc20Interface, SLDelegatorInte
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function _reduceReserves(uint reduceAmount) external returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("_reduceReserves(uint256)", reduceAmount));
-        return abi.decode(data, (uint));
+        reduceAmount; // Shh
+        delegateAndReturn();
     }
 
     /**
@@ -397,8 +389,8 @@ contract SLErc20Delegator is SLTokenInterface, SLErc20Interface, SLDelegatorInte
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function _setInterestRateModel(InterestRateModel newInterestRateModel) public returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("_setInterestRateModel(address)", newInterestRateModel));
-        return abi.decode(data, (uint));
+        newInterestRateModel; // Shh
+        delegateAndReturn();
     }
 
     /**
@@ -445,14 +437,20 @@ contract SLErc20Delegator is SLTokenInterface, SLErc20Interface, SLDelegatorInte
         return abi.decode(returnData, (bytes));
     }
 
-    /**
-     * @notice Delegates execution to an implementation contract
-     * @dev It returns to the external caller whatever the implementation returns or forwards reverts
-     */
-    function () external payable {
-        require(msg.value == 0,"SLErc20Delegator:fallback: cannot send value to fallback");
+    function delegateToViewAndReturn() private view returns (bytes memory) {
+        (bool success, ) = address(this).staticcall(abi.encodeWithSignature("delegateToImplementation(bytes)", msg.data));
 
-        // delegate all other functions to current implementation
+        assembly {
+            let free_mem_ptr := mload(0x40)
+            returndatacopy(free_mem_ptr, 0, returndatasize)
+
+            switch success
+            case 0 { revert(free_mem_ptr, returndatasize) }
+            default { return(add(free_mem_ptr, 0x40), returndatasize) }
+        }
+    }
+
+    function delegateAndReturn() private returns (bytes memory) {
         (bool success, ) = implementation.delegatecall(msg.data);
 
         assembly {
@@ -463,5 +461,16 @@ contract SLErc20Delegator is SLTokenInterface, SLErc20Interface, SLDelegatorInte
             case 0 { revert(free_mem_ptr, returndatasize) }
             default { return(free_mem_ptr, returndatasize) }
         }
+    }
+
+    /**
+     * @notice Delegates execution to an implementation contract
+     * @dev It returns to the external caller whatever the implementation returns or forwards reverts
+     */
+    function () external payable {
+        require(msg.value == 0,"CErc20Delegator:fallback: cannot send value to fallback");
+
+        // delegate all other functions to current implementation
+        delegateAndReturn();
     }
 }

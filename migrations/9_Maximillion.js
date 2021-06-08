@@ -1,5 +1,5 @@
 const Maximillion = artifacts.require("Maximillion");
-const SLEther = artifacts.require("SLEther");
+const SLEther = artifacts.require("CEther");
 const writeAddress = require('../deploy/script/writeAddress');
 
 module.exports = function (deployer) {

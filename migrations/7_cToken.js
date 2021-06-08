@@ -1,12 +1,12 @@
-const SLErc20Delegator = artifacts.require("SLErc20Delegator");
-const SLErc20Delegate = artifacts.require("SLErc20Delegate");
+const CErc20Delegator = artifacts.require("CErc20Delegator");
+const CErc20Delegate = artifacts.require("CErc20Delegate");
 const Comptroller = artifacts.require("Comptroller");
 const fs = require('fs');
 const writeAddress = require('../deploy/script/writeAddress');
 
 module.exports = function (deployer) {
 
-    let paramData = fs.readFileSync('/Users/chenghaiming/work/codes/compound-protocol/deploy/config/SLToken.json');
+    let paramData = fs.readFileSync('/Users/chenghaiming/work/codes/compound-protocol/deploy/config/CToken.json');
     let addressData = fs.readFileSync('/Users/chenghaiming/work/codes/compound-protocol/deploy/Address.json');
 
     let config = JSON.parse(paramData);
@@ -22,12 +22,12 @@ module.exports = function (deployer) {
         decimals_ = params.decimals_;
         admin_ = params.admin_;
         datas = "0x0000000000000000000000000000000000000000"
-        deployer.deploy(SLErc20Delegator, underlying_, Unitroller, WhitePaperInterestRateModel, initialExchangeRateMantissa_, name_, symbol_, decimals_, admin_, SLErc20Delegate.address, datas, { gas: 6000000 }).then(function () {
-            return SLErc20Delegator.deployed();
+        deployer.deploy(CErc20Delegator, underlying_, Unitroller, WhitePaperInterestRateModel, initialExchangeRateMantissa_, name_, symbol_, decimals_, admin_, CErc20Delegate.address, datas, { gas: 6000000 }).then(function () {
+            return CErc20Delegator.deployed();
         }).then(async function (instance) {
             writeAddress(name, instance.address);
 
-            var a = await SLErc20Delegate.at(instance.address);
+            var a = await CErc20Delegate.at(instance.address);
             await a._setReserveFactor(params.newReserveFactorMantissa);
             // var b = await Comptroller.at(Unitroller);
             // await b._setCollateralFactor(instance.address, params.newCollateralFactorMantissa);

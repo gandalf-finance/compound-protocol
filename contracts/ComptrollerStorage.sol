@@ -1,6 +1,6 @@
 pragma solidity ^0.5.16;
 
-import "./SLToken.sol";
+import "./CToken.sol";
 import "./PriceOracle.sol";
 
 contract UnitrollerAdminStorage {
@@ -23,9 +23,6 @@ contract UnitrollerAdminStorage {
     * @notice Pending brains of Unitroller
     */
     address public pendingComptrollerImplementation;
-
-//    The address of migrator
-    address public migrator;
 }
 
 contract ComptrollerV1Storage is UnitrollerAdminStorage {
@@ -53,7 +50,7 @@ contract ComptrollerV1Storage is UnitrollerAdminStorage {
     /**
      * @notice Per-account mapping of "assets you are in", capped by maxAssets
      */
-    mapping(address => SLToken[]) public accountAssets;
+    mapping(address => CToken[]) public accountAssets;
 
 }
 
@@ -72,12 +69,12 @@ contract ComptrollerV2Storage is ComptrollerV1Storage {
         /// @notice Per-market mapping of "accounts in this asset"
         mapping(address => bool) accountMembership;
 
-        /// @notice Whether or not this market receives SASHIMI
-        bool isSashimied;
+        /// @notice Whether or not this market receives COMP
+        bool isComped;
     }
 
     /**
-     * @notice Official mapping of slTokens -> Market metadata
+     * @notice Official mapping of cTokens -> Market metadata
      * @dev Used e.g. to determine if a market is supported
      */
     mapping(address => Market) public markets;
@@ -98,8 +95,8 @@ contract ComptrollerV2Storage is ComptrollerV1Storage {
 }
 
 contract ComptrollerV3Storage is ComptrollerV2Storage {
-    struct SashimiMarketState {
-        /// @notice The market's last updated sashimiBorrowIndex or sashimiSupplyIndex
+    struct CompMarketState {
+        /// @notice The market's last updated compBorrowIndex or compSupplyIndex
         uint224 index;
 
         /// @notice The block number the index was last updated at
@@ -107,34 +104,34 @@ contract ComptrollerV3Storage is ComptrollerV2Storage {
     }
 
     /// @notice A list of all markets
-    SLToken[] public allMarkets;
+    CToken[] public allMarkets;
 
-    /// @notice The rate at which the flywheel distributes SASHIMI, per block
-    uint public sashimiRate;
+    /// @notice The rate at which the flywheel distributes COMP, per block
+    uint public compRate;
 
-    /// @notice The portion of sashimiRate that each market currently receives
-    mapping(address => uint) public sashimiSpeeds;
+    /// @notice The portion of compRate that each market currently receives
+    mapping(address => uint) public compSpeeds;
 
-    /// @notice The SASHIMI market supply state for each market
-    mapping(address => SashimiMarketState) public sashimiSupplyState;
+    /// @notice The COMP market supply state for each market
+    mapping(address => CompMarketState) public compSupplyState;
 
-    /// @notice The SASHIMI market borrow state for each market
-    mapping(address => SashimiMarketState) public sashimiBorrowState;
+    /// @notice The COMP market borrow state for each market
+    mapping(address => CompMarketState) public compBorrowState;
 
-    /// @notice The SASHIMI borrow index for each market for each supplier as of the last time they accrued SASHIMI
-    mapping(address => mapping(address => uint)) public sashimiSupplierIndex;
+    /// @notice The COMP borrow index for each market for each supplier as of the last time they accrued COMP
+    mapping(address => mapping(address => uint)) public compSupplierIndex;
 
-    /// @notice The SASHIMI borrow index for each market for each borrower as of the last time they accrued SASHIMI
-    mapping(address => mapping(address => uint)) public sashimiBorrowerIndex;
+    /// @notice The COMP borrow index for each market for each borrower as of the last time they accrued COMP
+    mapping(address => mapping(address => uint)) public compBorrowerIndex;
 
-    /// @notice The SASHIMI accrued but not yet transferred to each user
-    mapping(address => uint) public sashimiAccrued;
+    /// @notice The COMP accrued but not yet transferred to each user
+    mapping(address => uint) public compAccrued;
 }
 
 contract ComptrollerV4Storage is ComptrollerV3Storage {
     // @notice The borrowCapGuardian can set borrowCaps to any number for any market. Lowering the borrow cap could disable borrowing on the given market.
     address public borrowCapGuardian;
 
-    // @notice Borrow caps enforced by borrowAllowed for each slToken address. Defaults to zero which corresponds to unlimited borrowing.
+    // @notice Borrow caps enforced by borrowAllowed for each cToken address. Defaults to zero which corresponds to unlimited borrowing.
     mapping(address => uint) public borrowCaps;
 }

@@ -1,6 +1,6 @@
 pragma solidity ^0.5.16;
 
-import "./SLToken.sol";
+import "./CToken.sol";
 import "./ErrorReporter.sol";
 import "./Exponential.sol";
 import "./PriceOracle.sol";
@@ -9,8 +9,8 @@ import "./ComptrollerStorage.sol";
 import "./Unitroller.sol";
 
 /**
- * @title SashimiLending's Comptroller Contract
- * @author SashimiLending
+ * @title Compound's Comptroller Contract
+ * @author Compound
  * @dev This was the first version of the Comptroller brains.
  *  We keep it so our tests can continue to do the real-life behavior of upgrading from this logic forward.
  */
@@ -35,7 +35,7 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
     }
 
     /**
-     * @notice Official mapping of slTokens -> Market metadata
+     * @notice Official mapping of cTokens -> Market metadata
      * @dev Used e.g. to determine if a market is supported
      */
     mapping(address => Market) public markets;
@@ -43,17 +43,17 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
     /**
      * @notice Emitted when an admin supports a market
      */
-    event MarketListed(SLToken slToken);
+    event MarketListed(CToken cToken);
 
     /**
      * @notice Emitted when an account enters a market
      */
-    event MarketEntered(SLToken slToken, address account);
+    event MarketEntered(CToken cToken, address account);
 
     /**
      * @notice Emitted when an account exits a market
      */
-    event MarketExited(SLToken slToken, address account);
+    event MarketExited(CToken cToken, address account);
 
     /**
      * @notice Emitted when close factor is changed by admin
@@ -63,7 +63,7 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
     /**
      * @notice Emitted when a collateral factor is changed by admin
      */
-    event NewCollateralFactor(SLToken slToken, uint oldCollateralFactorMantissa, uint newCollateralFactorMantissa);
+    event NewCollateralFactor(CToken cToken, uint oldCollateralFactorMantissa, uint newCollateralFactorMantissa);
 
     /**
      * @notice Emitted when liquidation incentive is changed by admin
@@ -106,8 +106,8 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
      * @param account The address of the account to pull assets for
      * @return A dynamic list with the assets the account has entered
      */
-    function getAssetsIn(address account) external view returns (SLToken[] memory) {
-        SLToken[] memory assetsIn = accountAssets[account];
+    function getAssetsIn(address account) external view returns (CToken[] memory) {
+        CToken[] memory assetsIn = accountAssets[account];
 
         return assetsIn;
     }
@@ -115,25 +115,25 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
     /**
      * @notice Returns whether the given account is entered in the given asset
      * @param account The address of the account to check
-     * @param slToken The slToken to check
+     * @param cToken The cToken to check
      * @return True if the account is in the asset, otherwise false.
      */
-    function checkMembership(address account, SLToken slToken) external view returns (bool) {
-        return markets[address(slToken)].accountMembership[account];
+    function checkMembership(address account, CToken cToken) external view returns (bool) {
+        return markets[address(cToken)].accountMembership[account];
     }
 
     /**
      * @notice Add assets to be included in account liquidity calculation
-     * @param slTokens The list of addresses of the slToken markets to be enabled
+     * @param cTokens The list of addresses of the cToken markets to be enabled
      * @return Success indicator for whether each corresponding market was entered
      */
-    function enterMarkets(address[] memory slTokens) public returns (uint[] memory) {
-        uint len = slTokens.length;
+    function enterMarkets(address[] memory cTokens) public returns (uint[] memory) {
+        uint len = cTokens.length;
 
         uint[] memory results = new uint[](len);
         for (uint i = 0; i < len; i++) {
-            SLToken slToken = SLToken(slTokens[i]);
-            Market storage marketToJoin = markets[address(slToken)];
+            CToken cToken = CToken(cTokens[i]);
+            Market storage marketToJoin = markets[address(cToken)];
 
             if (!marketToJoin.isListed) {
                 // if market is not listed, cannot join move along
@@ -159,9 +159,9 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
             //  that is, only when we need to perform liquidity checks
             //   and not whenever we want to check if an account is in a particular market
             marketToJoin.accountMembership[msg.sender] = true;
-            accountAssets[msg.sender].push(slToken);
+            accountAssets[msg.sender].push(cToken);
 
-            emit MarketEntered(slToken, msg.sender);
+            emit MarketEntered(cToken, msg.sender);
 
             results[i] = uint(Error.NO_ERROR);
         }
@@ -173,13 +173,13 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
      * @notice Removes asset from sender's account liquidity calculation
      * @dev Sender must not have an outstanding borrow balance in the asset,
      *  or be providing neccessary collateral for an outstanding borrow.
-     * @param slTokenAddress The address of the asset to be removed
+     * @param cTokenAddress The address of the asset to be removed
      * @return Whether or not the account successfully exited the market
      */
-    function exitMarket(address slTokenAddress) external returns (uint) {
-        SLToken slToken = SLToken(slTokenAddress);
-        /* Get sender tokensHeld and amountOwed underlying from the slToken */
-        (uint oErr, uint tokensHeld, uint amountOwed, ) = slToken.getAccountSnapshot(msg.sender);
+    function exitMarket(address cTokenAddress) external returns (uint) {
+        CToken cToken = CToken(cTokenAddress);
+        /* Get sender tokensHeld and amountOwed underlying from the cToken */
+        (uint oErr, uint tokensHeld, uint amountOwed, ) = cToken.getAccountSnapshot(msg.sender);
         require(oErr == 0, "exitMarket: getAccountSnapshot failed"); // semi-opaque error code
 
         /* Fail if the sender has a borrow balance */
@@ -188,28 +188,28 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
         }
 
         /* Fail if the sender is not permitted to redeem all of their tokens */
-        uint allowed = redeemAllowedInternal(slTokenAddress, msg.sender, tokensHeld);
+        uint allowed = redeemAllowedInternal(cTokenAddress, msg.sender, tokensHeld);
         if (allowed != 0) {
             return failOpaque(Error.REJECTION, FailureInfo.EXIT_MARKET_REJECTION, allowed);
         }
 
-        Market storage marketToExit = markets[address(slToken)];
+        Market storage marketToExit = markets[address(cToken)];
 
         /* Return true if the sender is not already ‘in’ the market */
         if (!marketToExit.accountMembership[msg.sender]) {
             return uint(Error.NO_ERROR);
         }
 
-        /* Set slToken account membership to false */
+        /* Set cToken account membership to false */
         delete marketToExit.accountMembership[msg.sender];
 
-        /* Delete slToken from the account’s list of assets */
+        /* Delete cToken from the account’s list of assets */
         // load into memory for faster iteration
-        SLToken[] memory userAssetList = accountAssets[msg.sender];
+        CToken[] memory userAssetList = accountAssets[msg.sender];
         uint len = userAssetList.length;
         uint assetIndex = len;
         for (uint i = 0; i < len; i++) {
-            if (userAssetList[i] == slToken) {
+            if (userAssetList[i] == cToken) {
                 assetIndex = i;
                 break;
             }
@@ -219,11 +219,11 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
         assert(assetIndex < len);
 
         // copy last item in list to location of item to be removed, reduce length by 1
-        SLToken[] storage storedList = accountAssets[msg.sender];
+        CToken[] storage storedList = accountAssets[msg.sender];
         storedList[assetIndex] = storedList[storedList.length - 1];
         storedList.length--;
 
-        emit MarketExited(slToken, msg.sender);
+        emit MarketExited(cToken, msg.sender);
 
         return uint(Error.NO_ERROR);
     }
@@ -232,16 +232,16 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
 
     /**
      * @notice Checks if the account should be allowed to mint tokens in the given market
-     * @param slToken The market to verify the mint against
+     * @param cToken The market to verify the mint against
      * @param minter The account which would get the minted tokens
      * @param mintAmount The amount of underlying being supplied to the market in exchange for tokens
      * @return 0 if the mint is allowed, otherwise a semi-opaque error code (See ErrorReporter.sol)
      */
-    function mintAllowed(address slToken, address minter, uint mintAmount) external returns (uint) {
+    function mintAllowed(address cToken, address minter, uint mintAmount) external returns (uint) {
         minter;       // currently unused
         mintAmount;   // currently unused
 
-        if (!markets[slToken].isListed) {
+        if (!markets[cToken].isListed) {
             return uint(Error.MARKET_NOT_LISTED);
         }
 
@@ -252,13 +252,13 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
 
     /**
      * @notice Validates mint and reverts on rejection. May emit logs.
-     * @param slToken Asset being minted
+     * @param cToken Asset being minted
      * @param minter The address minting the tokens
      * @param mintAmount The amount of the underlying asset being minted
      * @param mintTokens The number of tokens being minted
      */
-    function mintVerify(address slToken, address minter, uint mintAmount, uint mintTokens) external {
-        slToken;       // currently unused
+    function mintVerify(address cToken, address minter, uint mintAmount, uint mintTokens) external {
+        cToken;       // currently unused
         minter;       // currently unused
         mintAmount;   // currently unused
         mintTokens;   // currently unused
@@ -270,29 +270,29 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
 
     /**
      * @notice Checks if the account should be allowed to redeem tokens in the given market
-     * @param slToken The market to verify the redeem against
+     * @param cToken The market to verify the redeem against
      * @param redeemer The account which would redeem the tokens
-     * @param redeemTokens The number of slTokens to exchange for the underlying asset in the market
+     * @param redeemTokens The number of cTokens to exchange for the underlying asset in the market
      * @return 0 if the redeem is allowed, otherwise a semi-opaque error code (See ErrorReporter.sol)
      */
-    function redeemAllowed(address slToken, address redeemer, uint redeemTokens) external returns (uint) {
-        return redeemAllowedInternal(slToken, redeemer, redeemTokens);
+    function redeemAllowed(address cToken, address redeemer, uint redeemTokens) external returns (uint) {
+        return redeemAllowedInternal(cToken, redeemer, redeemTokens);
     }
 
-    function redeemAllowedInternal(address slToken, address redeemer, uint redeemTokens) internal view returns (uint) {
-        if (!markets[slToken].isListed) {
+    function redeemAllowedInternal(address cToken, address redeemer, uint redeemTokens) internal view returns (uint) {
+        if (!markets[cToken].isListed) {
             return uint(Error.MARKET_NOT_LISTED);
         }
 
         // *may include Policy Hook-type checks
 
         /* If the redeemer is not 'in' the market, then we can bypass the liquidity check */
-        if (!markets[slToken].accountMembership[redeemer]) {
+        if (!markets[cToken].accountMembership[redeemer]) {
             return uint(Error.NO_ERROR);
         }
 
         /* Otherwise, perform a hypothetical liquidity check to guard against shortfall */
-        (Error err, , uint shortfall) = getHypotheticalAccountLiquidityInternal(redeemer, SLToken(slToken), redeemTokens, 0);
+        (Error err, , uint shortfall) = getHypotheticalAccountLiquidityInternal(redeemer, CToken(cToken), redeemTokens, 0);
         if (err != Error.NO_ERROR) {
             return uint(err);
         }
@@ -305,13 +305,13 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
 
     /**
      * @notice Validates redeem and reverts on rejection. May emit logs.
-     * @param slToken Asset being redeemed
+     * @param cToken Asset being redeemed
      * @param redeemer The address redeeming the tokens
      * @param redeemAmount The amount of the underlying asset being redeemed
      * @param redeemTokens The number of tokens being redeemed
      */
-    function redeemVerify(address slToken, address redeemer, uint redeemAmount, uint redeemTokens) external {
-        slToken;         // currently unused
+    function redeemVerify(address cToken, address redeemer, uint redeemAmount, uint redeemTokens) external {
+        cToken;         // currently unused
         redeemer;       // currently unused
         redeemAmount;   // currently unused
         redeemTokens;   // currently unused
@@ -324,27 +324,27 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
 
     /**
      * @notice Checks if the account should be allowed to borrow the underlying asset of the given market
-     * @param slToken The market to verify the borrow against
+     * @param cToken The market to verify the borrow against
      * @param borrower The account which would borrow the asset
      * @param borrowAmount The amount of underlying the account would borrow
      * @return 0 if the borrow is allowed, otherwise a semi-opaque error code (See ErrorReporter.sol)
      */
-    function borrowAllowed(address slToken, address borrower, uint borrowAmount) external returns (uint) {
-        if (!markets[slToken].isListed) {
+    function borrowAllowed(address cToken, address borrower, uint borrowAmount) external returns (uint) {
+        if (!markets[cToken].isListed) {
             return uint(Error.MARKET_NOT_LISTED);
         }
 
         // *may include Policy Hook-type checks
 
-        if (!markets[slToken].accountMembership[borrower]) {
+        if (!markets[cToken].accountMembership[borrower]) {
             return uint(Error.MARKET_NOT_ENTERED);
         }
 
-        if (oracle.getUnderlyingPrice(SLToken(slToken)) == 0) {
+        if (oracle.getUnderlyingPrice(CToken(cToken)) == 0) {
             return uint(Error.PRICE_ERROR);
         }
 
-        (Error err, , uint shortfall) = getHypotheticalAccountLiquidityInternal(borrower, SLToken(slToken), 0, borrowAmount);
+        (Error err, , uint shortfall) = getHypotheticalAccountLiquidityInternal(borrower, CToken(cToken), 0, borrowAmount);
         if (err != Error.NO_ERROR) {
             return uint(err);
         }
@@ -357,12 +357,12 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
 
     /**
      * @notice Validates borrow and reverts on rejection. May emit logs.
-     * @param slToken Asset whose underlying is being borrowed
+     * @param cToken Asset whose underlying is being borrowed
      * @param borrower The address borrowing the underlying
      * @param borrowAmount The amount of the underlying asset requested to borrow
      */
-    function borrowVerify(address slToken, address borrower, uint borrowAmount) external {
-        slToken;         // currently unused
+    function borrowVerify(address cToken, address borrower, uint borrowAmount) external {
+        cToken;         // currently unused
         borrower;       // currently unused
         borrowAmount;   // currently unused
 
@@ -373,14 +373,14 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
 
     /**
      * @notice Checks if the account should be allowed to repay a borrow in the given market
-     * @param slToken The market to verify the repay against
+     * @param cToken The market to verify the repay against
      * @param payer The account which would repay the asset
      * @param borrower The account which would borrowed the asset
      * @param repayAmount The amount of the underlying asset the account would repay
      * @return 0 if the repay is allowed, otherwise a semi-opaque error code (See ErrorReporter.sol)
      */
     function repayBorrowAllowed(
-        address slToken,
+        address cToken,
         address payer,
         address borrower,
         uint repayAmount) external returns (uint) {
@@ -388,7 +388,7 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
         borrower;      // currently unused
         repayAmount;   // currently unused
 
-        if (!markets[slToken].isListed) {
+        if (!markets[cToken].isListed) {
             return uint(Error.MARKET_NOT_LISTED);
         }
 
@@ -399,18 +399,18 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
 
     /**
      * @notice Validates repayBorrow and reverts on rejection. May emit logs.
-     * @param slToken Asset being repaid
+     * @param cToken Asset being repaid
      * @param payer The address repaying the borrow
      * @param borrower The address of the borrower
      * @param repayAmount The amount of underlying being repaid
      */
     function repayBorrowVerify(
-        address slToken,
+        address cToken,
         address payer,
         address borrower,
         uint repayAmount,
         uint borrowerIndex) external {
-        slToken;        // currently unused
+        cToken;        // currently unused
         payer;         // currently unused
         borrower;      // currently unused
         repayAmount;   // currently unused
@@ -423,15 +423,15 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
 
     /**
      * @notice Checks if the liquidation should be allowed to occur
-     * @param slTokenBorrowed Asset which was borrowed by the borrower
-     * @param slTokenCollateral Asset which was used as collateral and will be seized
+     * @param cTokenBorrowed Asset which was borrowed by the borrower
+     * @param cTokenCollateral Asset which was used as collateral and will be seized
      * @param liquidator The address repaying the borrow and seizing the collateral
      * @param borrower The address of the borrower
      * @param repayAmount The amount of underlying being repaid
      */
     function liquidateBorrowAllowed(
-        address slTokenBorrowed,
-        address slTokenCollateral,
+        address cTokenBorrowed,
+        address cTokenCollateral,
         address liquidator,
         address borrower,
         uint repayAmount) external returns (uint) {
@@ -439,7 +439,7 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
         borrower;     // currently unused
         repayAmount;  // currently unused
 
-        if (!markets[slTokenBorrowed].isListed || !markets[slTokenCollateral].isListed) {
+        if (!markets[cTokenBorrowed].isListed || !markets[cTokenCollateral].isListed) {
             return uint(Error.MARKET_NOT_LISTED);
         }
 
@@ -455,7 +455,7 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
         }
 
         /* The liquidator may not repay more than what is allowed by the closeFactor */
-        uint borrowBalance = SLToken(slTokenBorrowed).borrowBalanceStored(borrower);
+        uint borrowBalance = CToken(cTokenBorrowed).borrowBalanceStored(borrower);
         (MathError mathErr, uint maxClose) = mulScalarTruncate(Exp({mantissa: closeFactorMantissa}), borrowBalance);
         if (mathErr != MathError.NO_ERROR) {
             return uint(Error.MATH_ERROR);
@@ -469,21 +469,21 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
 
     /**
      * @notice Validates liquidateBorrow and reverts on rejection. May emit logs.
-     * @param slTokenBorrowed Asset which was borrowed by the borrower
-     * @param slTokenCollateral Asset which was used as collateral and will be seized
+     * @param cTokenBorrowed Asset which was borrowed by the borrower
+     * @param cTokenCollateral Asset which was used as collateral and will be seized
      * @param liquidator The address repaying the borrow and seizing the collateral
      * @param borrower The address of the borrower
      * @param repayAmount The amount of underlying being repaid
      */
     function liquidateBorrowVerify(
-        address slTokenBorrowed,
-        address slTokenCollateral,
+        address cTokenBorrowed,
+        address cTokenCollateral,
         address liquidator,
         address borrower,
         uint repayAmount,
         uint seizeTokens) external {
-        slTokenBorrowed;   // currently unused
-        slTokenCollateral; // currently unused
+        cTokenBorrowed;   // currently unused
+        cTokenCollateral; // currently unused
         liquidator;       // currently unused
         borrower;         // currently unused
         repayAmount;      // currently unused
@@ -496,15 +496,15 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
 
     /**
      * @notice Checks if the seizing of assets should be allowed to occur
-     * @param slTokenCollateral Asset which was used as collateral and will be seized
-     * @param slTokenBorrowed Asset which was borrowed by the borrower
+     * @param cTokenCollateral Asset which was used as collateral and will be seized
+     * @param cTokenBorrowed Asset which was borrowed by the borrower
      * @param liquidator The address repaying the borrow and seizing the collateral
      * @param borrower The address of the borrower
      * @param seizeTokens The number of collateral tokens to seize
      */
     function seizeAllowed(
-        address slTokenCollateral,
-        address slTokenBorrowed,
+        address cTokenCollateral,
+        address cTokenBorrowed,
         address liquidator,
         address borrower,
         uint seizeTokens) external returns (uint) {
@@ -512,11 +512,11 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
         borrower;         // currently unused
         seizeTokens;      // currently unused
 
-        if (!markets[slTokenCollateral].isListed || !markets[slTokenBorrowed].isListed) {
+        if (!markets[cTokenCollateral].isListed || !markets[cTokenBorrowed].isListed) {
             return uint(Error.MARKET_NOT_LISTED);
         }
 
-        if (SLToken(slTokenCollateral).comptroller() != SLToken(slTokenBorrowed).comptroller()) {
+        if (CToken(cTokenCollateral).comptroller() != CToken(cTokenBorrowed).comptroller()) {
             return uint(Error.COMPTROLLER_MISMATCH);
         }
 
@@ -527,20 +527,20 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
 
     /**
      * @notice Validates seize and reverts on rejection. May emit logs.
-     * @param slTokenCollateral Asset which was used as collateral and will be seized
-     * @param slTokenBorrowed Asset which was borrowed by the borrower
+     * @param cTokenCollateral Asset which was used as collateral and will be seized
+     * @param cTokenBorrowed Asset which was borrowed by the borrower
      * @param liquidator The address repaying the borrow and seizing the collateral
      * @param borrower The address of the borrower
      * @param seizeTokens The number of collateral tokens to seize
      */
     function seizeVerify(
-        address slTokenCollateral,
-        address slTokenBorrowed,
+        address cTokenCollateral,
+        address cTokenBorrowed,
         address liquidator,
         address borrower,
         uint seizeTokens) external {
-        slTokenCollateral; // currently unused
-        slTokenBorrowed;   // currently unused
+        cTokenCollateral; // currently unused
+        cTokenBorrowed;   // currently unused
         liquidator;       // currently unused
         borrower;         // currently unused
         seizeTokens;      // currently unused
@@ -552,14 +552,14 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
 
     /**
      * @notice Checks if the account should be allowed to transfer tokens in the given market
-     * @param slToken The market to verify the transfer against
+     * @param cToken The market to verify the transfer against
      * @param src The account which sources the tokens
      * @param dst The account which receives the tokens
-     * @param transferTokens The number of slTokens to transfer
+     * @param transferTokens The number of cTokens to transfer
      * @return 0 if the transfer is allowed, otherwise a semi-opaque error code (See ErrorReporter.sol)
      */
-    function transferAllowed(address slToken, address src, address dst, uint transferTokens) external returns (uint) {
-        slToken;         // currently unused
+    function transferAllowed(address cToken, address src, address dst, uint transferTokens) external returns (uint) {
+        cToken;         // currently unused
         src;            // currently unused
         dst;            // currently unused
         transferTokens; // currently unused
@@ -568,18 +568,18 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
 
         // Currently the only consideration is whether or not
         //  the src is allowed to redeem this many tokens
-        return redeemAllowedInternal(slToken, src, transferTokens);
+        return redeemAllowedInternal(cToken, src, transferTokens);
     }
 
     /**
      * @notice Validates transfer and reverts on rejection. May emit logs.
-     * @param slToken Asset being transferred
+     * @param cToken Asset being transferred
      * @param src The account which sources the tokens
      * @param dst The account which receives the tokens
-     * @param transferTokens The number of slTokens to transfer
+     * @param transferTokens The number of cTokens to transfer
      */
-    function transferVerify(address slToken, address src, address dst, uint transferTokens) external {
-        slToken;         // currently unused
+    function transferVerify(address cToken, address src, address dst, uint transferTokens) external {
+        cToken;         // currently unused
         src;            // currently unused
         dst;            // currently unused
         transferTokens; // currently unused
@@ -593,13 +593,13 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
 
     /**
      * @dev Local vars for avoiding stack-depth limits in calculating account liquidity.
-     *  Note that `slTokenBalance` is the number of slTokens the account owns in the market,
+     *  Note that `cTokenBalance` is the number of cTokens the account owns in the market,
      *  whereas `borrowBalance` is the amount of underlying that the account has borrowed.
      */
     struct AccountLiquidityLocalVars {
         uint sumCollateral;
         uint sumBorrowPlusEffects;
-        uint slTokenBalance;
+        uint cTokenBalance;
         uint borrowBalance;
         uint exchangeRateMantissa;
         uint oraclePriceMantissa;
@@ -616,7 +616,7 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
      *          account shortfall below collateral requirements)
      */
     function getAccountLiquidity(address account) public view returns (uint, uint, uint) {
-        (Error err, uint liquidity, uint shortfall) = getHypotheticalAccountLiquidityInternal(account, SLToken(0), 0, 0);
+        (Error err, uint liquidity, uint shortfall) = getHypotheticalAccountLiquidityInternal(account, CToken(0), 0, 0);
 
         return (uint(err), liquidity, shortfall);
     }
@@ -628,16 +628,16 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
      *          account shortfall below collateral requirements)
      */
     function getAccountLiquidityInternal(address account) internal view returns (Error, uint, uint) {
-        return getHypotheticalAccountLiquidityInternal(account, SLToken(0), 0, 0);
+        return getHypotheticalAccountLiquidityInternal(account, CToken(0), 0, 0);
     }
 
     /**
      * @notice Determine what the account liquidity would be if the given amounts were redeemed/borrowed
-     * @param slTokenModify The market to hypothetically redeem/borrow in
+     * @param cTokenModify The market to hypothetically redeem/borrow in
      * @param account The account to determine liquidity for
      * @param redeemTokens The number of tokens to hypothetically redeem
      * @param borrowAmount The amount of underlying to hypothetically borrow
-     * @dev Note that we calculate the exchangeRateStored for each collateral slToken using stored data,
+     * @dev Note that we calculate the exchangeRateStored for each collateral cToken using stored data,
      *  without calculating accumulated interest.
      * @return (possible error code,
                 hypothetical account liquidity in excess of collateral requirements,
@@ -645,7 +645,7 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
      */
     function getHypotheticalAccountLiquidityInternal(
         address account,
-        SLToken slTokenModify,
+        CToken cTokenModify,
         uint redeemTokens,
         uint borrowAmount) internal view returns (Error, uint, uint) {
 
@@ -654,12 +654,12 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
         MathError mErr;
 
         // For each asset the account is in
-        SLToken[] memory assets = accountAssets[account];
+        CToken[] memory assets = accountAssets[account];
         for (uint i = 0; i < assets.length; i++) {
-            SLToken asset = assets[i];
+            CToken asset = assets[i];
 
-            // Read the balances and exchange rate from the slToken
-            (oErr, vars.slTokenBalance, vars.borrowBalance, vars.exchangeRateMantissa) = asset.getAccountSnapshot(account);
+            // Read the balances and exchange rate from the cToken
+            (oErr, vars.cTokenBalance, vars.borrowBalance, vars.exchangeRateMantissa) = asset.getAccountSnapshot(account);
             if (oErr != 0) { // semi-opaque error code, we assume NO_ERROR == 0 is invariant between upgrades
                 return (Error.SNAPSHOT_ERROR, 0, 0);
             }
@@ -679,8 +679,8 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
                 return (Error.MATH_ERROR, 0, 0);
             }
 
-            // sumCollateral += tokensToEther * slTokenBalance
-            (mErr, vars.sumCollateral) = mulScalarTruncateAddUInt(vars.tokensToEther, vars.slTokenBalance, vars.sumCollateral);
+            // sumCollateral += tokensToEther * cTokenBalance
+            (mErr, vars.sumCollateral) = mulScalarTruncateAddUInt(vars.tokensToEther, vars.cTokenBalance, vars.sumCollateral);
             if (mErr != MathError.NO_ERROR) {
                 return (Error.MATH_ERROR, 0, 0);
             }
@@ -691,8 +691,8 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
                 return (Error.MATH_ERROR, 0, 0);
             }
 
-            // Calculate effects of interacting with slTokenModify
-            if (asset == slTokenModify) {
+            // Calculate effects of interacting with cTokenModify
+            if (asset == cTokenModify) {
                 // redeem effect
                 // sumBorrowPlusEffects += tokensToEther * redeemTokens
                 (mErr, vars.sumBorrowPlusEffects) = mulScalarTruncateAddUInt(vars.tokensToEther, redeemTokens, vars.sumBorrowPlusEffects);
@@ -719,16 +719,16 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
 
     /**
      * @notice Calculate number of tokens of collateral asset to seize given an underlying amount
-     * @dev Used in liquidation (called in slToken.liquidateBorrowFresh)
-     * @param slTokenBorrowed The address of the borrowed slToken
-     * @param slTokenCollateral The address of the collateral slToken
-     * @param repayAmount The amount of slTokenBorrowed underlying to convert into slTokenCollateral tokens
-     * @return (errorCode, number of slTokenCollateral tokens to be seized in a liquidation)
+     * @dev Used in liquidation (called in cToken.liquidateBorrowFresh)
+     * @param cTokenBorrowed The address of the borrowed cToken
+     * @param cTokenCollateral The address of the collateral cToken
+     * @param repayAmount The amount of cTokenBorrowed underlying to convert into cTokenCollateral tokens
+     * @return (errorCode, number of cTokenCollateral tokens to be seized in a liquidation)
      */
-    function liquidateCalculateSeizeTokens(address slTokenBorrowed, address slTokenCollateral, uint repayAmount) external view returns (uint, uint) {
+    function liquidateCalculateSeizeTokens(address cTokenBorrowed, address cTokenCollateral, uint repayAmount) external view returns (uint, uint) {
         /* Read oracle prices for borrowed and collateral markets */
-        uint priceBorrowedMantissa = oracle.getUnderlyingPrice(SLToken(slTokenBorrowed));
-        uint priceCollateralMantissa = oracle.getUnderlyingPrice(SLToken(slTokenCollateral));
+        uint priceBorrowedMantissa = oracle.getUnderlyingPrice(CToken(cTokenBorrowed));
+        uint priceCollateralMantissa = oracle.getUnderlyingPrice(CToken(cTokenCollateral));
         if (priceBorrowedMantissa == 0 || priceCollateralMantissa == 0) {
             return (uint(Error.PRICE_ERROR), 0);
         }
@@ -739,7 +739,7 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
          *  seizeTokens = seizeAmount / exchangeRate
          *   = repayAmount * (liquidationIncentive * priceBorrowed) / (priceCollateral * exchangeRate)
          */
-        uint exchangeRateMantissa = SLToken(slTokenCollateral).exchangeRateStored(); // Note: reverts on error
+        uint exchangeRateMantissa = CToken(cTokenCollateral).exchangeRateStored(); // Note: reverts on error
         uint seizeTokens;
         Exp memory numerator;
         Exp memory denominator;
@@ -830,18 +830,18 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
     /**
       * @notice Sets the collateralFactor for a market
       * @dev Admin function to set per-market collateralFactor
-      * @param slToken The market to set the factor on
+      * @param cToken The market to set the factor on
       * @param newCollateralFactorMantissa The new collateral factor, scaled by 1e18
       * @return uint 0=success, otherwise a failure. (See ErrorReporter for details)
       */
-    function _setCollateralFactor(SLToken slToken, uint newCollateralFactorMantissa) external returns (uint256) {
+    function _setCollateralFactor(CToken cToken, uint newCollateralFactorMantissa) external returns (uint256) {
         // Check caller is admin
         if (msg.sender != admin) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_COLLATERAL_FACTOR_OWNER_CHECK);
         }
 
         // Verify market is listed
-        Market storage market = markets[address(slToken)];
+        Market storage market = markets[address(cToken)];
         if (!market.isListed) {
             return fail(Error.MARKET_NOT_LISTED, FailureInfo.SET_COLLATERAL_FACTOR_NO_EXISTS);
         }
@@ -855,7 +855,7 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
         }
 
         // If collateral factor != 0, fail if price == 0
-        if (newCollateralFactorMantissa != 0 && oracle.getUnderlyingPrice(slToken) == 0) {
+        if (newCollateralFactorMantissa != 0 && oracle.getUnderlyingPrice(cToken) == 0) {
             return fail(Error.PRICE_ERROR, FailureInfo.SET_COLLATERAL_FACTOR_WITHOUT_PRICE);
         }
 
@@ -864,7 +864,7 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
         market.collateralFactorMantissa = newCollateralFactorMantissa;
 
         // Emit event with asset, old collateral factor, and new collateral factor
-        emit NewCollateralFactor(slToken, oldCollateralFactorMantissa, newCollateralFactorMantissa);
+        emit NewCollateralFactor(cToken, oldCollateralFactorMantissa, newCollateralFactorMantissa);
 
         return uint(Error.NO_ERROR);
     }
@@ -927,22 +927,22 @@ contract ComptrollerG1 is ComptrollerV1Storage, ComptrollerInterface, Comptrolle
     /**
       * @notice Add the market to the markets mapping and set it as listed
       * @dev Admin function to set isListed and add support for the market
-      * @param slToken The address of the market (token) to list
+      * @param cToken The address of the market (token) to list
       * @return uint 0=success, otherwise a failure. (See enum Error for details)
       */
-    function _supportMarket(SLToken slToken) external returns (uint) {
+    function _supportMarket(CToken cToken) external returns (uint) {
         if (msg.sender != admin) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SUPPORT_MARKET_OWNER_CHECK);
         }
 
-        if (markets[address(slToken)].isListed) {
+        if (markets[address(cToken)].isListed) {
             return fail(Error.MARKET_ALREADY_LISTED, FailureInfo.SUPPORT_MARKET_EXISTS);
         }
 
-        slToken.isSLToken(); // Sanity check to make sure its really a SLToken
+        cToken.isCToken(); // Sanity check to make sure its really a CToken
 
-        markets[address(slToken)] = Market({isListed: true, collateralFactorMantissa: 0});
-        emit MarketListed(slToken);
+        markets[address(cToken)] = Market({isListed: true, collateralFactorMantissa: 0});
+        emit MarketListed(cToken);
 
         return uint(Error.NO_ERROR);
     }

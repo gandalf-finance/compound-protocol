@@ -3,7 +3,7 @@ pragma solidity ^0.5.16;
 import "./ComptrollerInterface.sol";
 import "./InterestRateModel.sol";
 
-contract SLTokenStorage {
+contract CTokenStorage {
     /**
      * @dev Guard variable for re-entrancy checks
      */
@@ -46,7 +46,7 @@ contract SLTokenStorage {
     address payable public pendingAdmin;
 
     /**
-     * @notice Contract which oversees inter-slToken operations
+     * @notice Contract which oversees inter-cToken operations
      */
     ComptrollerInterface public comptroller;
 
@@ -56,7 +56,7 @@ contract SLTokenStorage {
     InterestRateModel public interestRateModel;
 
     /**
-     * @notice Initial exchange rate used when minting the first SLTokens (used when totalSupply = 0)
+     * @notice Initial exchange rate used when minting the first CTokens (used when totalSupply = 0)
      */
     uint internal initialExchangeRateMantissa;
 
@@ -116,11 +116,11 @@ contract SLTokenStorage {
     mapping(address => BorrowSnapshot) internal accountBorrows;
 }
 
-contract SLTokenInterface is SLTokenStorage {
+contract CTokenInterface is CTokenStorage {
     /**
-     * @notice Indicator that this is a SLToken contract (for inspection)
+     * @notice Indicator that this is a CToken contract (for inspection)
      */
-    bool public constant isSLToken = true;
+    bool public constant isCToken = true;
 
 
     /*** Market Events ***/
@@ -153,7 +153,7 @@ contract SLTokenInterface is SLTokenStorage {
     /**
      * @notice Event emitted when a borrow is liquidated
      */
-    event LiquidateBorrow(address liquidator, address borrower, uint repayAmount, address slTokenCollateral, uint seizeTokens);
+    event LiquidateBorrow(address liquidator, address borrower, uint repayAmount, address cTokenCollateral, uint seizeTokens);
 
 
     /*** Admin Events ***/
@@ -240,14 +240,14 @@ contract SLTokenInterface is SLTokenStorage {
     function _setInterestRateModel(InterestRateModel newInterestRateModel) public returns (uint);
 }
 
-contract SLErc20Storage {
+contract CErc20Storage {
     /**
-     * @notice Underlying asset for this SLToken
+     * @notice Underlying asset for this CToken
      */
     address public underlying;
 }
 
-contract SLErc20Interface is SLErc20Storage {
+contract CErc20Interface is CErc20Storage {
 
     /*** User Interface ***/
 
@@ -257,7 +257,7 @@ contract SLErc20Interface is SLErc20Storage {
     function borrow(uint borrowAmount) external returns (uint);
     function repayBorrow(uint repayAmount) external returns (uint);
     function repayBorrowBehalf(address borrower, uint repayAmount) external returns (uint);
-    function liquidateBorrow(address borrower, uint repayAmount, SLTokenInterface slTokenCollateral) external returns (uint);
+    function liquidateBorrow(address borrower, uint repayAmount, CTokenInterface cTokenCollateral) external returns (uint);
 
 
     /*** Admin Functions ***/
@@ -265,14 +265,14 @@ contract SLErc20Interface is SLErc20Storage {
     function _addReserves(uint addAmount) external returns (uint);
 }
 
-contract SLDelegationStorage {
+contract CDelegationStorage {
     /**
      * @notice Implementation address for this contract
      */
     address public implementation;
 }
 
-contract SLDelegatorInterface is SLDelegationStorage {
+contract CDelegatorInterface is CDelegationStorage {
     /**
      * @notice Emitted when implementation is changed
      */
@@ -287,7 +287,7 @@ contract SLDelegatorInterface is SLDelegationStorage {
     function _setImplementation(address implementation_, bool allowResign, bytes memory becomeImplementationData) public;
 }
 
-contract SLDelegateInterface is SLDelegationStorage {
+contract CDelegateInterface is CDelegationStorage {
     /**
      * @notice Called by the delegator on a delegate to initialize it for duty
      * @dev Should revert if any issues arise which make it unfit for delegation
@@ -299,9 +299,4 @@ contract SLDelegateInterface is SLDelegationStorage {
      * @notice Called by the delegator on a delegate to forfeit its responsibility
      */
     function _resignImplementation() public;
-}
-
-interface IMigrator {
-    // Return the desired amount of liquidity token that the migrator wants.
-    function desiredLiquidity() external view returns (uint256);
 }
