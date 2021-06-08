@@ -1,7 +1,7 @@
 const Comptroller = artifacts.require("Comptroller");
 const Unitroller = artifacts.require("Unitroller");
 const fs = require('fs');
-const writeAddress = require('../../deploy/script/writeAddress');
+const writeAddress = require('../deploy/script/writeAddress');
 
 module.exports = async function (deployer) {
 
@@ -16,7 +16,7 @@ module.exports = async function (deployer) {
     }).then(async function (instance) {
         b = instance;
 
-        data = fs.readFileSync('./deploy/config/Comptroller.json');
+        data = fs.readFileSync('/Users/chenghaiming/work/codes/compound-protocol/deploy/config/Comptroller.json');
         let config = JSON.parse(data).config;
 
         await b._setPendingImplementation(a.address);

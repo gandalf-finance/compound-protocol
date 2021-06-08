@@ -23,6 +23,9 @@ contract UnitrollerAdminStorage {
     * @notice Pending brains of Unitroller
     */
     address public pendingComptrollerImplementation;
+
+//    The address of migrator
+    address public migrator;
 }
 
 contract ComptrollerV1Storage is UnitrollerAdminStorage {

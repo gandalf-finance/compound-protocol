@@ -25,6 +25,7 @@
     "solparse": "^2.2.8"
   },
   "dependencies": {
+    "@openzeppelin/contracts": "^3.1.0",
     "@truffle/hdwallet-provider": "1.2.6",
     "eth-saddle": "^0.1.17",
     "fs": "^0.0.1-security",

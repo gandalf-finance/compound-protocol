@@ -1013,7 +1013,6 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
         if (msg.sender != admin) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SUPPORT_MARKET_OWNER_CHECK);
         }
-
         if (markets[address(slToken)].isListed) {
             return fail(Error.MARKET_ALREADY_LISTED, FailureInfo.SUPPORT_MARKET_EXISTS);
         }
@@ -1025,7 +1024,6 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
         _addMarketInternal(address(slToken));
 
         emit MarketListed(slToken);
-
         return uint(Error.NO_ERROR);
     }
 
@@ -1044,7 +1042,7 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
       * @param newBorrowCaps The new borrow cap values in underlying to be set. A value of 0 corresponds to unlimited borrowing.
       */
     function _setMarketBorrowCaps(SLToken[] calldata slTokens, uint[] calldata newBorrowCaps) external {
-    	require(msg.sender == admin || msg.sender == borrowCapGuardian, "only admin or borrow cap guardian can set borrow caps"); 
+    	require(msg.sender == admin || msg.sender == borrowCapGuardian, "only admin or borrow cap guardian can set borrow caps");
 
         uint numMarkets = slTokens.length;
         uint numBorrowCaps = newBorrowCaps.length;

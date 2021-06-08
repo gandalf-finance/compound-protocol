@@ -1,62 +1,26 @@
 {
-    "SLErc20Delegator_slDAI": {
-        "underlying_": "0x7276e496B7B8A155c3257c2b0889c47a55D4f002",
+    "SLErc20Delegator_cUSDT": {
+        "underlying_": "0x7B268Fb5adFfa8a8015c6C47b41EE5af7DFC72aC",
         "comptroller_": "",
-        "interestRateModel_": "JumpRateModelV20",
+        "interestRateModel_": "JumpRateModelV2_0",
         "initialExchangeRateMantissa_": "200000000000000",
         "name_": "slDAI",
         "symbol_": "slDAI",
         "decimals_": "8",
-        "admin_": "0x2E7c4EfdFA6680e34988dcBD70F6a31b4CC28219",
+        "admin_": "0x73b9dc8f51d7144150F324F5313fb4c67EEB852A",
         "newReserveFactorMantissa": "200000000000000000",
         "newCollateralFactorMantissa": "750000000000000000"
     },
     "SLErc20Delegator_slUSDT": {
-        "underlying_": "0x7276e496B7B8A155c3257c2b0889c47a55D4f002",
+        "underlying_": "0x7B268Fb5adFfa8a8015c6C47b41EE5af7DFC72aC",
         "comptroller_": "",
-        "interestRateModel_": "JumpRateModelV20",
+        "interestRateModel_": "JumpRateModelV2_0",
         "initialExchangeRateMantissa_": "200000000000000",
         "name_": "slUSDT",
         "symbol_": "slUSDT",
         "decimals_": "8",
-        "admin_": "0x2E7c4EfdFA6680e34988dcBD70F6a31b4CC28219",
+        "admin_": "0x73b9dc8f51d7144150F324F5313fb4c67EEB852A",
         "newReserveFactorMantissa": "200000000000000000",
         "newCollateralFactorMantissa": "0"
-    },
-    "SLErc20Delegator_slHUSD": {
-        "underlying_": "0x7276e496B7B8A155c3257c2b0889c47a55D4f002",
-        "comptroller_": "",
-        "interestRateModel_": "JumpRateModelV20",
-        "initialExchangeRateMantissa_": "200000000000000",
-        "name_": "slHUSD",
-        "symbol_": "slHUSD",
-        "decimals_": "8",
-        "admin_": "0x2E7c4EfdFA6680e34988dcBD70F6a31b4CC28219",
-        "newReserveFactorMantissa": "50000000000000000",
-        "newCollateralFactorMantissa": "750000000000000000"
-    },
-    "SLErc20Delegator_slETH": {
-        "underlying_": "0x5879180423f5D35a34721501a24F1116A446EC53",
-        "comptroller_": "",
-        "interestRateModel_": "WhitePaperInterestRateModel0",
-        "initialExchangeRateMantissa_": "200000000000000",
-        "name_": "slETH",
-        "symbol_": "slETH",
-        "decimals_": "8",
-        "admin_": "0x2E7c4EfdFA6680e34988dcBD70F6a31b4CC28219",
-        "newReserveFactorMantissa": "100000000000000000",
-        "newCollateralFactorMantissa": "750000000000000000"
-    },
-    "SLErc20Delegator_slHBTC": {
-        "underlying_": "0x5bE1a23a43afb38351F34D949C98fb338666d6E3",
-        "comptroller_": "",
-        "interestRateModel_": "WhitePaperInterestRateModel1",
-        "initialExchangeRateMantissa_": "200000000000000",
-        "name_": "slHBTC",
-        "symbol_": "slHBTC",
-        "decimals_": "8",
-        "admin_": "0x2E7c4EfdFA6680e34988dcBD70F6a31b4CC28219",
-        "newReserveFactorMantissa": "100000000000000000",
-        "newCollateralFactorMantissa": "600000000000000000"
     }
 }
