@@ -19,7 +19,7 @@ module.exports = function (deployer) {
     deployer.deploy(SLEther, Unitroller, WhitePaperInterestRateModel, INITIALEXCHANGERATEMANTISSA_, NAME_, SYMBOL_, DECIMALS_, ADMIN_, { gas: 6000000 }).then(function () {
         return SLEther.deployed();
     }).then(async function (instance) {
-        writeAddress("SLEther_" + NAME_, instance.address);
+        writeAddress("CEther_" + NAME_, instance.address);
         var a = instance;
         await a._setReserveFactor(config["newReserveFactorMantissa"]);
     });
