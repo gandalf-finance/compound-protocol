@@ -23,7 +23,7 @@ module.exports = async function (deployer) {
         await a._become(b.address);
         c = await Comptroller.at(b.address);
         await c._setCloseFactor(config["newCloseFactorMantissa"]);
-        await c._setSashimiRate(config["sashimiRate_"]);
+        await c._setCompRate(config["sashimiRate_"]);
         await c._setLiquidationIncentive(config["newLiquidationIncentiveMantissa"]);
         await c._setMaxAssets(config["newMaxAssets"]);
 
