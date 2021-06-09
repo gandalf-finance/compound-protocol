@@ -8,7 +8,7 @@ var verify = function (contractName, address, networkName) {
 }
 
 module.exports = async function () {
-    let network = "hecochain";
+    let network = "kovan";
     let addressData = fs.readFileSync('./deploy/Address.json');
     let address = JSON.parse(addressData);
     for (const [name, params] of Object.entries(address)) {

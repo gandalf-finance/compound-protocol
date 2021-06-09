@@ -12,7 +12,7 @@ const HDWalletProvider = require("@truffle/hdwallet-provider");
 var infura_apikey = "4cf4a56083914b2e8a299ad89789e654";
 // var keys = [process.env.kovan_key0, process.env.kovan_key1, process.env.kovan_key2, process.env.kovan_key3];
 var keys = ['752610848129becb01b141ad9a45b9685a083f8a2f6c82e9c7e5f5c97c222d24'];
-console.log(keys);
+var ETHERSCAN_API_KEY ="NE8GWRRX9H4D629G3QBBUUNXB9G3D39QG9";
 //var mnemonic_mainnet = process.env.mnemonic_mainnet;
 module.exports = {
 
@@ -76,10 +76,10 @@ module.exports = {
             }
         },
     },
-    // plugins: [
-    //   'truffle-plugin-verify'
-    // ],
-    // api_keys: {
-    //   etherscan: process.env.HECO_API_KEY
-    // }
+    plugins: [
+      'truffle-plugin-verify'
+    ],
+    api_keys: {
+      etherscan: ETHERSCAN_API_KEY
+    }
 };
