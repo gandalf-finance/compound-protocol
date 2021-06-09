@@ -7,27 +7,27 @@ const addresses = JSON.parse(data);
 contract("deploy cToken and mint and distribution",([kakapo,bob,tom,kitty])=>{
 
     it('should mint cToken success [Erc20]', async ()=> {
-        this.comptroller = await Comptroller.at(addresses['Unitroller']);
+        // this.comptroller = await Comptroller.at(addresses['Unitroller']);
         this.cErc20 = await CErc20.at(addresses['CErc20Delegator_cUSDT']);
-        await this.comptroller._supportMarket(this.cErc20.address, {from: kakapo});
-        this.cErc20.mint(5000,{from:kakapo});
+        // await this.comptroller._supportMarket(this.cErc20.address, {from: kakapo});
+        this.cErc20.mint(500,{from:kakapo});
         await this.cErc20.balanceOf(kakapo).then(function (bal) {
             console.log("total amount of admin:"+bal);
         })
         await this.cErc20.underlying().then(function (r) {
             console.log("underlying address:"+r);
         })
-        await this.cErc20.transfer(bob, 2000, {from: kakapo});
-        await this.cErc20.transfer(tom, 2000, {from: kakapo});
-        await this.cErc20.transfer(kitty, 2000, {from: kakapo});
+        await this.cErc20.transfer(bob, 200, {from: kakapo});
+        await this.cErc20.transfer(tom, 200, {from: kakapo});
+        await this.cErc20.transfer(kitty, 100, {from: kakapo});
         await this.cErc20.balanceOf(bob).then(function (r) {
-            console.log("bob cErc20 balance:"+r);
+            console.log("bob cErc20 mint:"+r);
         })
-        await this.cErc20.balanceOf(tom).then(function (r) {
-            console.log("tom cErc20 balance:"+r);
-        })
-        await this.cErc20.balanceOf(kitty).then(function (r) {
-            console.log("kitty cErc20 balance:"+r)
-        })
+    //    redeem
+    //     this.cErc20.redeem(1000,{from:bob});
+    //     await this.cErc20.balanceOf(bob).then(function (r) {
+    //         console.log("bob cErc20 redeem:"+r);
+    //     })
+
     });
 });

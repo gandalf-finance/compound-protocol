@@ -6,7 +6,7 @@
         "NAME_": "cETher",
         "SYMBOL_": "cEther",
         "DECIMALS_": 8,
-        "ADMIN_": "0x73b9dc8f51d7144150F324F5313fb4c67EEB852A",
+        "ADMIN_": "0x11b8b9522014325930019bFC5FF967BFb7d93Ea6",
         "newReserveFactorMantissa": "200000000000000000",
         "newCollateralFactorMantissa": "600000000000000000"
     }

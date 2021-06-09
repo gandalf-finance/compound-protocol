@@ -1,13 +1,13 @@
 {
     "CErc20Delegator_cUSDT": {
-        "underlying_": "0x7B268Fb5adFfa8a8015c6C47b41EE5af7DFC72aC",
+        "underlying_": "0xbBAD56a69C9F1FD3A50AF848807d3850397E8740",
         "comptroller_": "",
         "interestRateModel_": "JumpRateModelV2_0",
         "initialExchangeRateMantissa_": "200000000000000",
         "name_": "cUSDT",
         "symbol_": "cUSDT",
         "decimals_": "8",
-        "admin_": "0x73b9dc8f51d7144150F324F5313fb4c67EEB852A",
+        "admin_": "0x11b8b9522014325930019bFC5FF967BFb7d93Ea6",
         "newReserveFactorMantissa": "200000000000000000",
         "newCollateralFactorMantissa": "750000000000000000"
     }
