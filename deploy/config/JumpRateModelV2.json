@@ -4,13 +4,13 @@
         "multiplierPerYear": "40000000000000000",
         "jumpMultiplierPerYear": "1090000000000000000",
         "kink_": "800000000000000000",
-        "owner_": "0x73b9dc8f51d7144150F324F5313fb4c67EEB852A"
+        "owner_": "0x11b8b9522014325930019bFC5FF967BFb7d93Ea6"
     },
     "JumpRateModelV2_1": {
         "baseRatePerYear": "20000000000000000",
         "multiplierPerYear": "180000000000000000",
         "jumpMultiplierPerYear": "4000000000000000000",
         "kink_": "800000000000000000",
-        "owner_": "0x73b9dc8f51d7144150F324F5313fb4c67EEB852A"
+        "owner_": "0x11b8b9522014325930019bFC5FF967BFb7d93Ea6"
     }
 }

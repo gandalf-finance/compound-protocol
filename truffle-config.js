@@ -24,21 +24,21 @@ module.exports = {
             network_id: "*",       // Any network (default: none)
             gas: 3012388,
             gasPrice: 30000000000
-        }
-        // kovan: {
-        //     provider: function () {
-        //         return new HDWalletProvider({
-        //             privateKeys: keys,
-        //             providerOrUrl: "https://kovan.infura.io/v3/" + infura_apikey,
-        //             numberOfAddresses: keys.length,
-        //             pollingInterval: 60000,
-        //         })
-        //     },
-        //     network_id: 42,
-        //     gas: 10000000,
-        //     gasPrice: 1100000000,
-        //     networkCheckTimeout: 10000000
-        // },
+        },
+        kovan: {
+            provider: function () {
+                return new HDWalletProvider({
+                    privateKeys: keys,
+                    providerOrUrl: "https://kovan.infura.io/v3/" + infura_apikey,
+                    numberOfAddresses: keys.length,
+                    pollingInterval: 60000,
+                })
+            },
+            network_id: 42,
+            gas: 10000000,
+            gasPrice: 2000000000,
+            networkCheckTimeout: 10000000
+        },
         // kovan: {
         //   provider: new HDWalletProvider(keys, "https://kovan.infura.io/v3/" + infura_apikey, 0, 4),
         //   network_id: 42,
