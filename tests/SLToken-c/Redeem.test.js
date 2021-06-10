@@ -12,17 +12,17 @@ contract("redeem", ([kakapo, bob]) => {
         await this.cErc20.balanceOf(bob).then(function (r) {
             console.log("bob cErc20 mint:" + r);
         })
-
-        await this.cErc20.redeem(1000, {from: bob});
-
-        await this.cErc20.balanceOf(bob).then(function (r) {
-            console.log("bob cErc20 redeem:" + r);
-        })
         this.underlying = await MockErc20.at(underlydingAddr);
         await this.underlying.balanceOf(bob).then(function (r) {
             console.log("a:" + r);
         })
-        await this.underlying.transfer(bob, 100, {from: kakapo});
+
+        await this.cErc20.redeem(100000000, {from: bob});
+
+        await this.cErc20.balanceOf(bob).then(function (r) {
+            console.log("bob cErc20 redeem:" + r);
+        })
+        // await this.underlying.transfer(bob, 100, {from: kakapo});
         await this.underlying.balanceOf(bob).then(function (r) {
             console.log("b:" + r);
         })
