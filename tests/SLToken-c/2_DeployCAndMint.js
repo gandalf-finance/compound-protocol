@@ -1,32 +1,55 @@
 const fs = require("fs");
 const Comptroller = artifacts.require("Comptroller");
-const CErc20 = artifacts.require("CErc20");
+const CErc20 = artifacts.require("CErc20Delegate");
+const MockErc20 = artifacts.require("MockErc20")
 const data =fs.readFileSync("../../deploy/Address.json");
 const addresses = JSON.parse(data);
+const underlyingAddr = "0xbBAD56a69C9F1FD3A50AF848807d3850397E8740";
 
 contract("deploy cToken and mint and distribution",([kakapo,bob,tom,kitty])=>{
 
     it('should mint cToken success [Erc20]', async ()=> {
         // this.comptroller = await Comptroller.at(addresses['Unitroller']);
         this.cErc20 = await CErc20.at(addresses['CErc20Delegator_cUSDT']);
+        this.underlying = await MockErc20.at(underlyingAddr);
+        await this.underlying.balanceOf(kakapo).then(function (r) {
+            console.log("a:"+r);
+        })
+        await console.log("cErc20:"+this.cErc20.address);
+        await this.underlying.allowance(kakapo,this.cErc20.address).then(function (r) {
+            console.log("allowance:"+r);
+        })
         // await this.comptroller._supportMarket(this.cErc20.address, {from: kakapo});
-        this.cErc20.mint(500,{from:kakapo});
+        // await this.cErc20.mint(5000000000,{from:kakapo});
         await this.cErc20.balanceOf(kakapo).then(function (bal) {
             console.log("total amount of admin:"+bal);
         })
         await this.cErc20.underlying().then(function (r) {
             console.log("underlying address:"+r);
         })
-        await this.cErc20.transfer(bob, 200, {from: kakapo});
-        await this.cErc20.transfer(tom, 200, {from: kakapo});
-        await this.cErc20.transfer(kitty, 100, {from: kakapo});
+        await this.cErc20.transfer(bob, 5000000000, {from: kakapo});
+        await this.cErc20.transfer(tom, 2000000000, {from: kakapo});
+        await this.cErc20.transfer(kitty, 1000000000, {from: kakapo});
+
         await this.cErc20.balanceOf(bob).then(function (r) {
-            console.log("bob cErc20 mint:"+r);
+            console.log("bob cErc20 balance redeem before:"+r);
         })
-    //    redeem
-    //     this.cErc20.redeem(1000,{from:bob});
+        await this.cErc20.balanceOf(tom).then(function (r) {
+            console.log("tom cErc20 balance redeem before:"+r);
+        })
+        await this.cErc20.balanceOf(kitty).then(function (r) {
+            console.log("kitty cErc20 balance redeem before:"+r);
+        })
+    // // //    redeem
+    //     await this.underlying.balanceOf(bob).then(function (bal) {
+    //         console.log("bob underlying bal before:"+bal);
+    //     })
+    //     await this.cErc20.redeem(9002499500,{from:bob});
     //     await this.cErc20.balanceOf(bob).then(function (r) {
-    //         console.log("bob cErc20 redeem:"+r);
+    //         console.log("bob cErc20 balance redeem after:"+r);
+    //     })
+    //     await this.underlying.balanceOf(bob).then(function (bal) {
+    //         console.log("bob underlying bal after:"+bal);
     //     })
 
     });
