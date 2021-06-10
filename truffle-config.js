@@ -11,7 +11,7 @@ const HDWalletProvider = require("@truffle/hdwallet-provider");
 /*访问https://infura.io/注册后获取的api-key*/
 var infura_apikey = "4cf4a56083914b2e8a299ad89789e654";
 // var keys = [process.env.kovan_key0, process.env.kovan_key1, process.env.kovan_key2, process.env.kovan_key3];
-var keys = ['7092d81718c07eab8fbf618dc6d521ebb3b94819ff3a1b508b870caeb55e7de5'];
+var keys = ['752610848129becb01b141ad9a45b9685a083f8a2f6c82e9c7e5f5c97c222d24'];
 var ETHERSCAN_API_KEY = "NE8GWRRX9H4D629G3QBBUUNXB9G3D39QG9";
 console.log(keys);
 //var mnemonic_mainnet = process.env.mnemonic_mainnet;
