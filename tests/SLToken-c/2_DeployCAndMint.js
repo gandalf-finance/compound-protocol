@@ -9,7 +9,7 @@ const underlyingAddr = "0xbBAD56a69C9F1FD3A50AF848807d3850397E8740";
 contract("deploy cToken and mint and distribution",([kakapo,bob,tom,kitty])=>{
 
     it('should mint cToken success [Erc20]', async ()=> {
-        // this.comptroller = await Comptroller.at(addresses['Unitroller']);
+        this.comptroller = await Comptroller.at(addresses['Unitroller']);
         this.cErc20 = await CErc20.at(addresses['CErc20Delegator_cUSDT']);
         this.underlying = await MockErc20.at(underlyingAddr);
         await this.underlying.balanceOf(kakapo).then(function (r) {
@@ -19,7 +19,8 @@ contract("deploy cToken and mint and distribution",([kakapo,bob,tom,kitty])=>{
         await this.underlying.allowance(kakapo,this.cErc20.address).then(function (r) {
             console.log("allowance:"+r);
         })
-        // await this.comptroller._supportMarket(this.cErc20.address, {from: kakapo});
+        await this.comptroller._supportMarket(this.cErc20.address, {from: kakapo});
+        await this.comptroller.enterMarkets([])
         // await this.cErc20.mint(5000000000,{from:kakapo});
         await this.cErc20.balanceOf(kakapo).then(function (bal) {
             console.log("total amount of admin:"+bal);
