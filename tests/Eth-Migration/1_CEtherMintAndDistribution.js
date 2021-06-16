@@ -6,16 +6,21 @@ const addresses = JSON.parse(data);
 
 
 contract("CEther mint", ([kakapo, bob]) => {
-    it('should mint and distribution successs~', async () => {
+
+    beforeEach(async ()=>{
         this.comptroller = await Comptroller.at(addresses['Unitroller']);
         this.cEther = await CEther.at(addresses["CEther_cETher"]);
         await this.comptroller._supportMarket(this.cEther.address, {from: kakapo});
-        await this.cEther.mint({value:50000000000,from:bob}).then(function (res) {
-            console.log(res);
-        });
+    });
 
+    it('should mint and distribution successs~', async () => {
+        await this.cEther.mint({value:5000000000000,from:bob});
         await this.cEther.balanceOf(bob).then(function (bal) {
             console.log("bob CEther bal:%s",bal);
         })
+    });
+
+    it('should redeem success ', function () {
+
     });
 });
