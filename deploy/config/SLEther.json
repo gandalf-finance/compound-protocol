@@ -6,7 +6,7 @@
         "NAME_": "slHT",
         "SYMBOL_": "slHT",
         "DECIMALS_": 8,
-        "ADMIN_": "0x11b8b9522014325930019bFC5FF967BFb7d93Ea6",
+        "ADMIN_": "0x664fe76F7d9f58b3a8c627630008D6a22A91DA76",
         "newReserveFactorMantissa": "200000000000000000",
         "newCollateralFactorMantissa": "600000000000000000"
     }

@@ -1,13 +1,13 @@
 {
     "SLErc20Delegator_slUSDT": {
-        "underlying_": "0xbBAD56a69C9F1FD3A50AF848807d3850397E8740",
+        "underlying_": "0x97917624944A73E9458CDDdf3f2252901006254d",
         "comptroller_": "",
         "interestRateModel_": "JumpRateModelV2_0",
         "initialExchangeRateMantissa_": "200000000000000",
         "name_": "slUSDT",
         "symbol_": "slUSDT",
         "decimals_": "8",
-        "admin_": "0x11b8b9522014325930019bFC5FF967BFb7d93Ea6",
+        "admin_": "0x664fe76F7d9f58b3a8c627630008D6a22A91DA76",
         "newReserveFactorMantissa": "200000000000000000",
         "newCollateralFactorMantissa": "0"
     }
