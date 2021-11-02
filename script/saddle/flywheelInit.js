@@ -51,13 +51,13 @@ let getConfig = (configArgs) => {
 	return res;
 };
 
-let getSLTokenAddresses = (cTokenArgs) => {
+let getGTokenAddresses = (cTokenArgs) => {
 	let all = [
 		'cUSDC',
 		'cDAI',
 		'cUSDT',
 		'cBAT',
-		'slETH',
+		'gETH',
 		'cSAI',
 		'cREP',
 		'cZRX',
@@ -140,14 +140,14 @@ let accountRequest = async (network, opts) => {
 	return JSON.parse(res).accounts;
 };
 
-let filterInitialized = async (borrowersBySLToken) => {
+let filterInitialized = async (borrowersByGToken) => {
 	let res = {}
 	let batchSize = 75;
 	console.log(`Calling compBorrowerIndex for borrowers in batches of ${batchSize}...\n`);
-	for(let cTokenAddr of Object.keys(borrowersBySLToken)) {
+	for(let cTokenAddr of Object.keys(borrowersByGToken)) {
 		let speed = await call(Comptroller, 'compSpeeds', [cTokenAddr]);
 		if (Number(speed) != 0){
-			for (let borrowerChunk of getChunks(borrowersBySLToken[cTokenAddr], batchSize)) {
+			for (let borrowerChunk of getChunks(borrowersByGToken[cTokenAddr], batchSize)) {
 				try {
 					let indices = await Promise.all(borrowerChunk.map(
 						async(borrower) => {
@@ -169,9 +169,9 @@ let filterInitialized = async (borrowersBySLToken) => {
 let filterBorrowers = (apiAccounts, cTokenList) => {
 	return apiAccounts.reduce((acc, account) => {
 		let validBorrowers = account.tokens.filter(
-			(accountSLToken) =>
-				cTokenList.includes(accountSLToken.address) &&
-				accountSLToken.borrow_balance_underlying.value > 0
+			(accountGToken) =>
+				cTokenList.includes(accountGToken.address) &&
+				accountGToken.borrow_balance_underlying.value > 0
 		);
 		for (let borrower of validBorrowers) {
 			let ctokenAddr = borrower.address;
@@ -183,9 +183,9 @@ let filterBorrowers = (apiAccounts, cTokenList) => {
 	}, {});
 };
 
-let claimCompBatch = async (borrowersBySLToken, opts) => {
-	for (let cTokenAddr of Object.keys(borrowersBySLToken)) {
-		let borrowers = borrowersBySLToken[cTokenAddr];
+let claimCompBatch = async (borrowersByGToken, opts) => {
+	for (let cTokenAddr of Object.keys(borrowersByGToken)) {
+		let borrowers = borrowersByGToken[cTokenAddr];
 		for (let chunk of getChunks(borrowers, opts.batch)) {
 			if (chunk.length == 0) {
 				console.log(`No borrowers to claim for ${cTokenAddr}`);
@@ -214,25 +214,25 @@ let claimCompBatch = async (borrowersBySLToken, opts) => {
 };
 
 (async () => {
-	let borrowersBySLToken;
+	let borrowersByGToken;
 	let cTokenMap; // symbol => addrs
 	let opts = getConfig(args[0]);
 	if (network == 'development') {
-		borrowersBySLToken = getTestData();
+		borrowersByGToken = getTestData();
 	} else if (isKnownNetwork(network)) {
 		let apiAccounts = opts.readFixture
 			? await readFixture()
 			: await accountRequest(network, opts);
-		let cTokenAddresses = Object.values(getSLTokenAddresses(opts.cTokens));
-		borrowersBySLToken = filterBorrowers(apiAccounts, cTokenAddresses);
+		let cTokenAddresses = Object.values(getGTokenAddresses(opts.cTokens));
+		borrowersByGToken = filterBorrowers(apiAccounts, cTokenAddresses);
 		if (opts.writeFixture) await writeFixture(apiAccounts);
 	} else {
 		printUsage();
 	}
-	let unInit = await filterInitialized(borrowersBySLToken);
+	let unInit = await filterInitialized(borrowersByGToken);
 	print('Uninitialized accounts before: ', unInit);
 
 	await claimCompBatch(unInit, opts);
-	unInit = await filterInitialized(borrowersBySLToken);
+	unInit = await filterInitialized(borrowersByGToken);
 	print('Uninitialized accounts after: ', unInit);
 })();

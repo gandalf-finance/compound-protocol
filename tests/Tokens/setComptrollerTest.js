@@ -1,15 +1,15 @@
 const {
   makeComptroller,
-  makeSLToken
-} = require('../Utils/SashimiLending');
+  makeGToken
+} = require('../Utils/GandalfLending');
 
-describe('SLToken', function () {
+describe('GToken', function () {
   let root, accounts;
-  let slToken, oldComptroller, newComptroller;
+  let gToken, oldComptroller, newComptroller;
   beforeEach(async () => {
     [root, ...accounts] = saddle.accounts;
-    slToken = await makeSLToken();
-    oldComptroller = slToken.comptroller;
+    gToken = await makeGToken();
+    oldComptroller = gToken.comptroller;
     newComptroller = await makeComptroller();
     expect(newComptroller._address).not.toEqual(oldComptroller._address);
   });
@@ -17,31 +17,31 @@ describe('SLToken', function () {
   describe('_setComptroller', () => {
     it("should fail if called by non-admin", async () => {
       expect(
-        await send(slToken, '_setComptroller', [newComptroller._address], { from: accounts[0] })
+        await send(gToken, '_setComptroller', [newComptroller._address], { from: accounts[0] })
       ).toHaveTokenFailure('UNAUTHORIZED', 'SET_COMPTROLLER_OWNER_CHECK');
-      expect(await call(slToken, 'comptroller')).toEqual(oldComptroller._address);
+      expect(await call(gToken, 'comptroller')).toEqual(oldComptroller._address);
     });
 
     it("reverts if passed a contract that doesn't implement isComptroller", async () => {
-      await expect(send(slToken, '_setComptroller', [slToken.underlying._address])).rejects.toRevert("revert");
-      expect(await call(slToken, 'comptroller')).toEqual(oldComptroller._address);
+      await expect(send(gToken, '_setComptroller', [gToken.underlying._address])).rejects.toRevert("revert");
+      expect(await call(gToken, 'comptroller')).toEqual(oldComptroller._address);
     });
 
     it("reverts if passed a contract that implements isComptroller as false", async () => {
       // extremely unlikely to occur, of course, but let's be exhaustive
       const badComptroller = await makeComptroller({ kind: 'false-marker' });
-      await expect(send(slToken, '_setComptroller', [badComptroller._address])).rejects.toRevert("revert marker method returned false");
-      expect(await call(slToken, 'comptroller')).toEqual(oldComptroller._address);
+      await expect(send(gToken, '_setComptroller', [badComptroller._address])).rejects.toRevert("revert marker method returned false");
+      expect(await call(gToken, 'comptroller')).toEqual(oldComptroller._address);
     });
 
     it("updates comptroller and emits log on success", async () => {
-      const result = await send(slToken, '_setComptroller', [newComptroller._address]);
+      const result = await send(gToken, '_setComptroller', [newComptroller._address]);
       expect(result).toSucceed();
       expect(result).toHaveLog('NewComptroller', {
         oldComptroller: oldComptroller._address,
         newComptroller: newComptroller._address
       });
-      expect(await call(slToken, 'comptroller')).toEqual(newComptroller._address);
+      expect(await call(gToken, 'comptroller')).toEqual(newComptroller._address);
     });
   });
 });

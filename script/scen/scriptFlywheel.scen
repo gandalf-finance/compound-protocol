@@ -13,43 +13,43 @@ Comptroller SetPriceOracle (PriceOracleProxy Address)
 Comptroller SetMaxAssets 20
 Comptroller SetCloseFactor 0.5
 Comptroller LiquidationIncentive 1.1
-NewSLToken ZRX slZRX
-NewSLToken BAT slBAT
-Support slZRX collateralFactor:0.5
-Support slBAT collateralFactor:0.5
+NewGToken ZRX gZRX
+NewGToken BAT gBAT
+Support gZRX collateralFactor:0.5
+Support gBAT collateralFactor:0.5
 -- final
 ComptrollerImpl Deploy Scenario ComptrollerScen
 Unitroller SetPendingImpl ComptrollerScen
 
-Prep Geoff 100e18 ZRX slZRX
-Mint Geoff 50e18 slZRX--tokenbalance = 50e18 / 2e9 = 2.5e10
+Prep Geoff 100e18 ZRX gZRX
+Mint Geoff 50e18 gZRX--tokenbalance = 50e18 / 2e9 = 2.5e10
 
-Prep Fourth Some BAT slBAT
-Mint Fourth 6e18 slBAT
-EnterMarkets Fourth slBAT
-Borrow Fourth 1e18 slZRX
+Prep Fourth Some BAT gBAT
+Mint Fourth 6e18 gBAT
+EnterMarkets Fourth gBAT
+Borrow Fourth 1e18 gZRX
 
-Prep Fifth Some BAT slBAT
-Mint Fifth 6e18 slBAT
-EnterMarkets Fifth slBAT
-Borrow Fifth 1e18 slZRX
+Prep Fifth Some BAT gBAT
+Mint Fifth 6e18 gBAT
+EnterMarkets Fifth gBAT
+Borrow Fifth 1e18 gZRX
 
-Prep Sixth Some BAT slBAT
-Mint Sixth 6e18 slBAT
-EnterMarkets Sixth slBAT
-Borrow Sixth 1e18 slZRX
+Prep Sixth Some BAT gBAT
+Mint Sixth 6e18 gBAT
+EnterMarkets Sixth gBAT
+Borrow Sixth 1e18 gZRX
 
-Prep Seventh Some BAT slBAT
-Mint Seventh 6e18 slBAT
-EnterMarkets Seventh slBAT
-Borrow Seventh 1e18 slZRX
+Prep Seventh Some BAT gBAT
+Mint Seventh 6e18 gBAT
+EnterMarkets Seventh gBAT
+Borrow Seventh 1e18 gZRX
 
-ComptrollerImpl ComptrollerScen Become 1e18 [slZRX slBAT]
-Erc20 Deploy Standard SASHIMI "SASHIMI Token" 18
-Give (Address Comptroller) 5000000e18 SASHIMI
-Comptroller Send "setSashimiAddress(address)" (Address SASHIMI)
+ComptrollerImpl ComptrollerScen Become 1e18 [gZRX gBAT]
+Erc20 Deploy Standard PLATFORMTOKEN "PLATFORMTOKEN Token" 18
+Give (Address Comptroller) 5000000e18 PLATFORMTOKEN
+Comptroller Send "setPlatformTokenAddress(address)" (Address PLATFORMTOKEN)
 
-Comptroller RefreshSashimiSpeeds
+Comptroller RefreshPlatformTokenSpeeds
 
 FastForward 300000 Blocks
 Read (Comptroller Address)

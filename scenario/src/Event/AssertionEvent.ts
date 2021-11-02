@@ -260,8 +260,8 @@ export function assertionCommands() {
 
         * "Approx given:<Value> expected:<Value> tolerance:<Value>" - Asserts that given approximately matches expected.
           * E.g. "Assert Approx (Exactly 0) Zero "
-          * E.g. "Assert Approx (SLToken slZRX TotalSupply) (Exactly 55) 1e-18"
-          * E.g. "Assert Approx (SLToken slZRX Comptroller) (Comptroller Address) 1"
+          * E.g. "Assert Approx (GToken gZRX TotalSupply) (Exactly 55) 1e-18"
+          * E.g. "Assert Approx (GToken gZRX Comptroller) (Comptroller Address) 1"
       `,
       "Approx",
       [
@@ -277,8 +277,8 @@ export function assertionCommands() {
 
         * "Equal given:<Value> expected:<Value>" - Asserts that given matches expected.
           * E.g. "Assert Equal (Exactly 0) Zero"
-          * E.g. "Assert Equal (SLToken slZRX TotalSupply) (Exactly 55)"
-          * E.g. "Assert Equal (SLToken slZRX Comptroller) (Comptroller Address)"
+          * E.g. "Assert Equal (GToken gZRX TotalSupply) (Exactly 55)"
+          * E.g. "Assert Equal (GToken gZRX Comptroller) (Comptroller Address)"
       `,
       "Equal",
       [
@@ -322,7 +322,7 @@ export function assertionCommands() {
         #### True
 
         * "True given:<Value>" - Asserts that given is true.
-          * E.g. "Assert True (Comptroller CheckMembership Geoff slETH)"
+          * E.g. "Assert True (Comptroller CheckMembership Geoff gETH)"
       `,
       "True",
       [
@@ -335,7 +335,7 @@ export function assertionCommands() {
         #### False
 
         * "False given:<Value>" - Asserts that given is false.
-          * E.g. "Assert False (Comptroller CheckMembership Geoff slETH)"
+          * E.g. "Assert False (Comptroller CheckMembership Geoff gETH)"
       `,
       "False",
       [
@@ -347,7 +347,7 @@ export function assertionCommands() {
         #### ReadRevert
 
         * "ReadRevert event:<Event> message:<String>" - Asserts that reading the given value reverts with given message.
-          * E.g. "Assert ReadRevert (Comptroller CheckMembership Geoff slETH) \"revert\""
+          * E.g. "Assert ReadRevert (Comptroller CheckMembership Geoff gETH) \"revert\""
       `,
       "ReadRevert",
       [

@@ -1,8 +1,8 @@
 #!/usr/bin/env yarn repl -s
 
 PrintTransactionLogs
-Alias SashimiHolder "0x19bc62ff7cd9ffd6bdced9802ff718f09f7259f1"
-Web3Fork "https://mainnet-eth.compound.finance/@10796407" (SashimiHolder)
+Alias PlatformTokenHolder "0x19bc62ff7cd9ffd6bdced9802ff718f09f7259f1"
+Web3Fork "https://mainnet-eth.compound.finance/@10796407" (PlatformTokenHolder)
 UseConfigs mainnet
 
 -- Deploy new interest rate model
@@ -10,21 +10,21 @@ InterestRateModel Deploy LegacyJumpRateModelV2 MyInterestRateModel 0 0.04 1.09 0
 
 -- Propose to apply the patch
 
-From SashimiHolder (Sashimi Delegate SashimiHolder)
-From SashimiHolder (Governor GovernorAlpha Propose "Update slUSDC interest rate model" [(Address slUSDC)] [0] ["_setInterestRateModel(address)"] [[(Address MyInterestRateModel)]])
+From PlatformTokenHolder (PlatformToken Delegate PlatformTokenHolder)
+From PlatformTokenHolder (Governor GovernorAlpha Propose "Update gUSDC interest rate model" [(Address gUSDC)] [0] ["_setInterestRateModel(address)"] [[(Address MyInterestRateModel)]])
 
 -- Vote for, queue, and execute the proposal
 
 MineBlock
-From SashimiHolder (Governor GovernorAlpha Proposal LastProposal Vote For)
+From PlatformTokenHolder (Governor GovernorAlpha Proposal LastProposal Vote For)
 AdvanceBlocks 20000
 Governor GovernorAlpha Proposal LastProposal Queue
 IncreaseTime 604910
 Governor GovernorAlpha Proposal LastProposal Execute
 
 
-Assert Equal (Address (SLToken slUSDC InterestRateModel)) (Address MyInterestRateModel)
-SLToken slUSDC AccrueInterest
+Assert Equal (Address (GToken gUSDC InterestRateModel)) (Address MyInterestRateModel)
+GToken gUSDC AccrueInterest
 
 
-Print "slUSDC interest rate model upgrade ok" 
+Print "gUSDC interest rate model upgrade ok" 

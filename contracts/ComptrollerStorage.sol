@@ -1,6 +1,6 @@
 pragma solidity ^0.5.16;
 
-import "./SLToken.sol";
+import "./GToken.sol";
 import "./PriceOracle.sol";
 
 contract UnitrollerAdminStorage {
@@ -50,7 +50,7 @@ contract ComptrollerV1Storage is UnitrollerAdminStorage {
     /**
      * @notice Per-account mapping of "assets you are in", capped by maxAssets
      */
-    mapping(address => SLToken[]) public accountAssets;
+    mapping(address => GToken[]) public accountAssets;
 
 }
 
@@ -69,12 +69,12 @@ contract ComptrollerV2Storage is ComptrollerV1Storage {
         /// @notice Per-market mapping of "accounts in this asset"
         mapping(address => bool) accountMembership;
 
-        /// @notice Whether or not this market receives SASHIMI
-        bool isSashimied;
+        /// @notice Whether or not this market receives PLATFORMTOKEN
+        bool isPlatformTokened;
     }
 
     /**
-     * @notice Official mapping of slTokens -> Market metadata
+     * @notice Official mapping of gTokens -> Market metadata
      * @dev Used e.g. to determine if a market is supported
      */
     mapping(address => Market) public markets;
@@ -95,8 +95,8 @@ contract ComptrollerV2Storage is ComptrollerV1Storage {
 }
 
 contract ComptrollerV3Storage is ComptrollerV2Storage {
-    struct SashimiMarketState {
-        /// @notice The market's last updated sashimiBorrowIndex or sashimiSupplyIndex
+    struct PlatformTokenMarketState {
+        /// @notice The market's last updated platformTokenBorrowIndex or platformTokenSupplyIndex
         uint224 index;
 
         /// @notice The block number the index was last updated at
@@ -104,34 +104,34 @@ contract ComptrollerV3Storage is ComptrollerV2Storage {
     }
 
     /// @notice A list of all markets
-    SLToken[] public allMarkets;
+    GToken[] public allMarkets;
 
-    /// @notice The rate at which the flywheel distributes SASHIMI, per block
-    uint public sashimiRate;
+    /// @notice The rate at which the flywheel distributes PLATFORMTOKEN, per block
+    uint public platformTokenRate;
 
-    /// @notice The portion of sashimiRate that each market currently receives
-    mapping(address => uint) public sashimiSpeeds;
+    /// @notice The portion of platformTokenRate that each market currently receives
+    mapping(address => uint) public platformTokenSpeeds;
 
-    /// @notice The SASHIMI market supply state for each market
-    mapping(address => SashimiMarketState) public sashimiSupplyState;
+    /// @notice The PLATFORMTOKEN market supply state for each market
+    mapping(address => PlatformTokenMarketState) public platformTokenSupplyState;
 
-    /// @notice The SASHIMI market borrow state for each market
-    mapping(address => SashimiMarketState) public sashimiBorrowState;
+    /// @notice The PLATFORMTOKEN market borrow state for each market
+    mapping(address => PlatformTokenMarketState) public platformTokenBorrowState;
 
-    /// @notice The SASHIMI borrow index for each market for each supplier as of the last time they accrued SASHIMI
-    mapping(address => mapping(address => uint)) public sashimiSupplierIndex;
+    /// @notice The PLATFORMTOKEN borrow index for each market for each supplier as of the last time they accrued PLATFORMTOKEN
+    mapping(address => mapping(address => uint)) public platformTokenSupplierIndex;
 
-    /// @notice The SASHIMI borrow index for each market for each borrower as of the last time they accrued SASHIMI
-    mapping(address => mapping(address => uint)) public sashimiBorrowerIndex;
+    /// @notice The PLATFORMTOKEN borrow index for each market for each borrower as of the last time they accrued PLATFORMTOKEN
+    mapping(address => mapping(address => uint)) public platformTokenBorrowerIndex;
 
-    /// @notice The SASHIMI accrued but not yet transferred to each user
-    mapping(address => uint) public sashimiAccrued;
+    /// @notice The PLATFORMTOKEN accrued but not yet transferred to each user
+    mapping(address => uint) public platformTokenAccrued;
 }
 
 contract ComptrollerV4Storage is ComptrollerV3Storage {
     // @notice The borrowCapGuardian can set borrowCaps to any number for any market. Lowering the borrow cap could disable borrowing on the given market.
     address public borrowCapGuardian;
 
-    // @notice Borrow caps enforced by borrowAllowed for each slToken address. Defaults to zero which corresponds to unlimited borrowing.
+    // @notice Borrow caps enforced by borrowAllowed for each gToken address. Defaults to zero which corresponds to unlimited borrowing.
     mapping(address => uint) public borrowCaps;
 }

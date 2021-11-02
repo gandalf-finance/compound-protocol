@@ -1,43 +1,43 @@
 
 Test "Set admin"
     NewComptroller
-    NewSLToken ZRX slZRX
-    Assert Equal (SLToken slZRX Admin) (Address Root)
-    Assert Equal (SLToken slZRX PendingAdmin) (Address Zero)
-    From Root (SLToken slZRX SetPendingAdmin Geoff)
-    Assert Equal (SLToken slZRX Admin) (Address Root)
-    Assert Equal (SLToken slZRX PendingAdmin) (Address Geoff)
-    From Geoff (SLToken slZRX AcceptAdmin)
-    Assert Equal (SLToken slZRX Admin) (Address Geoff)
-    Assert Equal (SLToken slZRX PendingAdmin) (Address Zero)
+    NewGToken ZRX gZRX
+    Assert Equal (GToken gZRX Admin) (Address Root)
+    Assert Equal (GToken gZRX PendingAdmin) (Address Zero)
+    From Root (GToken gZRX SetPendingAdmin Geoff)
+    Assert Equal (GToken gZRX Admin) (Address Root)
+    Assert Equal (GToken gZRX PendingAdmin) (Address Geoff)
+    From Geoff (GToken gZRX AcceptAdmin)
+    Assert Equal (GToken gZRX Admin) (Address Geoff)
+    Assert Equal (GToken gZRX PendingAdmin) (Address Zero)
 
 Test "Set admin to contructor argument"
     NewComptroller
-    NewSLToken ZRX slZRX admin:Torrey
-    Assert Equal (SLToken slZRX Admin) (Address Torrey)
-    Assert Equal (SLToken slZRX PendingAdmin) (Address Zero)
-    From Torrey (SLToken slZRX SetPendingAdmin Geoff)
-    Assert Equal (SLToken slZRX Admin) (Address Torrey)
-    Assert Equal (SLToken slZRX PendingAdmin) (Address Geoff)
-    From Geoff (SLToken slZRX AcceptAdmin)
-    Assert Equal (SLToken slZRX Admin) (Address Geoff)
-    Assert Equal (SLToken slZRX PendingAdmin) (Address Zero)
+    NewGToken ZRX gZRX admin:Torrey
+    Assert Equal (GToken gZRX Admin) (Address Torrey)
+    Assert Equal (GToken gZRX PendingAdmin) (Address Zero)
+    From Torrey (GToken gZRX SetPendingAdmin Geoff)
+    Assert Equal (GToken gZRX Admin) (Address Torrey)
+    Assert Equal (GToken gZRX PendingAdmin) (Address Geoff)
+    From Geoff (GToken gZRX AcceptAdmin)
+    Assert Equal (GToken gZRX Admin) (Address Geoff)
+    Assert Equal (GToken gZRX PendingAdmin) (Address Zero)
 
 
 Test "Fail to set pending admin"
     NewComptroller
-    NewSLToken ZRX slZRX
-    Invariant Remains (SLToken slZRX Admin) (Address Root)
-    Invariant Remains (SLToken slZRX PendingAdmin) (Address Zero)
+    NewGToken ZRX gZRX
+    Invariant Remains (GToken gZRX Admin) (Address Root)
+    Invariant Remains (GToken gZRX PendingAdmin) (Address Zero)
     AllowFailures
-    From Geoff (SLToken slZRX SetPendingAdmin Geoff)
+    From Geoff (GToken gZRX SetPendingAdmin Geoff)
     Assert Failure UNAUTHORIZED SET_PENDING_ADMIN_OWNER_CHECK
 
 Test "Fail to accept admin"
     NewComptroller
-    NewSLToken ZRX slZRX
-    Invariant Remains (SLToken slZRX Admin) (Address Root)
-    Invariant Remains (SLToken slZRX PendingAdmin) (Address Zero)
+    NewGToken ZRX gZRX
+    Invariant Remains (GToken gZRX Admin) (Address Root)
+    Invariant Remains (GToken gZRX PendingAdmin) (Address Zero)
     AllowFailures
-    From Geoff (SLToken slZRX AcceptAdmin)
+    From Geoff (GToken gZRX AcceptAdmin)
     Assert Failure UNAUTHORIZED ACCEPT_ADMIN_PENDING_ADMIN_CHECK

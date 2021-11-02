@@ -1,5 +1,5 @@
 -- NewComptroller, but with markets listed so that we can make them comp markets in constructor
-Macro FlywheelComptroller price=1.0 borrowRate=0.000005 sashimiInitAmount=5000000e18
+Macro FlywheelComptroller price=1.0 borrowRate=0.000005 platformTokenInitAmount=5000000e18
     Unitroller Deploy
     PriceOracle Deploy Fixed price
     PriceOracleProxy Deploy Admin (PriceOracle Address) (Address Zero) (Address Zero) (Address Zero) (Address Zero) (Address Zero)
@@ -12,210 +12,210 @@ Macro FlywheelComptroller price=1.0 borrowRate=0.000005 sashimiInitAmount=500000
     Comptroller SetMaxAssets 20
     Comptroller SetCloseFactor 0.5
     Comptroller LiquidationIncentive 1.1
-    NewSLToken ZRX slZRX
-    NewSLToken BAT slBAT
-    Support slZRX collateralFactor:0.5
-    Support slBAT collateralFactor:0.5
+    NewGToken ZRX gZRX
+    NewGToken BAT gBAT
+    Support gZRX collateralFactor:0.5
+    Support gBAT collateralFactor:0.5
     -- final
     ComptrollerImpl Deploy ScenarioG3 ComptrollerScen
     Unitroller SetPendingImpl ComptrollerScen
-    ComptrollerImpl ComptrollerScen BecomeG3 1e18 [slZRX slBAT]
-    Erc20 Deploy Standard SASHIMI "SASHIMI Token" 18
-    Give (Address Comptroller) sashimiInitAmount SASHIMI
-    Comptroller Send "setSashimiAddress(address)" (Address SASHIMI)
+    ComptrollerImpl ComptrollerScen BecomeG3 1e18 [gZRX gBAT]
+    Erc20 Deploy Standard PLATFORMTOKEN "PLATFORMTOKEN Token" 18
+    Give (Address Comptroller) platformTokenInitAmount PLATFORMTOKEN
+    Comptroller Send "setPlatformTokenAddress(address)" (Address PLATFORMTOKEN)
 
 Macro InitSpeeds
-    Prep Geoff 100e18 ZRX slZRX
-    Mint Geoff 50e18 slZRX--tokenbalance = 50e18 / 2e9 = 2.5e10
-    Prep Coburn Some BAT slBAT
-    Mint Coburn 6e18 slBAT--tokenbalance = 6e18 / 2e9 = 3e9
-    EnterMarkets Coburn slBAT
-    Borrow Coburn 1e18 slZRX
-    Comptroller RefreshSashimiSpeeds
+    Prep Geoff 100e18 ZRX gZRX
+    Mint Geoff 50e18 gZRX--tokenbalance = 50e18 / 2e9 = 2.5e10
+    Prep Coburn Some BAT gBAT
+    Mint Coburn 6e18 gBAT--tokenbalance = 6e18 / 2e9 = 3e9
+    EnterMarkets Coburn gBAT
+    Borrow Coburn 1e18 gZRX
+    Comptroller RefreshPlatformTokenSpeeds
 
-Test "Accrue SASHIMI during a mint"
+Test "Accrue PLATFORMTOKEN during a mint"
     FlywheelComptroller
     InitSpeeds
     FastForward 300000 Blocks
-    Assert Equal (Comptroller SashimiAccrued Geoff) 0
-    Mint Geoff 1e18 slZRX
+    Assert Equal (Comptroller PlatformTokenAccrued Geoff) 0
+    Mint Geoff 1e18 gZRX
     -- new index = initVal + deltaBlocks * supplySpeed * 1e36 / totalSupply
     -- new index = 1e36 + 300000 * 1e18 * 1e36 / 2.5e10 = 1.2000000000001e49
-    Assert Equal (Comptroller SashimiAccrued Geoff) 0
-    Assert Equal (Comptroller SashimiSupplyState slZRX "index") 1.2000000000001e49
-    Assert Equal (Comptroller SashimiSupplyState slZRX "block") 300000
-    Assert Equal (Erc20 SASHIMI TokenBalance Geoff) 300000e18
-    Assert Equal (Comptroller SashimiSupplierIndex slZRX Geoff) 1.2000000000001e49
+    Assert Equal (Comptroller PlatformTokenAccrued Geoff) 0
+    Assert Equal (Comptroller PlatformTokenSupplyState gZRX "index") 1.2000000000001e49
+    Assert Equal (Comptroller PlatformTokenSupplyState gZRX "block") 300000
+    Assert Equal (Erc20 PLATFORMTOKEN TokenBalance Geoff) 300000e18
+    Assert Equal (Comptroller PlatformTokenSupplierIndex gZRX Geoff) 1.2000000000001e49
 
-Test "Accrue SASHIMI during a borrow"
+Test "Accrue PLATFORMTOKEN during a borrow"
     FlywheelComptroller
     InitSpeeds
     Comptroller FastForward 300000 Blocks
-    Assert Equal (Comptroller SashimiAccrued Coburn) 0
-    Borrow Coburn 0.1e18 slZRX
+    Assert Equal (Comptroller PlatformTokenAccrued Coburn) 0
+    Borrow Coburn 0.1e18 gZRX
     -- new index = initVal + deltaBlocks * borrowSpeed * 1e36 / totalBorrows
     -- new index = 1e36 + 300000 * 1e18 * 1e36 / 1e18 =  3.00001e41
-    Assert Equal (Comptroller SashimiAccrued Coburn) 0
-    Assert Equal (Comptroller SashimiBorrowState slZRX "index") 3.00001e41
-    Assert Equal (Comptroller SashimiBorrowState slZRX "block") 300000
-    Assert Equal (Erc20 SASHIMI TokenBalance Coburn) 300000e18
-    Assert Equal (Comptroller SashimiBorrowerIndex slZRX Coburn) 3.00001e41
+    Assert Equal (Comptroller PlatformTokenAccrued Coburn) 0
+    Assert Equal (Comptroller PlatformTokenBorrowState gZRX "index") 3.00001e41
+    Assert Equal (Comptroller PlatformTokenBorrowState gZRX "block") 300000
+    Assert Equal (Erc20 PLATFORMTOKEN TokenBalance Coburn) 300000e18
+    Assert Equal (Comptroller PlatformTokenBorrowerIndex gZRX Coburn) 3.00001e41
 
-Test "Accrue SASHIMI during a redeem"
+Test "Accrue PLATFORMTOKEN during a redeem"
     FlywheelComptroller
     InitSpeeds
     FastForward 300000 Blocks
-    Assert Equal (Comptroller SashimiAccrued Geoff) 0
-    Redeem Geoff 1e9 slZRX
+    Assert Equal (Comptroller PlatformTokenAccrued Geoff) 0
+    Redeem Geoff 1e9 gZRX
     -- new index = initVal + deltaBlocks * supplySpeed * 1e36 / totalSupply
     -- new index = 1e36 + 300000 * 1e18 * 1e36 / 2.5e10 = 1.2000000000001e49
-    Assert Equal (Comptroller SashimiAccrued Geoff) 0
-    Assert Equal (Comptroller SashimiSupplyState slZRX "index") 1.2000000000001e49
-    Assert Equal (Comptroller SashimiSupplyState slZRX "block") 300000
-    Assert Equal (Erc20 SASHIMI TokenBalance Geoff) 300000e18
-    Assert Equal (Comptroller SashimiSupplierIndex slZRX Geoff) 1.2000000000001e49
+    Assert Equal (Comptroller PlatformTokenAccrued Geoff) 0
+    Assert Equal (Comptroller PlatformTokenSupplyState gZRX "index") 1.2000000000001e49
+    Assert Equal (Comptroller PlatformTokenSupplyState gZRX "block") 300000
+    Assert Equal (Erc20 PLATFORMTOKEN TokenBalance Geoff) 300000e18
+    Assert Equal (Comptroller PlatformTokenSupplierIndex gZRX Geoff) 1.2000000000001e49
 
-Test "Accrue SASHIMI during a repayBorrow"
+Test "Accrue PLATFORMTOKEN during a repayBorrow"
     FlywheelComptroller
     InitSpeeds
     FastForward 300000 Blocks
-    Assert Equal (Comptroller SashimiAccrued Geoff) 0
-    Prep Coburn 0.5e18 ZRX slZRX
-    RepayBorrow Coburn 0.5e18 slZRX
+    Assert Equal (Comptroller PlatformTokenAccrued Geoff) 0
+    Prep Coburn 0.5e18 ZRX gZRX
+    RepayBorrow Coburn 0.5e18 gZRX
     -- new index = initVal + deltaBlocks * borrowSpeed * 1e36 / totalBorrows
     -- new index = 1e36 + 300000 * 1e18 * 1e36 / 1e18 =  3.00001e41
-    Assert Equal (Comptroller SashimiAccrued Coburn) 0
-    Assert Equal (Comptroller SashimiBorrowState slZRX "index") 3.00001e41
-    Assert Equal (Comptroller SashimiBorrowState slZRX "block") 300000
-    Assert Equal (Erc20 SASHIMI TokenBalance Coburn) 300000e18
-    Assert Equal (Comptroller SashimiBorrowerIndex slZRX Coburn) 3.00001e41
+    Assert Equal (Comptroller PlatformTokenAccrued Coburn) 0
+    Assert Equal (Comptroller PlatformTokenBorrowState gZRX "index") 3.00001e41
+    Assert Equal (Comptroller PlatformTokenBorrowState gZRX "block") 300000
+    Assert Equal (Erc20 PLATFORMTOKEN TokenBalance Coburn) 300000e18
+    Assert Equal (Comptroller PlatformTokenBorrowerIndex gZRX Coburn) 3.00001e41
 
-Test "Accrue SASHIMI during a repayBorrowBehalf of 0"
+Test "Accrue PLATFORMTOKEN during a repayBorrowBehalf of 0"
     FlywheelComptroller
     InitSpeeds
     FastForward 300000 Blocks
-    Assert Equal (Comptroller SashimiAccrued Geoff) 0
+    Assert Equal (Comptroller PlatformTokenAccrued Geoff) 0
     -- confirm we can init all flywheel accounts for free
-    RepayBorrowBehalf Jared Coburn 0 slZRX
+    RepayBorrowBehalf Jared Coburn 0 gZRX
     -- new index = initVal + deltaBlocks * borrowSpeed * 1e36 / totalBorrows
     -- new index = 1e36 + 300000 * 1e18 * 1e36 / 1e18 = 3.00001e41
-    Assert Equal (Comptroller SashimiAccrued Coburn) 0
-    Assert Equal (Comptroller SashimiBorrowState slZRX "index") 3.00001e41
-    Assert Equal (Comptroller SashimiBorrowState slZRX "block") 300000
-    Assert Equal (Erc20 SASHIMI TokenBalance Coburn) 300000e18
-    Assert Equal (Comptroller SashimiBorrowerIndex slZRX Coburn) 3.00001e41
+    Assert Equal (Comptroller PlatformTokenAccrued Coburn) 0
+    Assert Equal (Comptroller PlatformTokenBorrowState gZRX "index") 3.00001e41
+    Assert Equal (Comptroller PlatformTokenBorrowState gZRX "block") 300000
+    Assert Equal (Erc20 PLATFORMTOKEN TokenBalance Coburn) 300000e18
+    Assert Equal (Comptroller PlatformTokenBorrowerIndex gZRX Coburn) 3.00001e41
 
-Test "Accrue SASHIMI during a liquidation"
+Test "Accrue PLATFORMTOKEN during a liquidation"
     FlywheelComptroller
     InitSpeeds
-    Assert Equal (Comptroller SashimiSpeed slZRX) 1e18
-    Assert Equal (Comptroller SashimiSpeed slBAT) 0
+    Assert Equal (Comptroller PlatformTokenSpeed gZRX) 1e18
+    Assert Equal (Comptroller PlatformTokenSpeed gBAT) 0
     --coburn zrx borrow, bat supply. geoff zrx supply
     FastForward 600000 Blocks--1e18 borrow * (1 + 600000 * 0.000005) = 3.5e18 borrow > 6e18 collateral * 0.5 CF
-    Prep Geoff Some ZRX slZRX
-    From Geoff (SLToken slZRX Liquidate Coburn slBAT 0.5e18)
+    Prep Geoff Some ZRX gZRX
+    From Geoff (GToken gZRX Liquidate Coburn gBAT 0.5e18)
     -- zrx borrow index is updated and comp distributed
     -- * new index = initVal + deltaBlocks * borrowSpeed * 1e36 / totalBorrows
     -- * new index = 1e36 + 600000 * 1e18 * 1e36 / 1e18 = 6.00001E41
-    Assert Equal (Comptroller SashimiBorrowState slZRX "index") 6.00001e41
-    Assert Equal (Comptroller SashimiBorrowState slZRX "block") 600000
+    Assert Equal (Comptroller PlatformTokenBorrowState gZRX "index") 6.00001e41
+    Assert Equal (Comptroller PlatformTokenBorrowState gZRX "block") 600000
     -- zrx supply index isnt updated and comp isnt distributed for zrx supply
-    Assert Equal (Comptroller SashimiSupplyState slZRX "index") 1e36
-    Assert Equal (Comptroller SashimiSupplyState slZRX "block") 0
-    Assert Equal (Comptroller SashimiSupplierIndex slZRX Geoff) 1e36--no change, minted in init
+    Assert Equal (Comptroller PlatformTokenSupplyState gZRX "index") 1e36
+    Assert Equal (Comptroller PlatformTokenSupplyState gZRX "block") 0
+    Assert Equal (Comptroller PlatformTokenSupplierIndex gZRX Geoff) 1e36--no change, minted in init
     -- bat supply/borrow index is not updated, since there is no comp speed
-    Assert Equal (Comptroller SashimiSupplyState slBAT "index") 1e36
-    Assert Equal (Comptroller SashimiSupplyState slBAT "block") 600000
+    Assert Equal (Comptroller PlatformTokenSupplyState gBAT "index") 1e36
+    Assert Equal (Comptroller PlatformTokenSupplyState gBAT "block") 600000
     -- neither is borrow state. block is 0 because update fn is never even called
-    Assert Equal (Comptroller SashimiBorrowState slBAT "index") 1e36
-    Assert Equal (Comptroller SashimiBorrowState slBAT "block") 0
+    Assert Equal (Comptroller PlatformTokenBorrowState gBAT "index") 1e36
+    Assert Equal (Comptroller PlatformTokenBorrowState gBAT "block") 0
     --
-    Assert Equal (Comptroller SashimiSupplierIndex slBAT Coburn) 1e36
-    Assert Equal (Comptroller SashimiBorrowerIndex slZRX Coburn) 6.00001e41
-    Assert Equal (Erc20 SASHIMI TokenBalance Coburn) 600000e18
-    Assert Equal (Comptroller SashimiAccrued Coburn) 0
+    Assert Equal (Comptroller PlatformTokenSupplierIndex gBAT Coburn) 1e36
+    Assert Equal (Comptroller PlatformTokenBorrowerIndex gZRX Coburn) 6.00001e41
+    Assert Equal (Erc20 PLATFORMTOKEN TokenBalance Coburn) 600000e18
+    Assert Equal (Comptroller PlatformTokenAccrued Coburn) 0
     --
-    Assert Equal (Comptroller SashimiSupplierIndex slBAT Geoff) 1e36
-    Assert Equal (Erc20 SASHIMI TokenBalance Geoff) 0
-    Assert Equal (Comptroller SashimiAccrued Geoff) 0
+    Assert Equal (Comptroller PlatformTokenSupplierIndex gBAT Geoff) 1e36
+    Assert Equal (Erc20 PLATFORMTOKEN TokenBalance Geoff) 0
+    Assert Equal (Comptroller PlatformTokenAccrued Geoff) 0
 
-Test "Accrue SASHIMI during a transfer"
+Test "Accrue PLATFORMTOKEN during a transfer"
     FlywheelComptroller
     InitSpeeds
     FastForward 300000 Blocks
-    Assert Equal (Erc20 SASHIMI TokenBalance Geoff) 0
-    Assert Equal (Comptroller SashimiSupplierIndex slZRX Geoff) 1e36
-    Transfer Geoff Jared 2.5e10 slZRX
+    Assert Equal (Erc20 PLATFORMTOKEN TokenBalance Geoff) 0
+    Assert Equal (Comptroller PlatformTokenSupplierIndex gZRX Geoff) 1e36
+    Transfer Geoff Jared 2.5e10 gZRX
     -- new index = initVal + deltaBlocks * supplySpeed * 1e36 / totalSupply
     -- new index = 1e36 + 300000 * 1e18 * 1e36 / 2.5e10 = 1.2000000000001e49
-    Assert Equal (Erc20 SASHIMI TokenBalance Geoff) 300000e18
-    Assert Equal (Comptroller SashimiAccrued Geoff) 0
-    Assert Equal (Comptroller SashimiSupplyState slZRX "index") 1.2000000000001e49
-    Assert Equal (Comptroller SashimiSupplyState slZRX "block") 300000
-    Assert Equal (Comptroller SashimiSupplierIndex slZRX Geoff) 1.2000000000001e49
+    Assert Equal (Erc20 PLATFORMTOKEN TokenBalance Geoff) 300000e18
+    Assert Equal (Comptroller PlatformTokenAccrued Geoff) 0
+    Assert Equal (Comptroller PlatformTokenSupplyState gZRX "index") 1.2000000000001e49
+    Assert Equal (Comptroller PlatformTokenSupplyState gZRX "block") 300000
+    Assert Equal (Comptroller PlatformTokenSupplierIndex gZRX Geoff) 1.2000000000001e49
     --
-    Assert Equal (Comptroller SashimiAccrued Jared) 0
-    Assert Equal (Comptroller SashimiSupplyState slZRX "index") 1.2000000000001e49
-    Assert Equal (Comptroller SashimiSupplyState slZRX "block") 300000
-    Assert Equal (Comptroller SashimiSupplierIndex slZRX Jared) 1.2000000000001e49
+    Assert Equal (Comptroller PlatformTokenAccrued Jared) 0
+    Assert Equal (Comptroller PlatformTokenSupplyState gZRX "index") 1.2000000000001e49
+    Assert Equal (Comptroller PlatformTokenSupplyState gZRX "block") 300000
+    Assert Equal (Comptroller PlatformTokenSupplierIndex gZRX Jared) 1.2000000000001e49
 
 Test "Accrues correctly when market is added, deactivated, and activated again"
     FlywheelComptroller
     InitSpeeds
-    NewSLToken DAI slDAI
+    NewGToken DAI gDAI
     --
-    Support slDAI collateralFactor:0.5
-    Comptroller AddSashimiMarkets slDAI
-    Assert Equal (Comptroller GetSashimiMarkets) [(Address slZRX) (Address slBAT) (Address slDAI)]
-    Prep Jared Some DAI slDAI
-    Mint Jared 6e18 slDAI
-    EnterMarkets Geoff slZRX
-    Borrow Geoff 0.5e18 slDAI
-    Borrow Coburn 0.5e18 slDAI
-    Comptroller RefreshSashimiSpeeds
-    Assert Equal (Comptroller SashimiSpeed slZRX) 0.5e18
-    Assert Equal (Comptroller SashimiSpeed slDAI) 0.5e18
-    --
-    FastForward 100 Blocks
-    Comptroller DropSashimiMarket slDAI
-    Comptroller ClaimSashimi Geoff
-    Assert Equal (Erc20 SASHIMI TokenBalance Geoff) 75e18--half of sldai, all of zrx(.25e18 + .5e18) * 100
-    Assert Equal (Comptroller GetSashimiMarkets) [(Address slZRX) (Address slBAT)]
-    Assert Equal (Comptroller SashimiSpeed slZRX) 1e18
-    Assert Equal (Comptroller SashimiSpeed slDAI) 0
+    Support gDAI collateralFactor:0.5
+    Comptroller AddPlatformTokenMarkets gDAI
+    Assert Equal (Comptroller GetPlatformTokenMarkets) [(Address gZRX) (Address gBAT) (Address gDAI)]
+    Prep Jared Some DAI gDAI
+    Mint Jared 6e18 gDAI
+    EnterMarkets Geoff gZRX
+    Borrow Geoff 0.5e18 gDAI
+    Borrow Coburn 0.5e18 gDAI
+    Comptroller RefreshPlatformTokenSpeeds
+    Assert Equal (Comptroller PlatformTokenSpeed gZRX) 0.5e18
+    Assert Equal (Comptroller PlatformTokenSpeed gDAI) 0.5e18
     --
     FastForward 100 Blocks
-    Comptroller ClaimSashimi Geoff
-    Assert Equal (Erc20 SASHIMI TokenBalance Geoff) 175e18-- += 1e18 * 100
-    Assert Equal (Comptroller SashimiAccrued Geoff) 0
+    Comptroller DropPlatformTokenMarket gDAI
+    Comptroller ClaimPlatformToken Geoff
+    Assert Equal (Erc20 PLATFORMTOKEN TokenBalance Geoff) 75e18--half of gdai, all of zrx(.25e18 + .5e18) * 100
+    Assert Equal (Comptroller GetPlatformTokenMarkets) [(Address gZRX) (Address gBAT)]
+    Assert Equal (Comptroller PlatformTokenSpeed gZRX) 1e18
+    Assert Equal (Comptroller PlatformTokenSpeed gDAI) 0
     --
-    Comptroller AddSashimiMarkets slDAI
     FastForward 100 Blocks
-    Comptroller ClaimSashimi Geoff
-    Assert Equal (Erc20 SASHIMI TokenBalance Geoff) 250e18--half of sldai, all of zrx. += (.25 + .5) * 100
-    Assert Equal (Comptroller SashimiAccrued Geoff) 0
+    Comptroller ClaimPlatformToken Geoff
+    Assert Equal (Erc20 PLATFORMTOKEN TokenBalance Geoff) 175e18-- += 1e18 * 100
+    Assert Equal (Comptroller PlatformTokenAccrued Geoff) 0
+    --
+    Comptroller AddPlatformTokenMarkets gDAI
+    FastForward 100 Blocks
+    Comptroller ClaimPlatformToken Geoff
+    Assert Equal (Erc20 PLATFORMTOKEN TokenBalance Geoff) 250e18--half of gdai, all of zrx. += (.25 + .5) * 100
+    Assert Equal (Comptroller PlatformTokenAccrued Geoff) 0
 
-Test "TransferComp handles running out of SASHIMI in Comptroller correctly"
-    FlywheelComptroller price:1.0 borrowRate:0.000005 sashimiInitAmount:1e18
+Test "TransferComp handles running out of PLATFORMTOKEN in Comptroller correctly"
+    FlywheelComptroller price:1.0 borrowRate:0.000005 platformTokenInitAmount:1e18
     InitSpeeds
     FastForward 2 Blocks
-    Comptroller ClaimSashimi Geoff
-    Assert Equal (Comptroller SashimiAccrued Geoff) 2e18
-    Assert Equal (Erc20 SASHIMI TokenBalance Geoff) 0
-    Give (Address Comptroller) 1e18 SASHIMI
-    Comptroller ClaimSashimi Geoff
-    Assert Equal (Comptroller SashimiAccrued Geoff) 0
-    Assert Equal (Erc20 SASHIMI TokenBalance Geoff) 2e18
+    Comptroller ClaimPlatformToken Geoff
+    Assert Equal (Comptroller PlatformTokenAccrued Geoff) 2e18
+    Assert Equal (Erc20 PLATFORMTOKEN TokenBalance Geoff) 0
+    Give (Address Comptroller) 1e18 PLATFORMTOKEN
+    Comptroller ClaimPlatformToken Geoff
+    Assert Equal (Comptroller PlatformTokenAccrued Geoff) 0
+    Assert Equal (Erc20 PLATFORMTOKEN TokenBalance Geoff) 2e18
 
-Test "Changing SASHIMI rate continues to distribute at the correct speed"
+Test "Changing PLATFORMTOKEN rate continues to distribute at the correct speed"
     FlywheelComptroller
     InitSpeeds
     --
-    Assert Equal (Comptroller SashimiSpeed slZRX) 1e18
+    Assert Equal (Comptroller PlatformTokenSpeed gZRX) 1e18
     FastForward 10 Blocks
-    Comptroller SetSashimiRate 2e18
-    Assert Equal (Comptroller SashimiSpeed slZRX) 2e18
+    Comptroller SetPlatformTokenRate 2e18
+    Assert Equal (Comptroller PlatformTokenSpeed gZRX) 2e18
     FastForward 10 Blocks
-    Comptroller ClaimSashimi Geoff
-    Assert Equal (Comptroller SashimiAccrued Geoff) 0
-    Assert Equal (Erc20 SASHIMI TokenBalance Geoff) 30e18
+    Comptroller ClaimPlatformToken Geoff
+    Assert Equal (Comptroller PlatformTokenAccrued Geoff) 0
+    Assert Equal (Erc20 PLATFORMTOKEN TokenBalance Geoff) 30e18

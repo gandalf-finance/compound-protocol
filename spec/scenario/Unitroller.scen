@@ -9,8 +9,8 @@ Test "Standard Upgrade"
     Assert Equal (Comptroller CloseFactor) 0.2
     Assert Equal (Comptroller MaxAssets) 20
     Assert Equal (Comptroller Implementation) (Address ScenComptrollerG1)
-    ListedSLToken ZRX slZRX
-    ListedSLToken DAI slDAI
+    ListedGToken ZRX gZRX
+    ListedGToken DAI gDAI
     -- Upgrade to G2
     ComptrollerImpl Deploy StandardG2 StandardComptrollerG2
     Unitroller SetPendingImpl StandardComptrollerG2
@@ -21,7 +21,7 @@ Test "Standard Upgrade"
     -- Upgrade to G3
     ComptrollerImpl Deploy ScenarioG3 ScenComptrollerG3
     Unitroller SetPendingImpl ScenComptrollerG3
-    ComptrollerImpl ScenComptrollerG3 BecomeG3 1e18 [slZRX slDAI]
+    ComptrollerImpl ScenComptrollerG3 BecomeG3 1e18 [gZRX gDAI]
     Assert Equal (Comptroller CloseFactor) 0.2
     Assert Equal (Comptroller MaxAssets) 20
     Assert Equal (Comptroller Implementation) (Address ScenComptrollerG3)
@@ -36,8 +36,8 @@ Test "Standard Upgrade, then downgrade then upgrade again"
     Assert Equal (Comptroller CloseFactor) 0.2
     Assert Equal (Comptroller MaxAssets) 20
     Assert Equal (Comptroller Implementation) (Address ScenComptrollerG1)
-    ListedSLToken ZRX slZRX
-    ListedSLToken DAI slDAI
+    ListedGToken ZRX gZRX
+    ListedGToken DAI gDAI
     -- Upgrade to G2
     ComptrollerImpl Deploy StandardG2 ComptrollerG2
     Unitroller SetPendingImpl ComptrollerG2
@@ -50,7 +50,7 @@ Test "Standard Upgrade, then downgrade then upgrade again"
     -- Upgrade to G3
     ComptrollerImpl Deploy ScenarioG3 ScenComptrollerG3
     Unitroller SetPendingImpl ScenComptrollerG3
-    ComptrollerImpl ScenComptrollerG3 BecomeG3 1e18 [slZRX slDAI]
+    ComptrollerImpl ScenComptrollerG3 BecomeG3 1e18 [gZRX gDAI]
     Assert Equal (Comptroller PauseGuardian) (Address Coburn)
     Assert Equal (Comptroller CloseFactor) 0.2
     Assert Equal (Comptroller MaxAssets) 20
@@ -64,7 +64,7 @@ Test "Standard Upgrade, then downgrade then upgrade again"
     -- Upgrade to G3 again
     Unitroller SetPendingImpl ScenComptrollerG3
     ComptrollerImpl ScenComptrollerG3 BecomeG3 1e18 []
-    Assert Equal (Comptroller GetSashimiMarkets) [(Address slZRX) (Address slDAI)]
+    Assert Equal (Comptroller GetPlatformTokenMarkets) [(Address gZRX) (Address gDAI)]
     Assert Equal (Comptroller PauseGuardian) (Address Coburn)
     Assert Equal (Comptroller CloseFactor) 0.2
     Assert Equal (Comptroller MaxAssets) 20
@@ -152,17 +152,17 @@ Macro CheckV1Storage
     -- AccountAssets; 8 *
     Assert Equal (StorageAt Comptroller 8 0 "number") 0
     Assert Equal (StorageAtMapping Comptroller 8 (Address Geoff) "number") 2
-    Assert Equal (StorageAtMapping Comptroller 8 (Address Geoff) "list(address)") [(Address slZRX) (Address slBAT)]
-    Assert Equal (Comptroller AssetsIn Geoff) [(Address slZRX) (Address slBAT)]
+    Assert Equal (StorageAtMapping Comptroller 8 (Address Geoff) "list(address)") [(Address gZRX) (Address gBAT)]
+    Assert Equal (Comptroller AssetsIn Geoff) [(Address gZRX) (Address gBAT)]
     -- Markets; 9 *
     Assert Equal (StorageAt Comptroller 9 0 "number") 0
-    Assert Equal (StorageAtNestedMapping Comptroller 9 (Address slZRX) Geoff "marketStruct") [True 0.5 True]
-    Assert Equal (StorageAtNestedMapping Comptroller 9 (Address slBAT) Geoff "marketStruct") [True 0.4 True]
-    Assert Equal (StorageAtNestedMapping Comptroller 9 (Address slBAT) Coburn "marketStruct") [True 0.4 False]
-    Assert Equal (Comptroller CollateralFactor slZRX) 0.5
-    Assert Equal (Comptroller CollateralFactor slBAT) 0.4
-    Assert Equal (Comptroller CheckMembership Geoff slZRX) True
-    Assert Equal (Comptroller CheckMembership Geoff slBAT) True
+    Assert Equal (StorageAtNestedMapping Comptroller 9 (Address gZRX) Geoff "marketStruct") [True 0.5 True]
+    Assert Equal (StorageAtNestedMapping Comptroller 9 (Address gBAT) Geoff "marketStruct") [True 0.4 True]
+    Assert Equal (StorageAtNestedMapping Comptroller 9 (Address gBAT) Coburn "marketStruct") [True 0.4 False]
+    Assert Equal (Comptroller CollateralFactor gZRX) 0.5
+    Assert Equal (Comptroller CollateralFactor gBAT) 0.4
+    Assert Equal (Comptroller CheckMembership Geoff gZRX) True
+    Assert Equal (Comptroller CheckMembership Geoff gBAT) True
 
 Macro CheckV2Storage
     -- PauseGuardian; 10
@@ -190,35 +190,35 @@ Macro CheckV2Storage
     -- Pause by market storage
     --
     -- MintGuardianPaused; 15
-    Assert Equal (StorageAtMapping Comptroller 11 (Address slZRX) "bool") False
-    From Coburn (Comptroller SetGuardianMarketPaused slZRX "Mint" True)
-    Assert Equal (Comptroller MintGuardianMarketPaused slZRX) True
-    Assert Equal (StorageAtMapping Comptroller 11 (Address slZRX) "bool") True
-    Comptroller SetGuardianMarketPaused slZRX "Mint" False
+    Assert Equal (StorageAtMapping Comptroller 11 (Address gZRX) "bool") False
+    From Coburn (Comptroller SetGuardianMarketPaused gZRX "Mint" True)
+    Assert Equal (Comptroller MintGuardianMarketPaused gZRX) True
+    Assert Equal (StorageAtMapping Comptroller 11 (Address gZRX) "bool") True
+    Comptroller SetGuardianMarketPaused gZRX "Mint" False
     -- BorrowGuardianPaused; 16
-    Assert Equal (StorageAtMapping Comptroller 12 (Address slZRX) "bool") False
-    From Coburn (Comptroller SetGuardianMarketPaused slZRX "Borrow" True)
-    Assert Equal (Comptroller BorrowGuardianMarketPaused slZRX) True
-    Assert Equal (StorageAtMapping Comptroller 12 (Address slZRX) "bool") True
-    Comptroller SetGuardianMarketPaused slZRX "Borrow" False
+    Assert Equal (StorageAtMapping Comptroller 12 (Address gZRX) "bool") False
+    From Coburn (Comptroller SetGuardianMarketPaused gZRX "Borrow" True)
+    Assert Equal (Comptroller BorrowGuardianMarketPaused gZRX) True
+    Assert Equal (StorageAtMapping Comptroller 12 (Address gZRX) "bool") True
+    Comptroller SetGuardianMarketPaused gZRX "Borrow" False
 
 Macro CheckV3Storage
     -- AllMarkets; 17
     Assert Equal (StorageAt Comptroller 13 0 "number") 2
     -- TODO: StorageAtArray Comptroller 13?
-    -- SashimiRate; 18
+    -- PlatformTokenRate; 18
     Assert Equal (StorageAt Comptroller 14 0 "number") 1e18
     -- CompSpeeds; 19
     Assert Equal (StorageAt Comptroller 15 0 "number") 0
-    -- SashimiSupplyState; 20
+    -- PlatformTokenSupplyState; 20
     Assert Equal (StorageAt Comptroller 16 0 "number") 0
-    -- SashimiBorrowState; 21
+    -- PlatformTokenBorrowState; 21
     Assert Equal (StorageAt Comptroller 17 0 "number") 0
-    -- SashimiSupplierIndex; 22
+    -- PlatformTokenSupplierIndex; 22
     Assert Equal (StorageAt Comptroller 18 0 "number") 0
-    -- SashimiBorrowerIndex; 23
+    -- PlatformTokenBorrowerIndex; 23
     Assert Equal (StorageAt Comptroller 19 0 "number") 0
-    -- SashimiAccrued; 24
+    -- PlatformTokenAccrued; 24
     Assert Equal (StorageAt Comptroller 20 0 "number") 0
 
 -- Times out coverage, disable for now - ideally set flag to not run in coverage
@@ -230,15 +230,15 @@ Pending "Keeps all storage"
     ComptrollerImpl ComptrollerG1 BecomeG1 (PriceOracle Address) 0.2 20
     Comptroller SetPendingAdmin Coburn
     ---
-    NewSLToken ZRX slZRX delegatorType:CErc20Delegator slTokenType:SLErc20Delegate
-    NewSLToken BAT slBAT delegatorType:CErc20Delegator slTokenType:SLErc20Delegate
-    Give slBAT 10e18 BAT -- Faucet some bat to borrow
-    Support slZRX collateralFactor:0.5
-    Support slBAT collateralFactor:0.4
-    Prep Geoff Some ZRX slZRX
-    Mint Geoff 100e18 slZRX
-    EnterMarkets Geoff slZRX slBAT
-    Borrow Geoff 1e18 slBAT
+    NewGToken ZRX gZRX delegatorType:CErc20Delegator gTokenType:GErc20Delegate
+    NewGToken BAT gBAT delegatorType:CErc20Delegator gTokenType:GErc20Delegate
+    Give gBAT 10e18 BAT -- Faucet some bat to borrow
+    Support gZRX collateralFactor:0.5
+    Support gBAT collateralFactor:0.4
+    Prep Geoff Some ZRX gZRX
+    Mint Geoff 100e18 gZRX
+    EnterMarkets Geoff gZRX gBAT
+    Borrow Geoff 1e18 gBAT
     --
     CheckUnitrollerStorage (Address ComptrollerG1)
     CheckV1Storage
@@ -256,7 +256,7 @@ Pending "Keeps all storage"
     --
     ComptrollerImpl Deploy StandardG3 ComptrollerG3
     Unitroller SetPendingImpl ComptrollerG3
-    ComptrollerImpl ComptrollerG3 BecomeG3 1e18 [slZRX slBAT]
+    ComptrollerImpl ComptrollerG3 BecomeG3 1e18 [gZRX gBAT]
     --
     CheckUnitrollerStorage (Address ComptrollerG3)
     CheckV1Storage

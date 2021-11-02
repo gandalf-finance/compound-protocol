@@ -1,73 +1,73 @@
 
 Test "Initial Exchange Rate"
     NewComptroller
-    NewSLToken ZRX slZRX initialExchangeRate:2e9
-    Assert Equal (SLToken slZRX ExchangeRateStored) (Exp 2e9)
+    NewGToken ZRX gZRX initialExchangeRate:2e9
+    Assert Equal (GToken gZRX ExchangeRateStored) (Exp 2e9)
 
 Test "Initial Exchange Rate with Mint"
     NewComptroller
-    ListedSLToken ZRX slZRX initialExchangeRate:5e9
+    ListedGToken ZRX gZRX initialExchangeRate:5e9
     -- Check initial exchange holds
-    Invariant Remains (SLToken slZRX ExchangeRateStored) (Exp 5e9)
+    Invariant Remains (GToken gZRX ExchangeRateStored) (Exp 5e9)
     -- Mint some tokens and verify invariant still holds
-    Prep Geoff Some ZRX slZRX
-    Mint Geoff 50e18 slZRX
+    Prep Geoff Some ZRX gZRX
+    Mint Geoff 50e18 gZRX
     -- Also, verify token was minted at given exchange rate
-    Assert Equal (Erc20 slZRX TotalSupply) (Exactly 10e9)
-    Assert Equal (Erc20 slZRX TokenBalance Geoff) (Exactly 10e9)
+    Assert Equal (Erc20 gZRX TotalSupply) (Exactly 10e9)
+    Assert Equal (Erc20 gZRX TokenBalance Geoff) (Exactly 10e9)
     -- Let's mint again and verify it's still good.
-    Prep Torrey Some ZRX slZRX
-    Mint Torrey 50e18 slZRX
+    Prep Torrey Some ZRX gZRX
+    Mint Torrey 50e18 gZRX
     -- Also, verify token was minted at given exchange rate
-    Assert Equal (Erc20 slZRX TotalSupply) (Exactly 20e9)
-    Assert Equal (Erc20 slZRX TokenBalance Torrey) (Exactly 10e9)
+    Assert Equal (Erc20 gZRX TotalSupply) (Exactly 20e9)
+    Assert Equal (Erc20 gZRX TokenBalance Torrey) (Exactly 10e9)
 
 Test "ZRX: Exch. Rate:2e9, Cash(51e18) + Borrows(2.0e18) - Reserves(0.5e18) / Tokens(2.5e10)"
     NewComptroller
     -- Decimals You=18, Decimals Us=8 -> 2e9 Exchange Rate
-    ListedSLToken ZRX slZRX initialExchangeRate:2e9 decimals:8
-    Assert Equal (SLToken slZRX ExchangeRateStored) (Exp 2e9)
+    ListedGToken ZRX gZRX initialExchangeRate:2e9 decimals:8
+    Assert Equal (GToken gZRX ExchangeRateStored) (Exp 2e9)
     -- Mint 50.0 ZRX at given exchange rate
-    Prep Geoff Some ZRX slZRX
-    Assert Equal (Erc20 slZRX TotalSupply) Zero
-    Mint Geoff 50e18 slZRX
+    Prep Geoff Some ZRX gZRX
+    Assert Equal (Erc20 gZRX TotalSupply) Zero
+    Mint Geoff 50e18 gZRX
     -- 50e18 / 2e9 = 2.5e10
-    Assert Equal (Erc20 slZRX TotalSupply) (Exactly 2.5e10)
-    Assert Equal (Erc20 slZRX TokenBalance Geoff) (Exactly 2.5e10)
+    Assert Equal (Erc20 gZRX TotalSupply) (Exactly 2.5e10)
+    Assert Equal (Erc20 gZRX TokenBalance Geoff) (Exactly 2.5e10)
     -- Set cash
-    Erc20 ZRX Faucet slZRX 1.0e18
-    Assert Equal (Erc20 ZRX TokenBalance slZRX) (Exactly 51.0e18)
+    Erc20 ZRX Faucet gZRX 1.0e18
+    Assert Equal (Erc20 ZRX TokenBalance gZRX) (Exactly 51.0e18)
     -- Mock total borrows
-    SLToken slZRX Mock totalBorrows 2.0e18
-    Assert Equal (SLToken slZRX TotalBorrows) (Exactly 2.0e18)
+    GToken gZRX Mock totalBorrows 2.0e18
+    Assert Equal (GToken gZRX TotalBorrows) (Exactly 2.0e18)
     -- Mock total reserves
-    SLToken slZRX Mock totalReserves 0.5e18
-    Assert Equal (SLToken slZRX Reserves) (Exactly 0.5e18)
+    GToken gZRX Mock totalReserves 0.5e18
+    Assert Equal (GToken gZRX Reserves) (Exactly 0.5e18)
     -- Okay, we're all set, let's check the exchange rate
     -- (51+2-0.5)e18/2.5e10 = 52.5e18/2.5e10 = 21e8 -> 21e26 (Exp)
-    Assert Equal (SLToken slZRX ExchangeRateStored) (Exp 2.1e9)
+    Assert Equal (GToken gZRX ExchangeRateStored) (Exp 2.1e9)
 
 Test "USDC: Exch. Rate:2e-3, Cash(51e18) + Borrows(2.0e18) - Reserves(0.5e18) / Tokens(2.5e10)"
     NewComptroller
     -- Decimals You=6, Decimals Us=8 -> 2e-3 Exchange Rate
-    ListedSLToken USDC slUSDC initialExchangeRate:2e-3 decimals:8
-    Assert Equal (SLToken slUSDC ExchangeRateStored) (Exp 2e-3)
+    ListedGToken USDC gUSDC initialExchangeRate:2e-3 decimals:8
+    Assert Equal (GToken gUSDC ExchangeRateStored) (Exp 2e-3)
     -- Mint 50.0 USDC at given exchange rate
-    Prep Geoff Little USDC slUSDC
-    Assert Equal (Erc20 slUSDC TotalSupply) (Exactly 0.0)
-    Mint Geoff 50e6 slUSDC
+    Prep Geoff Little USDC gUSDC
+    Assert Equal (Erc20 gUSDC TotalSupply) (Exactly 0.0)
+    Mint Geoff 50e6 gUSDC
     -- 5.0e7 / 2e-3 = 2.5e10
-    Assert Equal (Erc20 slUSDC TotalSupply) (Exactly 2.5e10)
-    Assert Equal (Erc20 slUSDC TokenBalance Geoff) (Exactly 2.5e10)
+    Assert Equal (Erc20 gUSDC TotalSupply) (Exactly 2.5e10)
+    Assert Equal (Erc20 gUSDC TokenBalance Geoff) (Exactly 2.5e10)
     -- Set cash
-    Erc20 USDC Faucet slUSDC 2.0e6
-    Assert Equal (Erc20 USDC TokenBalance slUSDC) (Exactly 52.0e6)
+    Erc20 USDC Faucet gUSDC 2.0e6
+    Assert Equal (Erc20 USDC TokenBalance gUSDC) (Exactly 52.0e6)
     -- Mock total borrows
-    SLToken slUSDC Mock totalBorrows 5.0e6
-    Assert Equal (SLToken slUSDC TotalBorrows) (Exactly 5.0e6)
+    GToken gUSDC Mock totalBorrows 5.0e6
+    Assert Equal (GToken gUSDC TotalBorrows) (Exactly 5.0e6)
     -- Mock total reserves
-    SLToken slUSDC Mock totalReserves 1.5e6
-    Assert Equal (SLToken slUSDC Reserves) (Exactly 1.5e6)
+    GToken gUSDC Mock totalReserves 1.5e6
+    Assert Equal (GToken gUSDC Reserves) (Exactly 1.5e6)
     -- Okay, we're all set, let's check the exchange rate
     -- (52+5-1.5)e6/2.5e10 = 55.5e6/2.5e10 = 2.22e-3 -> 2.22e15 (Exp)
-    Assert Equal (SLToken slUSDC ExchangeRateStored) (Exp 2.22e-3)
+    Assert Equal (GToken gUSDC ExchangeRateStored) (Exp 2.22e-3)

@@ -1,21 +1,21 @@
 #!/usr/bin/env yarn repl -s
 
 PrintTransactionLogs
-Alias SashimiHolder "0x19bc62ff7cd9ffd6bdced9802ff718f09f7259f1"
+Alias PlatformTokenHolder "0x19bc62ff7cd9ffd6bdced9802ff718f09f7259f1"
 Alias USDCWhale "0x92d7796c04ee34d1d16c57fab92fc2bccf434468"
-Alias slBATBorrower "0xe5f3dbcc3dcf75a6946822aae7df5160505d3069"
-Web3Fork "https://mainnet-eth.compound.finance/@10348955" (SashimiHolder USDCWhale slBATBorrower)
+Alias gBATBorrower "0xe5f3dbcc3dcf75a6946822aae7df5160505d3069"
+Web3Fork "https://mainnet-eth.compound.finance/@10348955" (PlatformTokenHolder USDCWhale gBATBorrower)
 UseConfigs mainnet
 
 -- Propose to apply the patch
 
-From SashimiHolder (Sashimi Delegate SashimiHolder)
-From SashimiHolder (Governor GovernorAlpha Propose "SASHIMI Distribution Patch" [(Address Unitroller) (Address StdComptrollerG4)] [0 0] ["_setPendingImplementation(address)" "_become(address)"] [[(Address StdComptrollerG4)] [(Address Unitroller)]])
+From PlatformTokenHolder (PlatformToken Delegate PlatformTokenHolder)
+From PlatformTokenHolder (Governor GovernorAlpha Propose "PLATFORMTOKEN Distribution Patch" [(Address Unitroller) (Address StdComptrollerG4)] [0 0] ["_setPendingImplementation(address)" "_become(address)"] [[(Address StdComptrollerG4)] [(Address Unitroller)]])
 
 -- Vote for, queue, and execute the proposal
 
 MineBlock
-From SashimiHolder (Governor GovernorAlpha Proposal LastProposal Vote For)
+From PlatformTokenHolder (Governor GovernorAlpha Proposal LastProposal Vote For)
 AdvanceBlocks 20000
 Governor GovernorAlpha Proposal LastProposal Queue
 IncreaseTime 604910
@@ -23,56 +23,56 @@ Governor GovernorAlpha Proposal LastProposal Execute
 
 -- Sanity check the upgrade
 
-Assert Equal (Comptroller SashimiRate) 0.22e18
-Assert Equal (Comptroller CheckIsSashimied slBAT) True
-Assert Equal (Comptroller CheckIsSashimied slDAI) True
-Assert Equal (Comptroller CheckIsSashimied slETH) True
-Assert Equal (Comptroller CheckIsSashimied slREP) True
-Assert Equal (Comptroller CheckIsSashimied slSAI) False
-Assert Equal (Comptroller CheckIsSashimied slUSDC) True
-Assert Equal (Comptroller CheckIsSashimied slUSDT) True
-Assert Equal (Comptroller CheckisComped slWBTC) True
-Assert Equal (Comptroller CheckIsSashimied slZRX) True
+Assert Equal (Comptroller PlatformTokenRate) 0.22e18
+Assert Equal (Comptroller CheckIsPlatformTokened gBAT) True
+Assert Equal (Comptroller CheckIsPlatformTokened gDAI) True
+Assert Equal (Comptroller CheckIsPlatformTokened gETH) True
+Assert Equal (Comptroller CheckIsPlatformTokened gREP) True
+Assert Equal (Comptroller CheckIsPlatformTokened gSAI) False
+Assert Equal (Comptroller CheckIsPlatformTokened gUSDC) True
+Assert Equal (Comptroller CheckIsPlatformTokened gUSDT) True
+Assert Equal (Comptroller CheckisComped gWBTC) True
+Assert Equal (Comptroller CheckIsPlatformTokened gZRX) True
 
 -- Sanity check the speeds
 
-Assert Equal (Comptroller SashimiSpeed slBAT) 0.203121569295974918e18
-Assert Equal (Comptroller SashimiSpeed slDAI) 0.001103447907469680e18
-Assert Equal (Comptroller SashimiSpeed slETH) 0.000017970643503360e18
-Assert Equal (Comptroller SashimiSpeed slREP) 0.000127756157903774e18
-Assert Equal (Comptroller SashimiSpeed slSAI) 0
-Assert Equal (Comptroller SashimiSpeed slUSDC) 0.000940109498639776e18
-Assert Equal (Comptroller SashimiSpeed slUSDT) 0.008447487333746899e18
-Assert Equal (Comptroller SashimiSpeed slWBTC) 0.004841175362144006e18
-Assert Equal (Comptroller SashimiSpeed slZRX) 0.001400483800617582e18
+Assert Equal (Comptroller PlatformTokenSpeed gBAT) 0.203121569295974918e18
+Assert Equal (Comptroller PlatformTokenSpeed gDAI) 0.001103447907469680e18
+Assert Equal (Comptroller PlatformTokenSpeed gETH) 0.000017970643503360e18
+Assert Equal (Comptroller PlatformTokenSpeed gREP) 0.000127756157903774e18
+Assert Equal (Comptroller PlatformTokenSpeed gSAI) 0
+Assert Equal (Comptroller PlatformTokenSpeed gUSDC) 0.000940109498639776e18
+Assert Equal (Comptroller PlatformTokenSpeed gUSDT) 0.008447487333746899e18
+Assert Equal (Comptroller PlatformTokenSpeed gWBTC) 0.004841175362144006e18
+Assert Equal (Comptroller PlatformTokenSpeed gZRX) 0.001400483800617582e18
 
 -- Check the market borrows
 
-Assert Equal (SLToken slBAT TotalBorrows) 933675278927019769365181653
-Assert Equal (SLToken slDAI TotalBorrows) 28288631632222856320436141
-Assert Equal (SLToken slETH TotalBorrows) 1489418340783050403890
-Assert Equal (SLToken slREP TotalBorrows) 83744752724324161827907
-Assert Equal (SLToken slSAI TotalBorrows) 85694017918878755539524
-Assert Equal (SLToken slUSDC TotalBorrows) 13559619925496
-Assert Equal (SLToken slUSDT TotalBorrows) 34881672655224
-Assert Equal (SLToken slWBTC TotalBorrows) 148448436871
-Assert Equal (SLToken slZRX TotalBorrows) 17678865043142504899157201
+Assert Equal (GToken gBAT TotalBorrows) 933675278927019769365181653
+Assert Equal (GToken gDAI TotalBorrows) 28288631632222856320436141
+Assert Equal (GToken gETH TotalBorrows) 1489418340783050403890
+Assert Equal (GToken gREP TotalBorrows) 83744752724324161827907
+Assert Equal (GToken gSAI TotalBorrows) 85694017918878755539524
+Assert Equal (GToken gUSDC TotalBorrows) 13559619925496
+Assert Equal (GToken gUSDT TotalBorrows) 34881672655224
+Assert Equal (GToken gWBTC TotalBorrows) 148448436871
+Assert Equal (GToken gZRX TotalBorrows) 17678865043142504899157201
 
 -- Check the market prices
 
-Assert Equal (PriceOracleProxy Price slBAT) 1241500000000000
-Assert Equal (PriceOracleProxy Price slDAI) 4429377994656539
-Assert Equal (PriceOracleProxy Price slETH) 1000000000000000000
-Assert Equal (PriceOracleProxy Price slREP) 73035785000000000
-Assert Equal (PriceOracleProxy Price slSAI) 5285551943761727
-Assert Equal (PriceOracleProxy Price slUSDC) 4442302859110025000000000000
-Assert Equal (PriceOracleProxy Price slUSDT) 4442302859110025000000000000
-Assert Equal (PriceOracleProxy Price slWBTC) 401937357611677730000000000000
-Assert Equal (PriceOracleProxy Price slZRX) 1506198333333333
+Assert Equal (PriceOracleProxy Price gBAT) 1241500000000000
+Assert Equal (PriceOracleProxy Price gDAI) 4429377994656539
+Assert Equal (PriceOracleProxy Price gETH) 1000000000000000000
+Assert Equal (PriceOracleProxy Price gREP) 73035785000000000
+Assert Equal (PriceOracleProxy Price gSAI) 5285551943761727
+Assert Equal (PriceOracleProxy Price gUSDC) 4442302859110025000000000000
+Assert Equal (PriceOracleProxy Price gUSDT) 4442302859110025000000000000
+Assert Equal (PriceOracleProxy Price gWBTC) 401937357611677730000000000000
+Assert Equal (PriceOracleProxy Price gZRX) 1506198333333333
 
 -- Refresh speeds
 
-Comptroller RefreshSashimiSpeeds
+Comptroller RefreshPlatformTokenSpeeds
 
 -- Check the new speeds match utility metric
 -- Total Utility =
@@ -80,7 +80,7 @@ Comptroller RefreshSashimiSpeeds
 --  28288631632222856320436141 * 4429377994656539 +
 --  1489418340783050403890 * 1000000000000000000 +
 --  83744752724324161827907 * 73035785000000000 +
---  85694017918878755539524 * 5285551943761727 * 0 (slSAI not comped) +
+--  85694017918878755539524 * 5285551943761727 * 0 (gSAI not comped) +
 --  13559619925496 * 4442302859110025000000000000 +
 --  34881672655224 * 4442302859110025000000000000 +
 --  148448436871 * 401937357611677730000000000000 +
@@ -89,84 +89,84 @@ Comptroller RefreshSashimiSpeeds
 
 -- .22e18 * 933675278927019769365181653 * 1241500000000000 / 1593550425385280362248038892811635677856932
 --  = 160029281076361760
-Assert Equal (Comptroller SashimiSpeed slBAT) 0.160029281076361778e18
+Assert Equal (Comptroller PlatformTokenSpeed gBAT) 0.160029281076361778e18
 
 -- .22e18 * 28288631632222856320436141 * 4429377994656539 / 1593550425385280362248038892811635677856932
 --  = 17298623815115230
-Assert Equal (Comptroller SashimiSpeed slDAI) 0.017298623815115231e18
+Assert Equal (Comptroller PlatformTokenSpeed gDAI) 0.017298623815115231e18
 
 -- .22e18 * 1489418340783050403890 * 1000000000000000000 / 1593550425385280362248038892811635677856932
 --  = 205623888489784
-Assert Equal (Comptroller SashimiSpeed slETH) 0.000205623888489784e18
+Assert Equal (Comptroller PlatformTokenSpeed gETH) 0.000205623888489784e18
 
 -- .22e18 * 83744752724324161827907 * 73035785000000000 / 1593550425385280362248038892811635677856932
 --  = 844403794590991
-Assert Equal (Comptroller SashimiSpeed slREP) 0.000844403794590990e18
+Assert Equal (Comptroller PlatformTokenSpeed gREP) 0.000844403794590990e18
 
 -- not comped
-Assert Equal (Comptroller SashimiSpeed slSAI) 0
+Assert Equal (Comptroller PlatformTokenSpeed gSAI) 0
 
 -- .22e18 * 13559619925496 * 4442302859110025000000000000 / 1593550425385280362248038892811635677856932
 --  = 8315963040053016
-Assert Equal (Comptroller SashimiSpeed slUSDC) 0.008315963040053015e18
+Assert Equal (Comptroller PlatformTokenSpeed gUSDC) 0.008315963040053015e18
 
 -- .22e18 * 34881672655224 * 4442302859110025000000000000 / 1593550425385280362248038892811635677856932
 --  = 21392539183981588
-Assert Equal (Comptroller SashimiSpeed slUSDT) 0.021392539183981590e18
+Assert Equal (Comptroller PlatformTokenSpeed gUSDT) 0.021392539183981590e18
 
 -- .22e18 * 148448436871 * 401937357611677730000000000000 / 1593550425385280362248038892811635677856932
 --  = 8237413596422151
-Assert Equal (Comptroller SashimiSpeed slWBTC) 0.008237413596422151e18
+Assert Equal (Comptroller PlatformTokenSpeed gWBTC) 0.008237413596422151e18
 
 -- .22e18 * 17678865043142504899157201 * 1506198333333333 / 1593550425385280362248038892811635677856932
 --  = 3676151604985456
-Assert Equal (Comptroller SashimiSpeed slZRX) 0.003676151604985456e18
+Assert Equal (Comptroller PlatformTokenSpeed gZRX) 0.003676151604985456e18
 
 -- Now sanity check that we can continue to use the market as usual
 
 -- First check the USDC Whale, mint
 
-Assert Equal (Erc20 slUSDC TokenBalance USDCWhale) 0
+Assert Equal (Erc20 gUSDC TokenBalance USDCWhale) 0
 
-From USDCWhale (Trx GasPrice 0 (Erc20 USDC Approve slUSDC UInt256Max))
-From USDCWhale (Trx GasPrice 0 (SLToken slUSDC Mint 10000e6))
+From USDCWhale (Trx GasPrice 0 (Erc20 USDC Approve gUSDC UInt256Max))
+From USDCWhale (Trx GasPrice 0 (GToken gUSDC Mint 10000e6))
 
-Assert Equal (Erc20 slUSDC TokenBalance USDCWhale) 47481175626857
-Assert Equal (Erc20 slUSDC TotalSupply) 1067945787269646173
+Assert Equal (Erc20 gUSDC TokenBalance USDCWhale) 47481175626857
+Assert Equal (Erc20 gUSDC TotalSupply) 1067945787269646173
 
 -- Next check the BAT borrower, borrow a little more
 
-Assert Equal (Erc20 slETH TokenBalance slBATBorrower) 1034370824418
-Assert Equal (Erc20 slETH TotalSupply) 5163948275203265
+Assert Equal (Erc20 gETH TokenBalance gBATBorrower) 1034370824418
+Assert Equal (Erc20 gETH TotalSupply) 5163948275203265
 
-Assert Equal (SLToken slBAT BorrowBalance slBATBorrower) 123004206941461188039104
-Assert Equal (SLToken slBAT TotalBorrows) 933675278927019769365181653
+Assert Equal (GToken gBAT BorrowBalance gBATBorrower) 123004206941461188039104
+Assert Equal (GToken gBAT TotalBorrows) 933675278927019769365181653
 
-Expect Changes (SLToken slBAT BorrowBalance slBATBorrower) 6666016377088188607420
-From slBATBorrower (SLToken slBAT Borrow 6666000000000000000000)
+Expect Changes (GToken gBAT BorrowBalance gBATBorrower) 6666016377088188607420
+From gBATBorrower (GToken gBAT Borrow 6666000000000000000000)
 
-Assert Equal (SLToken slBAT BorrowBalance slBATBorrower) 129670223318549376646524
-Assert Equal (SLToken slBAT TotalBorrows) 936176444748237020604963003
+Assert Equal (GToken gBAT BorrowBalance gBATBorrower) 129670223318549376646524
+Assert Equal (GToken gBAT TotalBorrows) 936176444748237020604963003
 
 -- Claim comp to true up their balances
 
-Comptroller ClaimSashimi USDCWhale
-Comptroller ClaimSashimi slBATBorrower
+Comptroller ClaimPlatformToken USDCWhale
+Comptroller ClaimPlatformToken gBATBorrower
 
 -- Now move the clock forward
 
 AdvanceBlocks 1000000
 
--- And check that they receive the right amount of SASHIMI when claimed
+-- And check that they receive the right amount of PLATFORMTOKEN when claimed
 
--- slUSDC: 47481175626857 / 1067945787269646173 * 8315963040053015 * 1e6 = 369730098960081900
-Expect Changes (Erc20 Sashimi TokenBalance USDCWhale) 0.369731208150378785e18
-Comptroller ClaimSashimi USDCWhale
+-- gUSDC: 47481175626857 / 1067945787269646173 * 8315963040053015 * 1e6 = 369730098960081900
+Expect Changes (Erc20 PlatformToken TokenBalance USDCWhale) 0.369731208150378785e18
+Comptroller ClaimPlatformToken USDCWhale
 
--- slETH: 1034370824418 / 5163948275203265 * 205623888489784 * 1e6 = 41187738474944500
--- slBAT: 123004206941461188039104 / 933675278927019769365181653 * 160029281076361778 * 1e6 = 21082570408023708000
+-- gETH: 1034370824418 / 5163948275203265 * 205623888489784 * 1e6 = 41187738474944500
+-- gBAT: 123004206941461188039104 / 933675278927019769365181653 * 160029281076361778 * 1e6 = 21082570408023708000
 --  = 0.041187738474944495 + 21.082570408023706 = 21.123758146498652
-Expect Changes (Erc20 Sashimi TokenBalance slBATBorrower) 22.576722556314661630e18
-Comptroller ClaimSashimi slBATBorrower
+Expect Changes (Erc20 PlatformToken TokenBalance gBATBorrower) 22.576722556314661630e18
+Comptroller ClaimPlatformToken gBATBorrower
 
-Print "SASHIMI distribution patch OK!"
+Print "PLATFORMTOKEN distribution patch OK!"

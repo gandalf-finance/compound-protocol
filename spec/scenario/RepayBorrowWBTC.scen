@@ -2,190 +2,190 @@
 
 Macro NewBorrow borrowAmount borrowRate
     NewComptroller price:1.0 -- TODO: This should really be a price for a specific asset
-    NewSLToken ZRX slZRX
-    NewSLToken WBTC slWBTC borrowRate 0.1 8 WBTC -- note: cannot use macros with named args right now
-    Give slWBTC 10e8 WBTC -- Faucet some WBTC to borrow
-    Support slZRX collateralFactor:0.5
-    Support slWBTC collateralFactor:0.5
-    Prep Geoff Some ZRX slZRX
-    Mint Geoff 100e18 slZRX
-    EnterMarkets Geoff slZRX slWBTC
-    Borrow Geoff borrowAmount slWBTC
+    NewGToken ZRX gZRX
+    NewGToken WBTC gWBTC borrowRate 0.1 8 WBTC -- note: cannot use macros with named args right now
+    Give gWBTC 10e8 WBTC -- Faucet some WBTC to borrow
+    Support gZRX collateralFactor:0.5
+    Support gWBTC collateralFactor:0.5
+    Prep Geoff Some ZRX gZRX
+    Mint Geoff 100e18 gZRX
+    EnterMarkets Geoff gZRX gWBTC
+    Borrow Geoff borrowAmount gWBTC
 
 Test "Borrow WBTC, hold a few blocks, and repay part"
     NewBorrow borrowAmount:1e8 borrowRate:0.000005
-    Assert Equal (SLToken slWBTC BorrowBalance Geoff) 1e8
-    Assert Equal (SLToken slWBTC TotalBorrowsCurrent) 1e8
+    Assert Equal (GToken gWBTC BorrowBalance Geoff) 1e8
+    Assert Equal (GToken gWBTC TotalBorrowsCurrent) 1e8
     Assert Equal (Erc20 WBTC TokenBalance Geoff) 1e8
-    Assert Equal (Erc20 WBTC TokenBalance slWBTC) 9e8
+    Assert Equal (Erc20 WBTC TokenBalance gWBTC) 9e8
     -- Now let's add some blocks and see what happs
     FastForward 300000 Blocks -- 1e18 * (1 + 300000 * 0.000005)
-    Assert Equal (SLToken slWBTC BorrowBalance Geoff) 2.5e8
+    Assert Equal (GToken gWBTC BorrowBalance Geoff) 2.5e8
     -- Now let's repay one full token
-    From Geoff (Erc20 WBTC Approve slWBTC 1.0e8)
-    RepayBorrow Geoff 1e8 slWBTC
-    Assert Equal (SLToken slWBTC BorrowBalance Geoff) 1.5e8
+    From Geoff (Erc20 WBTC Approve gWBTC 1.0e8)
+    RepayBorrow Geoff 1e8 gWBTC
+    Assert Equal (GToken gWBTC BorrowBalance Geoff) 1.5e8
     -- Let's check the overall numbers
     Assert Equal (Erc20 WBTC TokenBalance Geoff) Zero
-    Assert Equal (Erc20 WBTC TokenBalance slWBTC) 10e8
-    Assert Equal (SLToken slWBTC TotalBorrowsCurrent) 1.5e8
+    Assert Equal (Erc20 WBTC TokenBalance gWBTC) 10e8
+    Assert Equal (GToken gWBTC TotalBorrowsCurrent) 1.5e8
     FastForward 200000 Blocks -- 1.5e8 * (1 + 200000 * 0.000005)
-    Assert Equal (SLToken slWBTC BorrowBalance Geoff) 3e8
-    Assert Equal (SLToken slWBTC TotalBorrowsCurrent) 3e8
+    Assert Equal (GToken gWBTC BorrowBalance Geoff) 3e8
+    Assert Equal (GToken gWBTC TotalBorrowsCurrent) 3e8
 
 Test "Borrow, hold a few blocks, and repay full"
     NewBorrow borrowAmount:1e8 borrowRate:0.000005
-    Assert Equal (SLToken slWBTC BorrowBalance Geoff) 1e8
-    Assert Equal (SLToken slWBTC TotalBorrowsCurrent) 1e8
+    Assert Equal (GToken gWBTC BorrowBalance Geoff) 1e8
+    Assert Equal (GToken gWBTC TotalBorrowsCurrent) 1e8
     Assert Equal (Erc20 WBTC TokenBalance Geoff) 1e8
-    Assert Equal (Erc20 WBTC TokenBalance slWBTC) 9e8
+    Assert Equal (Erc20 WBTC TokenBalance gWBTC) 9e8
     -- Now let's add some blocks and see what happs
     FastForward 300000 Blocks -- 1e8 * (1 + 300000 * 0.000005)
-    Assert Equal (SLToken slWBTC BorrowBalance Geoff) 2.5e8
+    Assert Equal (GToken gWBTC BorrowBalance Geoff) 2.5e8
     -- Now let's repay fully
     Give Geoff 1.5e8 WBTC -- Geoff had the 1.0e8 borrowed WBTC
-    From Geoff (Erc20 WBTC Approve slWBTC 2.5e8)
-    RepayBorrow Geoff 2.5e8 slWBTC
-    Assert Equal (SLToken slWBTC BorrowBalance Geoff) 0e8
+    From Geoff (Erc20 WBTC Approve gWBTC 2.5e8)
+    RepayBorrow Geoff 2.5e8 gWBTC
+    Assert Equal (GToken gWBTC BorrowBalance Geoff) 0e8
     -- Let's check the overall numbers
     Assert Equal (Erc20 WBTC TokenBalance Geoff) 0e8
-    Assert Equal (Erc20 WBTC TokenBalance slWBTC) 11.5e8
-    Assert Equal (SLToken slWBTC TotalBorrowsCurrent) 0e8
+    Assert Equal (Erc20 WBTC TokenBalance gWBTC) 11.5e8
+    Assert Equal (GToken gWBTC TotalBorrowsCurrent) 0e8
     FastForward 200000 Blocks -- 0e8 * (1 + 200000 * 0.000005)
-    Assert Equal (SLToken slWBTC BorrowBalance Geoff) 0e8
-    Assert Equal (SLToken slWBTC TotalBorrowsCurrent) 0e8
+    Assert Equal (GToken gWBTC BorrowBalance Geoff) 0e8
+    Assert Equal (GToken gWBTC TotalBorrowsCurrent) 0e8
 
 Test "Borrow, hold a few blocks, and repay too much"
     NewBorrow borrowAmount:1e8 borrowRate:0.000005
-    Assert Equal (SLToken slWBTC BorrowBalance Geoff) 1e8
-    Assert Equal (SLToken slWBTC TotalBorrowsCurrent) 1e8
+    Assert Equal (GToken gWBTC BorrowBalance Geoff) 1e8
+    Assert Equal (GToken gWBTC TotalBorrowsCurrent) 1e8
     -- Now let's add some blocks and see what happs
     FastForward 300000 Blocks -- 1e8 * (1 + 300000 * 0.000005)
-    Assert Equal (SLToken slWBTC BorrowBalance Geoff) 2.5e8
+    Assert Equal (GToken gWBTC BorrowBalance Geoff) 2.5e8
     -- Now let's repay fully
     AllowFailures
-    Prep Geoff 10e8 WBTC slWBTC
+    Prep Geoff 10e8 WBTC gWBTC
     Expect Changes (Erc20 WBTC TokenBalance Geoff) Zero
-    Expect Changes (Erc20 WBTC TokenBalance slWBTC) Zero
-    RepayBorrow Geoff 10e8 slWBTC
+    Expect Changes (Erc20 WBTC TokenBalance gWBTC) Zero
+    RepayBorrow Geoff 10e8 gWBTC
     Assert Revert "revert REPAY_BORROW_NEW_ACCOUNT_BORROW_BALANCE_CALCULATION_FAILED"
     -- Let's check the overall numbers
-    Assert Equal (SLToken slWBTC BorrowBalance Geoff) 2.5e8
-    Assert Equal (SLToken slWBTC TotalBorrowsCurrent) 2.5e8
+    Assert Equal (GToken gWBTC BorrowBalance Geoff) 2.5e8
+    Assert Equal (GToken gWBTC TotalBorrowsCurrent) 2.5e8
 
 Test "Borrow, and get a negative total cash situation"
     Invariant Success
     NewBorrow borrowAmount:1e8 borrowRate:0.000005
-    Assert Equal (SLToken slWBTC BorrowBalance Geoff) 1e8
-    Assert Equal (SLToken slWBTC TotalBorrowsCurrent) 1e8
+    Assert Equal (GToken gWBTC BorrowBalance Geoff) 1e8
+    Assert Equal (GToken gWBTC TotalBorrowsCurrent) 1e8
     Assert Equal (Erc20 WBTC TokenBalance Geoff) 1e8
-    Assert Equal (Erc20 WBTC TokenBalance slWBTC) 9e8
+    Assert Equal (Erc20 WBTC TokenBalance gWBTC) 9e8
     -- Let's zoom way forward into the future
     FastForward 9800000 Blocks -- 1e8 * (1 + 9800000 * 0.000005)
-    Assert Equal (SLToken slWBTC BorrowBalance Geoff) 50e8
-    Assert Equal (SLToken slWBTC TotalBorrowsCurrent) 50e8
+    Assert Equal (GToken gWBTC BorrowBalance Geoff) 50e8
+    Assert Equal (GToken gWBTC TotalBorrowsCurrent) 50e8
     -- Now let's repay one full token
-    From Geoff (Erc20 WBTC Approve slWBTC 1.0e8)
-    RepayBorrow Geoff 1.0e8 slWBTC
-    Assert Equal (SLToken slWBTC BorrowBalance Geoff) 49e8
-    Assert Equal (SLToken slWBTC TotalBorrowsCurrent) 49e8
+    From Geoff (Erc20 WBTC Approve gWBTC 1.0e8)
+    RepayBorrow Geoff 1.0e8 gWBTC
+    Assert Equal (GToken gWBTC BorrowBalance Geoff) 49e8
+    Assert Equal (GToken gWBTC TotalBorrowsCurrent) 49e8
     Assert Equal (Erc20 WBTC TokenBalance Geoff) 0e8
-    Assert Equal (Erc20 WBTC TokenBalance slWBTC) 10e8
+    Assert Equal (Erc20 WBTC TokenBalance gWBTC) 10e8
 
 Test "Borrow, hold a few blocks, and repay behalf part"
     Invariant Success
     NewBorrow borrowAmount:1e8 borrowRate:0.000005
-    Assert Equal (SLToken slWBTC BorrowBalance Geoff) 1e8
-    Assert Equal (SLToken slWBTC TotalBorrowsCurrent) 1e8
+    Assert Equal (GToken gWBTC BorrowBalance Geoff) 1e8
+    Assert Equal (GToken gWBTC TotalBorrowsCurrent) 1e8
     Assert Equal (Erc20 WBTC TokenBalance Geoff) 1e8
-    Assert Equal (Erc20 WBTC TokenBalance slWBTC) 9e8
+    Assert Equal (Erc20 WBTC TokenBalance gWBTC) 9e8
     -- Now let's add some blocks and see what happs
     FastForward 300000 Blocks -- 1e8 * (1 + 300000 * 0.000005)
-    Assert Equal (SLToken slWBTC BorrowBalance Geoff) 2.5e8
+    Assert Equal (GToken gWBTC BorrowBalance Geoff) 2.5e8
     -- Now let's repay one full token from another user
-    Prep Torrey 1.0e8 WBTC slWBTC
-    RepayBorrowBehalf Torrey Geoff 1.0e8 slWBTC
-    Assert Equal (SLToken slWBTC BorrowBalance Torrey) Zero
-    Assert Equal (SLToken slWBTC BorrowBalance Geoff) 1.5e8
+    Prep Torrey 1.0e8 WBTC gWBTC
+    RepayBorrowBehalf Torrey Geoff 1.0e8 gWBTC
+    Assert Equal (GToken gWBTC BorrowBalance Torrey) Zero
+    Assert Equal (GToken gWBTC BorrowBalance Geoff) 1.5e8
     -- Let's check the overall numbers
     Assert Equal (Erc20 WBTC TokenBalance Torrey) 0e8
     Assert Equal (Erc20 WBTC TokenBalance Geoff) 1e8
-    Assert Equal (Erc20 WBTC TokenBalance slWBTC) 10e8
-    Assert Equal (SLToken slWBTC TotalBorrowsCurrent) 1.5e8
+    Assert Equal (Erc20 WBTC TokenBalance gWBTC) 10e8
+    Assert Equal (GToken gWBTC TotalBorrowsCurrent) 1.5e8
     FastForward 200000 Blocks -- 1.5e8 * (1 + 200000 * 0.000005)
-    Assert Equal (SLToken slWBTC BorrowBalance Torrey) Zero
-    Assert Equal (SLToken slWBTC BorrowBalance Geoff) 3e8
-    Assert Equal (SLToken slWBTC TotalBorrowsCurrent) 3e8
+    Assert Equal (GToken gWBTC BorrowBalance Torrey) Zero
+    Assert Equal (GToken gWBTC BorrowBalance Geoff) 3e8
+    Assert Equal (GToken gWBTC TotalBorrowsCurrent) 3e8
 
 Test "Prohibit repay by comptroller rejection due to mock unlist"
     NewBorrow borrowAmount:1e8 borrowRate:0.000005
-    Assert Equal (SLToken slWBTC BorrowBalance Geoff) 1e8
-    Assert Equal (SLToken slWBTC TotalBorrowsCurrent) 1e8
+    Assert Equal (GToken gWBTC BorrowBalance Geoff) 1e8
+    Assert Equal (GToken gWBTC TotalBorrowsCurrent) 1e8
     -- Now let's add some blocks and see what happs
     FastForward 300000 Blocks -- 0.001e8 * (1 + 300000 * 0.000005)
-    Assert Equal (SLToken slWBTC BorrowBalance Geoff) 2.5e8
+    Assert Equal (GToken gWBTC BorrowBalance Geoff) 2.5e8
     -- Now let's repay fully
     AllowFailures
-    Prep Geoff 10e8 WBTC slWBTC
+    Prep Geoff 10e8 WBTC gWBTC
     Expect Changes (Erc20 WBTC TokenBalance Geoff) Zero
-    Expect Changes (Erc20 WBTC TokenBalance slWBTC) Zero
-    Comptroller UnList slZRX -- Mock unlist ZRX
-    RepayBorrow Geoff 2.5e8 slZRX
+    Expect Changes (Erc20 WBTC TokenBalance gWBTC) Zero
+    Comptroller UnList gZRX -- Mock unlist ZRX
+    RepayBorrow Geoff 2.5e8 gZRX
     Assert Failure COMPTROLLER_REJECTION REPAY_BORROW_COMPTROLLER_REJECTION MARKET_NOT_LISTED
     -- Let's check the overall numbers
-    Assert Equal (SLToken slWBTC BorrowBalance Geoff) 2.5e8
-    Assert Equal (SLToken slWBTC TotalBorrowsCurrent) 2.5e8
+    Assert Equal (GToken gWBTC BorrowBalance Geoff) 2.5e8
+    Assert Equal (GToken gWBTC TotalBorrowsCurrent) 2.5e8
 
 Test "Borrow WBTC, can't repay when paused"
     NewBorrow borrowAmount:1e8 borrowRate:0.000005
-    Assert Equal (SLToken slWBTC BorrowBalance Geoff) 1e8
-    Assert Equal (SLToken slWBTC TotalBorrowsCurrent) 1e8
+    Assert Equal (GToken gWBTC BorrowBalance Geoff) 1e8
+    Assert Equal (GToken gWBTC TotalBorrowsCurrent) 1e8
     Assert Equal (Erc20 WBTC TokenBalance Geoff) 1e8
-    Assert Equal (Erc20 WBTC TokenBalance slWBTC) 9e8
+    Assert Equal (Erc20 WBTC TokenBalance gWBTC) 9e8
     -- Now let's add some blocks and see what happs
     FastForward 300000 Blocks -- 1e18 * (1 + 300000 * 0.000005)
-    Invariant Remains (SLToken slWBTC BorrowBalance Geoff) 2.5e8
+    Invariant Remains (GToken gWBTC BorrowBalance Geoff) 2.5e8
     -- Now let's repay one full token
-    From Geoff (Erc20 WBTC Approve slWBTC 1.0e8)
+    From Geoff (Erc20 WBTC Approve gWBTC 1.0e8)
     Erc20 WBTC Pause
     AllowFailures
-    RepayBorrow Geoff 1e8 slWBTC
+    RepayBorrow Geoff 1e8 gWBTC
     Assert Revert
 
 Test "Repay fails with insufficient allowance"
     NewBorrow borrowAmount:1e8 borrowRate:0.000005
-    Assert Equal (SLToken slWBTC BorrowBalance Geoff) 1e8
-    Assert Equal (SLToken slWBTC TotalBorrowsCurrent) 1e8
+    Assert Equal (GToken gWBTC BorrowBalance Geoff) 1e8
+    Assert Equal (GToken gWBTC TotalBorrowsCurrent) 1e8
     -- Now let's add some blocks and see what happs
     FastForward 300000 Blocks -- 1e8 * (1 + 300000 * 0.000005)
-    Assert Equal (SLToken slWBTC BorrowBalance Geoff) 2.5e8
+    Assert Equal (GToken gWBTC BorrowBalance Geoff) 2.5e8
     -- Now let's repay fully
     AllowFailures
-    Prep Geoff 100e8 WBTC slWBTC allowanceAmount:1.5e8
+    Prep Geoff 100e8 WBTC gWBTC allowanceAmount:1.5e8
     Expect Changes (Erc20 WBTC TokenBalance Geoff) Zero
-    Expect Changes (Erc20 WBTC TokenBalance slWBTC) Zero
-    RepayBorrow Geoff 2.5e8 slWBTC
+    Expect Changes (Erc20 WBTC TokenBalance gWBTC) Zero
+    RepayBorrow Geoff 2.5e8 gWBTC
     --wbtc does not revert with reason in transfer from
     Assert Revert "revert"
     -- Let's check the overall numbers
-    Assert Equal (SLToken slWBTC BorrowBalance Geoff) 2.5e8
-    Assert Equal (SLToken slWBTC TotalBorrowsCurrent) 2.5e8
+    Assert Equal (GToken gWBTC BorrowBalance Geoff) 2.5e8
+    Assert Equal (GToken gWBTC TotalBorrowsCurrent) 2.5e8
 
 Test "Repay fails with insufficient balance"
     NewBorrow borrowAmount:1e8 borrowRate:0.000005
-    Assert Equal (SLToken slWBTC BorrowBalance Geoff) 1e8
-    Assert Equal (SLToken slWBTC TotalBorrowsCurrent) 1e8
+    Assert Equal (GToken gWBTC BorrowBalance Geoff) 1e8
+    Assert Equal (GToken gWBTC TotalBorrowsCurrent) 1e8
     -- Now let's add some blocks and see what happs
     FastForward 300000 Blocks -- 1e8 * (1 + 300000 * 0.000005)
-    Assert Equal (SLToken slWBTC BorrowBalance Geoff) 2.5e8
+    Assert Equal (GToken gWBTC BorrowBalance Geoff) 2.5e8
     -- Now let's repay fully
     AllowFailures
-    Prep Geoff 0e8 WBTC slWBTC allowanceAmount:2.5e8
+    Prep Geoff 0e8 WBTC gWBTC allowanceAmount:2.5e8
     Expect Changes (Erc20 WBTC TokenBalance Geoff) Zero
-    Expect Changes (Erc20 WBTC TokenBalance slWBTC) Zero
-    RepayBorrow Geoff 2.5e8 slWBTC
+    Expect Changes (Erc20 WBTC TokenBalance gWBTC) Zero
+    RepayBorrow Geoff 2.5e8 gWBTC
     --wbtc does not revert with reason in transfer from
     Assert Revert "revert"
     -- Let's check the overall numbers
-    Assert Equal (SLToken slWBTC BorrowBalance Geoff) 2.5e8
-    Assert Equal (SLToken slWBTC TotalBorrowsCurrent) 2.5e8
+    Assert Equal (GToken gWBTC BorrowBalance Geoff) 2.5e8
+    Assert Equal (GToken gWBTC TotalBorrowsCurrent) 2.5e8

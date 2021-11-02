@@ -5,10 +5,10 @@ import { World } from './World';
 import { Contract } from './Contract';
 import { mustString } from './Utils';
 
-import { SLErc20Delegate } from './Contract/SLErc20Delegate';
+import { GErc20Delegate } from './Contract/GErc20Delegate';
 import { Comptroller } from './Contract/Comptroller';
 import { ComptrollerImpl } from './Contract/ComptrollerImpl';
-import { SLToken } from './Contract/SLToken';
+import { GToken } from './Contract/GToken';
 import { Erc20 } from './Contract/Erc20';
 import { InterestRateModel } from './Contract/InterestRateModel';
 import { PriceOracle } from './Contract/PriceOracle';
@@ -91,12 +91,12 @@ export async function getComptrollerImpl(world: World, comptrollerImplArg: Event
   return getWorldContract(world, [['Comptroller', mustString(comptrollerImplArg), 'address']]);
 }
 
-export function getSLTokenAddress(world: World, slTokenArg: string): string {
-  return getContractDataString(world, [['slTokens', slTokenArg, 'address']]);
+export function getGTokenAddress(world: World, gTokenArg: string): string {
+  return getContractDataString(world, [['gTokens', gTokenArg, 'address']]);
 }
 
-export function getSLTokenDelegateAddress(world: World, slTokenDelegateArg: string): string {
-  return getContractDataString(world, [['SLTokenDelegate', slTokenDelegateArg, 'address']]);
+export function getGTokenDelegateAddress(world: World, gTokenDelegateArg: string): string {
+  return getContractDataString(world, [['GTokenDelegate', gTokenDelegateArg, 'address']]);
 }
 
 export function getErc20Address(world: World, erc20Arg: string): string {
@@ -146,24 +146,24 @@ export async function getErc20Data(
   return [contract, erc20Arg, <Map<string, string>>(<any>data)];
 }
 
-export async function getSLTokenData(
+export async function getGTokenData(
   world: World,
-  slTokenArg: string
-): Promise<[SLToken, string, Map<string, string>]> {
-  let contract = getWorldContract<SLToken>(world, [['slTokens', slTokenArg, 'address']]);
-  let data = getContractData(world, [['SLTokens', slTokenArg]]);
+  gTokenArg: string
+): Promise<[GToken, string, Map<string, string>]> {
+  let contract = getWorldContract<GToken>(world, [['gTokens', gTokenArg, 'address']]);
+  let data = getContractData(world, [['GTokens', gTokenArg]]);
 
-  return [contract, slTokenArg, <Map<string, string>>(<any>data)];
+  return [contract, gTokenArg, <Map<string, string>>(<any>data)];
 }
 
-export async function getSLTokenDelegateData(
+export async function getGTokenDelegateData(
   world: World,
-  slTokenDelegateArg: string
-): Promise<[SLErc20Delegate, string, Map<string, string>]> {
-  let contract = getWorldContract<SLErc20Delegate>(world, [['SLTokenDelegate', slTokenDelegateArg, 'address']]);
-  let data = getContractData(world, [['SLTokenDelegate', slTokenDelegateArg]]);
+  gTokenDelegateArg: string
+): Promise<[GErc20Delegate, string, Map<string, string>]> {
+  let contract = getWorldContract<GErc20Delegate>(world, [['GTokenDelegate', gTokenDelegateArg, 'address']]);
+  let data = getContractData(world, [['GTokenDelegate', gTokenDelegateArg]]);
 
-  return [contract, slTokenDelegateArg, <Map<string, string>>(<any>data)];
+  return [contract, gTokenDelegateArg, <Map<string, string>>(<any>data)];
 }
 
 export async function getComptrollerImplData(
@@ -199,8 +199,8 @@ export function getAddress(world: World, addressArg: string): string {
 
   return getContractDataString(world, [
     ['Contracts', addressArg],
-    ['slTokens', addressArg, 'address'],
-    ['SLTokenDelegate', addressArg, 'address'],
+    ['gTokens', addressArg, 'address'],
+    ['GTokenDelegate', addressArg, 'address'],
     ['Tokens', addressArg, 'address'],
     ['Comptroller', addressArg, 'address']
   ]);

@@ -4,20 +4,20 @@ import "../../contracts/ComptrollerG3.sol";
 
 contract ComptrollerScenarioG3 is ComptrollerG3 {
     uint public blockNumber;
-    address public sashimiAddress;
+    address public platformTokenAddress;
 
     constructor() ComptrollerG3() public {}
 
-    function setSashimiAddress(address sashimiAddress_) public {
-        sashimiAddress = sashimiAddress_;
+    function setPlatformTokenAddress(address platformTokenAddress_) public {
+        platformTokenAddress = platformTokenAddress_;
     }
 
-    function getSashimiAddress() public view returns (address) {
-        return sashimiAddress;
+    function getPlatformTokenAddress() public view returns (address) {
+        return platformTokenAddress;
     }
 
-    function membershipLength(SLToken slToken) public view returns (uint) {
-        return accountAssets[address(slToken)].length;
+    function membershipLength(GToken gToken) public view returns (uint) {
+        return accountAssets[address(gToken)].length;
     }
 
     function fastForward(uint blocks) public returns (uint) {
@@ -34,26 +34,26 @@ contract ComptrollerScenarioG3 is ComptrollerG3 {
         return blockNumber;
     }
 
-    function getSashimiMarkets() public view returns (address[] memory) {
+    function getPlatformTokenMarkets() public view returns (address[] memory) {
         uint m = allMarkets.length;
         uint n = 0;
         for (uint i = 0; i < m; i++) {
-            if (markets[address(allMarkets[i])].isSashimied) {
+            if (markets[address(allMarkets[i])].isPlatformTokened) {
                 n++;
             }
         }
 
-        address[] memory sashimiMarkets = new address[](n);
+        address[] memory platformTokenMarkets = new address[](n);
         uint k = 0;
         for (uint i = 0; i < m; i++) {
-            if (markets[address(allMarkets[i])].isSashimied) {
-                sashimiMarkets[k++] = address(allMarkets[i]);
+            if (markets[address(allMarkets[i])].isPlatformTokened) {
+                platformTokenMarkets[k++] = address(allMarkets[i]);
             }
         }
-        return sashimiMarkets;
+        return platformTokenMarkets;
     }
 
-    function unlist(SLToken slToken) public {
-        markets[address(slToken)].isListed = false;
+    function unlist(GToken gToken) public {
+        markets[address(gToken)].isListed = false;
     }
 }

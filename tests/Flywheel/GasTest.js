@@ -1,7 +1,7 @@
 const {
   makeComptroller,
-  makeSLToken
-} = require('../Utils/SashimiLending');
+  makeGToken
+} = require('../Utils/GandalfLending');
 const {
   etherExp,
   etherDouble,
@@ -17,16 +17,16 @@ describe.skip('Flywheel trace ops', () => {
     let interestRateModelOpts = {borrowRate: 0.000001};
     [root, a1, a2, a3, ...accounts] = saddle.accounts;
     comptroller = await makeComptroller();
-    market = await makeSLToken({comptroller, supportMarket: true, underlyingPrice: 3, interestRateModelOpts});
-    await send(comptroller, '_addSashimiMarkets', [[market].map(sl => sl._address)]);
+    market = await makeGToken({comptroller, supportMarket: true, underlyingPrice: 3, interestRateModelOpts});
+    await send(comptroller, '_addPlatformTokenMarkets', [[market].map(g => g._address)]);
   });
 
   it('update supply index SSTOREs', async () => {
     await send(comptroller, 'setBlockNumber', [100]);
     await send(market, 'harnessSetTotalBorrows', [etherUnsigned(11e18)]);
-    await send(comptroller, 'setSashimiSpeed', [market._address, etherExp(0.5)]);
+    await send(comptroller, 'setPlatformTokenSpeed', [market._address, etherExp(0.5)]);
 
-    const tx = await send(comptroller, 'harnessUpdateSashimiSupplyIndex', [market._address]);
+    const tx = await send(comptroller, 'harnessUpdatePlatformTokenSupplyIndex', [market._address]);
 
     const ops = {};
     await saddle.trace(tx, {
@@ -42,9 +42,9 @@ describe.skip('Flywheel trace ops', () => {
   it('update borrow index SSTOREs', async () => {
     await send(comptroller, 'setBlockNumber', [100]);
     await send(market, 'harnessSetTotalBorrows', [etherUnsigned(11e18)]);
-    await send(comptroller, 'setSashimiSpeed', [market._address, etherExp(0.5)]);
+    await send(comptroller, 'setPlatformTokenSpeed', [market._address, etherExp(0.5)]);
 
-    const tx = await send(comptroller, 'harnessUpdateSashimiBorrowIndex', [market._address, etherExp(1.1)]);
+    const tx = await send(comptroller, 'harnessUpdatePlatformTokenBorrowIndex', [market._address, etherExp(1.1)]);
 
     const ops = {};
     await saddle.trace(tx, {

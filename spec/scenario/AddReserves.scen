@@ -1,133 +1,133 @@
 Test "Add all reserves and verify effects"
     NewComptroller
-    ListedSLToken ZRX slZRX initialExchangeRate:1e9
-    Prep Geoff 50e18 ZRX slZRX
-    Mint Geoff 50e18 slZRX
-    Assert Equal (Erc20 slZRX TokenBalance Geoff) (Exactly 500e8) -- 50e18 / 1e9
-    Assert Equal (SLToken slZRX UnderlyingBalance Geoff) (Exactly 50e18)
-    Assert Equal (SLToken slZRX ExchangeRate) (Exactly 1e9)
+    ListedGToken ZRX gZRX initialExchangeRate:1e9
+    Prep Geoff 50e18 ZRX gZRX
+    Mint Geoff 50e18 gZRX
+    Assert Equal (Erc20 gZRX TokenBalance Geoff) (Exactly 500e8) -- 50e18 / 1e9
+    Assert Equal (GToken gZRX UnderlyingBalance Geoff) (Exactly 50e18)
+    Assert Equal (GToken gZRX ExchangeRate) (Exactly 1e9)
     -- Get some brah to borrow then repay
-    BorrowAndRepayWithInterest ZRX slZRX 10e18 5e18 interestRate:0.000001 blocks:500000 reserveRate:0.2
+    BorrowAndRepayWithInterest ZRX gZRX 10e18 5e18 interestRate:0.000001 blocks:500000 reserveRate:0.2
     -- We've accrued .0001% interest for 500000 blocks, or 50% of the principal (10e18),
     --   thus, we should have accrued 5e18 of interest for the protocol
     --   The reserves should get 20% of this, or 1e18, and the rest
     --   is due pro-rata to all suppliers. We just have one, so
     --   let's check that account is given correct new balance.
-    Assert Equal (Erc20 ZRX TokenBalance slZRX) (Exactly 55e18)
+    Assert Equal (Erc20 ZRX TokenBalance gZRX) (Exactly 55e18)
     Assert Equal (Erc20 ZRX TokenBalance Root) (Exactly 0e18)
-    Assert Equal (Erc20 slZRX TokenBalance Geoff) (Exactly 500e8)
-    Assert Equal (SLToken slZRX Reserves) (Exactly 1e18)
-    Assert Equal (SLToken slZRX UnderlyingBalance Geoff) (Exactly 54e18)
+    Assert Equal (Erc20 gZRX TokenBalance Geoff) (Exactly 500e8)
+    Assert Equal (GToken gZRX Reserves) (Exactly 1e18)
+    Assert Equal (GToken gZRX UnderlyingBalance Geoff) (Exactly 54e18)
     -- (55.0e18+0.0e18-1.0e18)/500.0e8
-    Assert Equal (SLToken slZRX ExchangeRate) (Exactly 1.08e9)
+    Assert Equal (GToken gZRX ExchangeRate) (Exactly 1.08e9)
     -- Now, let's pull out add some our reserves (1e18)
     Erc20 ZRX Faucet Root 3e18
-    From Root (Erc20 ZRX Approve slZRX 6e18)
-    AddReserves 1e18 slZRX
-    Assert Equal (Erc20 ZRX TokenBalance slZRX) (Exactly 56e18)
+    From Root (Erc20 ZRX Approve gZRX 6e18)
+    AddReserves 1e18 gZRX
+    Assert Equal (Erc20 ZRX TokenBalance gZRX) (Exactly 56e18)
     Assert Equal (Erc20 ZRX TokenBalance Root) (Exactly 2e18)
-    Assert Equal (Erc20 slZRX TokenBalance Geoff) (Exactly 500e8)
-    Assert Equal (SLToken slZRX Reserves) (Exactly 2e18)
-    Assert Equal (SLToken slZRX UnderlyingBalance Geoff) (Exactly 54e18)
+    Assert Equal (Erc20 gZRX TokenBalance Geoff) (Exactly 500e8)
+    Assert Equal (GToken gZRX Reserves) (Exactly 2e18)
+    Assert Equal (GToken gZRX UnderlyingBalance Geoff) (Exactly 54e18)
     -- (54.0e18+0.0e18-0.0e18)/500.0e8
     -- unchanged
-    Assert Equal (SLToken slZRX ExchangeRate) (Exactly 1.08e9)
+    Assert Equal (GToken gZRX ExchangeRate) (Exactly 1.08e9)
 
 Test "Remove and re add reserves and remove again"
     NewComptroller
-    ListedSLToken ZRX slZRX initialExchangeRate:1e9
-    Prep Geoff 50e18 ZRX slZRX
-    Mint Geoff 50e18 slZRX
-    Assert Equal (Erc20 slZRX TokenBalance Geoff) (Exactly 500e8)
-    Assert Equal (SLToken slZRX UnderlyingBalance Geoff) (Exactly 50e18)
-    Assert Equal (SLToken slZRX ExchangeRate) (Exactly 1e9)
+    ListedGToken ZRX gZRX initialExchangeRate:1e9
+    Prep Geoff 50e18 ZRX gZRX
+    Mint Geoff 50e18 gZRX
+    Assert Equal (Erc20 gZRX TokenBalance Geoff) (Exactly 500e8)
+    Assert Equal (GToken gZRX UnderlyingBalance Geoff) (Exactly 50e18)
+    Assert Equal (GToken gZRX ExchangeRate) (Exactly 1e9)
     -- Get some brah to borrow then repay
-    BorrowAndRepayWithInterest ZRX slZRX 10e18 5e18 interestRate:0.000001 blocks:500000 reserveRate:0.2
+    BorrowAndRepayWithInterest ZRX gZRX 10e18 5e18 interestRate:0.000001 blocks:500000 reserveRate:0.2
     -- We've accrued .0001% interest for 500000 blocks, or 50% of the principal (10e18),
     --   thus, we should have accrued 5e18 of interest for the protocol
     --   The reserves should get 20% of this, or 1e18, and the rest
     --   is due pro-rata to all suppliers. We just have one, so
     --   let's check that account is given correct new balance.
-    Assert Equal (Erc20 ZRX TokenBalance slZRX) (Exactly 55e18)
+    Assert Equal (Erc20 ZRX TokenBalance gZRX) (Exactly 55e18)
     Assert Equal (Erc20 ZRX TokenBalance Root) (Exactly 0e18)
-    Assert Equal (Erc20 slZRX TokenBalance Geoff) (Exactly 500e8)
-    Assert Equal (SLToken slZRX Reserves) (Exactly 1e18)
-    Assert Equal (SLToken slZRX UnderlyingBalance Geoff) (Exactly 54e18)
+    Assert Equal (Erc20 gZRX TokenBalance Geoff) (Exactly 500e8)
+    Assert Equal (GToken gZRX Reserves) (Exactly 1e18)
+    Assert Equal (GToken gZRX UnderlyingBalance Geoff) (Exactly 54e18)
     -- (55.0e18+0.0e18-1.0e18)/500.0e8
-    Assert Equal (SLToken slZRX ExchangeRate) (Exactly 1.08e9)
+    Assert Equal (GToken gZRX ExchangeRate) (Exactly 1.08e9)
     -- Now, let's pull out half of reserves (0.5e18)
-    ReduceReserves 0.5e18 slZRX
-    Assert Equal (Erc20 ZRX TokenBalance slZRX) (Exactly 54.5e18)
+    ReduceReserves 0.5e18 gZRX
+    Assert Equal (Erc20 ZRX TokenBalance gZRX) (Exactly 54.5e18)
     Assert Equal (Erc20 ZRX TokenBalance Root) (Exactly 0.5e18)
-    Assert Equal (Erc20 slZRX TokenBalance Geoff) (Exactly 500e8)
-    Assert Equal (SLToken slZRX Reserves) (Exactly 0.5e18)
-    Assert Equal (SLToken slZRX UnderlyingBalance Geoff) (Exactly 54e18)
+    Assert Equal (Erc20 gZRX TokenBalance Geoff) (Exactly 500e8)
+    Assert Equal (GToken gZRX Reserves) (Exactly 0.5e18)
+    Assert Equal (GToken gZRX UnderlyingBalance Geoff) (Exactly 54e18)
     -- (54.5e18+0.5e18-0.0e18)/500.0e8
-    Assert Equal (SLToken slZRX ExchangeRate) (Exactly 1.08e9)
+    Assert Equal (GToken gZRX ExchangeRate) (Exactly 1.08e9)
     -- Now, let's put back reserves (1e18)
-    From Root (Erc20 ZRX Approve slZRX 6e18)
-    AddReserves 0.5e18 slZRX
-    Assert Equal (Erc20 ZRX TokenBalance slZRX) (Exactly 55e18)
+    From Root (Erc20 ZRX Approve gZRX 6e18)
+    AddReserves 0.5e18 gZRX
+    Assert Equal (Erc20 ZRX TokenBalance gZRX) (Exactly 55e18)
     Assert Equal (Erc20 ZRX TokenBalance Root) (Exactly 0e18)
-    Assert Equal (Erc20 slZRX TokenBalance Geoff) (Exactly 500e8)
-    Assert Equal (SLToken slZRX Reserves) (Exactly 1e18)
-    Assert Equal (SLToken slZRX UnderlyingBalance Geoff) (Exactly 54e18)
+    Assert Equal (Erc20 gZRX TokenBalance Geoff) (Exactly 500e8)
+    Assert Equal (GToken gZRX Reserves) (Exactly 1e18)
+    Assert Equal (GToken gZRX UnderlyingBalance Geoff) (Exactly 54e18)
     -- (54.5e18+0.5e18-0.0e18)/500.0e8
-    Assert Equal (SLToken slZRX ExchangeRate) (Exactly 1.08e9)
+    Assert Equal (GToken gZRX ExchangeRate) (Exactly 1.08e9)
 
 Test "add reserves to empty contract"
     NewComptroller
-    ListedSLToken ZRX slZRX initialExchangeRate:1e9
-    Assert Equal (SLToken slZRX ExchangeRate) (Exactly 1e9)
+    ListedGToken ZRX gZRX initialExchangeRate:1e9
+    Assert Equal (GToken gZRX ExchangeRate) (Exactly 1e9)
     Erc20 ZRX Faucet Root 3e18
-    From Root (Erc20 ZRX Approve slZRX 6e18)
-    AddReserves 2e18 slZRX
-    Assert Equal (Erc20 ZRX TokenBalance slZRX) (Exactly 2e18)
+    From Root (Erc20 ZRX Approve gZRX 6e18)
+    AddReserves 2e18 gZRX
+    Assert Equal (Erc20 ZRX TokenBalance gZRX) (Exactly 2e18)
     Assert Equal (Erc20 ZRX TokenBalance Root) (Exactly 1e18)
-    Assert Equal (SLToken slZRX Reserves) (Exactly 2e18)
+    Assert Equal (GToken gZRX Reserves) (Exactly 2e18)
     -- unchanged
-    Assert Equal (SLToken slZRX ExchangeRate) (Exactly 1e9)
+    Assert Equal (GToken gZRX ExchangeRate) (Exactly 1e9)
 
 Test "add reserves failures"
     NewComptroller
-    ListedSLToken ZRX slZRX initialExchangeRate:1e9
-    Assert Equal (SLToken slZRX ExchangeRate) (Exactly 1e9)
-    Assert Equal (SLToken slZRX Reserves) (Exactly 0e18)
+    ListedGToken ZRX gZRX initialExchangeRate:1e9
+    Assert Equal (GToken gZRX ExchangeRate) (Exactly 1e9)
+    Assert Equal (GToken gZRX Reserves) (Exactly 0e18)
     Erc20 ZRX Faucet Root 2e18
     AllowFailures
-    AddReserves 2e18 slZRX
+    AddReserves 2e18 gZRX
     Assert Revert "revert Insufficient allowance"
-    Assert Equal (Erc20 ZRX TokenBalance slZRX) (Exactly 0e18)
+    Assert Equal (Erc20 ZRX TokenBalance gZRX) (Exactly 0e18)
     Assert Equal (Erc20 ZRX TokenBalance Root) (Exactly 2e18)
-    Assert Equal (SLToken slZRX Reserves) (Exactly 0e18)
+    Assert Equal (GToken gZRX Reserves) (Exactly 0e18)
     -- unchanged
-    Assert Equal (SLToken slZRX ExchangeRate) (Exactly 1e9)
+    Assert Equal (GToken gZRX ExchangeRate) (Exactly 1e9)
 
 Test "Add reserves WBTC when paused"
     NewComptroller
-    ListedSLToken WBTC slWBTC initialExchangeRate:1e9 tokenType:WBTC
-    Prep Geoff 50e18 WBTC slWBTC
-    Mint Geoff 50e18 slWBTC
-    Assert Equal (Erc20 slWBTC TokenBalance Geoff) (Exactly 500e8)
-    Assert Equal (SLToken slWBTC UnderlyingBalance Geoff) (Exactly 50e18)
-    Assert Equal (SLToken slWBTC ExchangeRate) (Exactly 1e9)
+    ListedGToken WBTC gWBTC initialExchangeRate:1e9 tokenType:WBTC
+    Prep Geoff 50e18 WBTC gWBTC
+    Mint Geoff 50e18 gWBTC
+    Assert Equal (Erc20 gWBTC TokenBalance Geoff) (Exactly 500e8)
+    Assert Equal (GToken gWBTC UnderlyingBalance Geoff) (Exactly 50e18)
+    Assert Equal (GToken gWBTC ExchangeRate) (Exactly 1e9)
     -- Get some brah to borrow then repay
-    BorrowAndRepayWithInterest WBTC slWBTC 10e18 5e18 interestRate:0.000001 blocks:500000 reserveRate:0.2
+    BorrowAndRepayWithInterest WBTC gWBTC 10e18 5e18 interestRate:0.000001 blocks:500000 reserveRate:0.2
     -- We've accrued .0001% interest for 500000 blocks, or 50% of the principal (10e18),
     --   thus, we should have accrued 5e18 of interest for the protocol
     --   The reserves should get 20% of this, or 1e18, and the rest
     --   is due pro-rata to all suppliers. We just have one, so
     --   let's check that account is given correct new balance.
     Erc20 WBTC Faucet Root 3e18
-    Invariant Remains (Erc20 WBTC TokenBalance slWBTC) (Exactly 55e18)
+    Invariant Remains (Erc20 WBTC TokenBalance gWBTC) (Exactly 55e18)
     Invariant Remains (Erc20 WBTC TokenBalance Root) (Exactly 3e18)
-    Invariant Remains (Erc20 slWBTC TokenBalance Geoff) (Exactly 500e8)
-    Invariant Remains (SLToken slWBTC Reserves) (Exactly 1e18)
-    Invariant Remains (SLToken slWBTC UnderlyingBalance Geoff) (Exactly 54e18)
+    Invariant Remains (Erc20 gWBTC TokenBalance Geoff) (Exactly 500e8)
+    Invariant Remains (GToken gWBTC Reserves) (Exactly 1e18)
+    Invariant Remains (GToken gWBTC UnderlyingBalance Geoff) (Exactly 54e18)
     -- (55.0e18+0.0e18-1.0e18)/500.0e8
-    Invariant Remains (SLToken slWBTC ExchangeRate) (Exactly 1.08e9)
-    From Root (Erc20 WBTC Approve slWBTC 6e18)
+    Invariant Remains (GToken gWBTC ExchangeRate) (Exactly 1.08e9)
+    From Root (Erc20 WBTC Approve gWBTC 6e18)
     Erc20 WBTC Pause
     AllowFailures
-    AddReserves 1e18 slWBTC
+    AddReserves 1e18 gWBTC
     Assert Revert

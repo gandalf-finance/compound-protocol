@@ -1,9 +1,9 @@
 pragma solidity ^0.5.16;
 
-import "../../contracts/SLEther.sol";
+import "../../contracts/GEther.sol";
 import "./ComptrollerScenario.sol";
 
-contract SLEtherHarness is SLEther {
+contract GEtherHarness is GEther {
     uint harnessExchangeRate;
     uint public blockNumber = 100000;
 
@@ -16,7 +16,7 @@ contract SLEtherHarness is SLEther {
                 string memory symbol_,
                 uint8 decimals_,
                 address payable admin_)
-    SLEther(
+    GEther(
     comptroller_,
     interestRateModel_,
     initialExchangeRateMantissa,
@@ -88,8 +88,8 @@ contract SLEtherHarness is SLEther {
         return err;
     }
 
-    function harnessRedeemFresh(address payable account, uint slTokenAmount, uint underlyingAmount) public returns (uint) {
-        return super.redeemFresh(account, slTokenAmount, underlyingAmount);
+    function harnessRedeemFresh(address payable account, uint gTokenAmount, uint underlyingAmount) public returns (uint) {
+        return super.redeemFresh(account, gTokenAmount, underlyingAmount);
     }
 
     function harnessAccountBorrows(address account) public view returns (uint principal, uint interestIndex) {
@@ -114,8 +114,8 @@ contract SLEtherHarness is SLEther {
         return err;
     }
 
-    function harnessLiquidateBorrowFresh(address liquidator, address borrower, uint repayAmount, SLToken slTokenCollateral) public returns (uint) {
-        (uint err,) = liquidateBorrowFresh(liquidator, borrower, repayAmount, slTokenCollateral);
+    function harnessLiquidateBorrowFresh(address liquidator, address borrower, uint repayAmount, GToken gTokenCollateral) public returns (uint) {
+        (uint err,) = liquidateBorrowFresh(liquidator, borrower, repayAmount, gTokenCollateral);
         return err;
     }
 
@@ -156,7 +156,7 @@ contract SLEtherHarness is SLEther {
     }
 }
 
-contract SLEtherScenario is SLEther {
+contract GEtherScenario is GEther {
     uint reserveFactor;
 
     constructor(string memory name_,
@@ -166,7 +166,7 @@ contract SLEtherScenario is SLEther {
                 ComptrollerInterface comptroller_,
                 InterestRateModel interestRateModel_,
                 uint initialExchangeRateMantissa)
-        SLEther(comptroller_,
+        GEther(comptroller_,
                interestRateModel_,
                initialExchangeRateMantissa,
                name_,

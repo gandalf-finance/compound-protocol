@@ -3,7 +3,7 @@ import {addAction, describeUser, World} from '../World';
 import {decodeCall, getPastEvents} from '../Contract';
 import {Comptroller} from '../Contract/Comptroller';
 import {ComptrollerImpl} from '../Contract/ComptrollerImpl';
-import {SLToken} from '../Contract/SLToken';
+import {GToken} from '../Contract/GToken';
 import {invoke} from '../Invokation';
 import {
   getAddressV,
@@ -27,7 +27,7 @@ import {buildComptrollerImpl} from '../Builder/ComptrollerImplBuilder';
 import {ComptrollerErrorReporter} from '../ErrorReporter';
 import {getComptroller, getComptrollerImpl} from '../ContractLookup';
 import {getLiquidity} from '../Value/ComptrollerValue';
-import {getSLTokenV} from '../Value/SLTokenValue';
+import {getGTokenV} from '../Value/GTokenValue';
 import {encodedNumber} from '../Encoding';
 import {encodeABI, rawValues} from "../Utils";
 
@@ -88,30 +88,30 @@ async function setLiquidationIncentive(world: World, from: string, comptroller: 
   return world;
 }
 
-async function supportMarket(world: World, from: string, comptroller: Comptroller, slToken: SLToken): Promise<World> {
+async function supportMarket(world: World, from: string, comptroller: Comptroller, gToken: GToken): Promise<World> {
   if (world.dryRun) {
     // Skip this specifically on dry runs since it's likely to crash due to a number of reasons
-    world.printer.printLine(`Dry run: Supporting market  \`${slToken._address}\``);
+    world.printer.printLine(`Dry run: Supporting market  \`${gToken._address}\``);
     return world;
   }
 
-  let invokation = await invoke(world, comptroller.methods._supportMarket(slToken._address), from, ComptrollerErrorReporter);
+  let invokation = await invoke(world, comptroller.methods._supportMarket(gToken._address), from, ComptrollerErrorReporter);
 
   world = addAction(
     world,
-    `Supported market ${slToken.name}`,
+    `Supported market ${gToken.name}`,
     invokation
   );
 
   return world;
 }
 
-async function unlistMarket(world: World, from: string, comptroller: Comptroller, slToken: SLToken): Promise<World> {
-  let invokation = await invoke(world, comptroller.methods.unlist(slToken._address), from, ComptrollerErrorReporter);
+async function unlistMarket(world: World, from: string, comptroller: Comptroller, gToken: GToken): Promise<World> {
+  let invokation = await invoke(world, comptroller.methods.unlist(gToken._address), from, ComptrollerErrorReporter);
 
   world = addAction(
     world,
-    `Unlisted market ${slToken.name}`,
+    `Unlisted market ${gToken.name}`,
     invokation
   );
 
@@ -154,12 +154,12 @@ async function setPriceOracle(world: World, from: string, comptroller: Comptroll
   return world;
 }
 
-async function setCollateralFactor(world: World, from: string, comptroller: Comptroller, slToken: SLToken, collateralFactor: NumberV): Promise<World> {
-  let invokation = await invoke(world, comptroller.methods._setCollateralFactor(slToken._address, collateralFactor.encode()), from, ComptrollerErrorReporter);
+async function setCollateralFactor(world: World, from: string, comptroller: Comptroller, gToken: GToken, collateralFactor: NumberV): Promise<World> {
+  let invokation = await invoke(world, comptroller.methods._setCollateralFactor(gToken._address, collateralFactor.encode()), from, ComptrollerErrorReporter);
 
   world = addAction(
     world,
-    `Set collateral factor for ${slToken.name} to ${collateralFactor.show()}`,
+    `Set collateral factor for ${gToken.name} to ${collateralFactor.show()}`,
     invokation
   );
 
@@ -200,60 +200,60 @@ async function sendAny(world: World, from:string, comptroller: Comptroller, sign
   return world;
 }
 
-async function addSashimiMarkets(world: World, from: string, comptroller: Comptroller, slTokens: SLToken[]): Promise<World> {
-  let invokation = await invoke(world, comptroller.methods._addSashimiMarkets(slTokens.map(c => c._address)), from, ComptrollerErrorReporter);
+async function addPlatformTokenMarkets(world: World, from: string, comptroller: Comptroller, gTokens: GToken[]): Promise<World> {
+  let invokation = await invoke(world, comptroller.methods._addPlatformTokenMarkets(gTokens.map(c => c._address)), from, ComptrollerErrorReporter);
 
   world = addAction(
     world,
-    `Added SASHIMI markets ${slTokens.map(c => c.name)}`,
+    `Added PLATFORMTOKEN markets ${gTokens.map(c => c.name)}`,
     invokation
   );
 
   return world;
 }
 
-async function dropSashimiMarket(world: World, from: string, comptroller: Comptroller, slToken: SLToken): Promise<World> {
-  let invokation = await invoke(world, comptroller.methods._dropSashimiMarket(slToken._address), from, ComptrollerErrorReporter);
+async function dropPlatformTokenMarket(world: World, from: string, comptroller: Comptroller, gToken: GToken): Promise<World> {
+  let invokation = await invoke(world, comptroller.methods._dropPlatformTokenMarket(gToken._address), from, ComptrollerErrorReporter);
 
   world = addAction(
     world,
-    `Drop SASHIMI market ${slToken.name}`,
+    `Drop PLATFORMTOKEN market ${gToken.name}`,
     invokation
   );
 
   return world;
 }
 
-async function refreshSashimiSpeeds(world: World, from: string, comptroller: Comptroller): Promise<World> {
-  let invokation = await invoke(world, comptroller.methods.refreshSashimiSpeeds(), from, ComptrollerErrorReporter);
+async function refreshPlatformTokenSpeeds(world: World, from: string, comptroller: Comptroller): Promise<World> {
+  let invokation = await invoke(world, comptroller.methods.refreshPlatformTokenSpeeds(), from, ComptrollerErrorReporter);
 
   world = addAction(
     world,
-    `Refreshed SASHIMI speeds`,
+    `Refreshed PLATFORMTOKEN speeds`,
     invokation
   );
 
   return world;
 }
 
-async function claimSashimi(world: World, from: string, comptroller: Comptroller, holder: string): Promise<World> {
-  let invokation = await invoke(world, comptroller.methods.claimSashimi(holder), from, ComptrollerErrorReporter);
+async function claimPlatformToken(world: World, from: string, comptroller: Comptroller, holder: string): Promise<World> {
+  let invokation = await invoke(world, comptroller.methods.claimPlatformToken(holder), from, ComptrollerErrorReporter);
 
   world = addAction(
     world,
-    `Sashimi claimed by ${holder}`,
+    `PlatformToken claimed by ${holder}`,
     invokation
   );
 
   return world;
 }
 
-async function setSashimiRate(world: World, from: string, comptroller: Comptroller, rate: NumberV): Promise<World> {
-  let invokation = await invoke(world, comptroller.methods._setSashimiRate(rate.encode()), from, ComptrollerErrorReporter);
+async function setPlatformTokenRate(world: World, from: string, comptroller: Comptroller, rate: NumberV): Promise<World> {
+  let invokation = await invoke(world, comptroller.methods._setPlatformTokenRate(rate.encode()), from, ComptrollerErrorReporter);
 
   world = addAction(
     world,
-    `Sashimi rate set to ${rate.show()}`,
+    `PlatformToken rate set to ${rate.show()}`,
     invokation
   );
 
@@ -337,7 +337,7 @@ async function setGuardianPaused(world: World, from: string, comptroller: Comptr
   return world;
 }
 
-async function setGuardianMarketPaused(world: World, from: string, comptroller: Comptroller, slToken: SLToken, action: string, state: boolean): Promise<World> {
+async function setGuardianMarketPaused(world: World, from: string, comptroller: Comptroller, gToken: GToken, action: string, state: boolean): Promise<World> {
   let fun;
   switch(action){
     case "Mint":
@@ -347,7 +347,7 @@ async function setGuardianMarketPaused(world: World, from: string, comptroller: 
       fun = comptroller.methods._setBorrowPaused
       break;
   }
-  let invokation = await invoke(world, fun(slToken._address, state), from, ComptrollerErrorReporter);
+  let invokation = await invoke(world, fun(gToken._address, state), from, ComptrollerErrorReporter);
 
   world = addAction(
     world,
@@ -358,12 +358,12 @@ async function setGuardianMarketPaused(world: World, from: string, comptroller: 
   return world;
 }
 
-async function setMarketBorrowCaps(world: World, from: string, comptroller: Comptroller, slTokens: SLToken[], borrowCaps: NumberV[]): Promise<World> {
-  let invokation = await invoke(world, comptroller.methods._setMarketBorrowCaps(slTokens.map(c => c._address), borrowCaps.map(c => c.encode())), from, ComptrollerErrorReporter);
+async function setMarketBorrowCaps(world: World, from: string, comptroller: Comptroller, gTokens: GToken[], borrowCaps: NumberV[]): Promise<World> {
+  let invokation = await invoke(world, comptroller.methods._setMarketBorrowCaps(gTokens.map(c => c._address), borrowCaps.map(c => c.encode())), from, ComptrollerErrorReporter);
 
   world = addAction(
     world,
-    `Borrow caps on ${slTokens} set to ${borrowCaps}`,
+    `Borrow caps on ${gTokens} set to ${borrowCaps}`,
     invokation
   );
 
@@ -397,7 +397,7 @@ export function comptrollerCommands() {
     new Command<{comptroller: Comptroller, action: StringV, isPaused: BoolV}>(`
         #### SetPaused
 
-        * "Comptroller SetPaused <Action> <Bool>" - Pauses or unpaused given slToken function
+        * "Comptroller SetPaused <Action> <Bool>" - Pauses or unpaused given gToken function
           * E.g. "Comptroller SetPaused "Mint" True"
       `,
       "SetPaused",
@@ -408,57 +408,57 @@ export function comptrollerCommands() {
       ],
       (world, from, {comptroller, action, isPaused}) => setPaused(world, from, comptroller, action.val, isPaused.val)
     ),
-    new Command<{comptroller: Comptroller, slToken: SLToken}>(`
+    new Command<{comptroller: Comptroller, gToken: GToken}>(`
         #### SupportMarket
 
-        * "Comptroller SupportMarket <SLToken>" - Adds support in the Comptroller for the given slToken
-          * E.g. "Comptroller SupportMarket slZRX"
+        * "Comptroller SupportMarket <GToken>" - Adds support in the Comptroller for the given gToken
+          * E.g. "Comptroller SupportMarket gZRX"
       `,
       "SupportMarket",
       [
         new Arg("comptroller", getComptroller, {implicit: true}),
-        new Arg("slToken", getSLTokenV)
+        new Arg("gToken", getGTokenV)
       ],
-      (world, from, {comptroller, slToken}) => supportMarket(world, from, comptroller, slToken)
+      (world, from, {comptroller, gToken}) => supportMarket(world, from, comptroller, gToken)
     ),
-    new Command<{comptroller: Comptroller, slToken: SLToken}>(`
+    new Command<{comptroller: Comptroller, gToken: GToken}>(`
         #### UnList
 
-        * "Comptroller UnList <SLToken>" - Mock unlists a given market in tests
-          * E.g. "Comptroller UnList slZRX"
+        * "Comptroller UnList <GToken>" - Mock unlists a given market in tests
+          * E.g. "Comptroller UnList gZRX"
       `,
       "UnList",
       [
         new Arg("comptroller", getComptroller, {implicit: true}),
-        new Arg("slToken", getSLTokenV)
+        new Arg("gToken", getGTokenV)
       ],
-      (world, from, {comptroller, slToken}) => unlistMarket(world, from, comptroller, slToken)
+      (world, from, {comptroller, gToken}) => unlistMarket(world, from, comptroller, gToken)
     ),
-    new Command<{comptroller: Comptroller, slTokens: SLToken[]}>(`
+    new Command<{comptroller: Comptroller, gTokens: GToken[]}>(`
         #### EnterMarkets
 
-        * "Comptroller EnterMarkets (<SLToken> ...)" - User enters the given markets
-          * E.g. "Comptroller EnterMarkets (slZRX slETH)"
+        * "Comptroller EnterMarkets (<GToken> ...)" - User enters the given markets
+          * E.g. "Comptroller EnterMarkets (gZRX gETH)"
       `,
       "EnterMarkets",
       [
         new Arg("comptroller", getComptroller, {implicit: true}),
-        new Arg("slTokens", getSLTokenV, {mapped: true})
+        new Arg("gTokens", getGTokenV, {mapped: true})
       ],
-      (world, from, {comptroller, slTokens}) => enterMarkets(world, from, comptroller, slTokens.map((c) => c._address))
+      (world, from, {comptroller, gTokens}) => enterMarkets(world, from, comptroller, gTokens.map((c) => c._address))
     ),
-    new Command<{comptroller: Comptroller, slToken: SLToken}>(`
+    new Command<{comptroller: Comptroller, gToken: GToken}>(`
         #### ExitMarket
 
-        * "Comptroller ExitMarket <SLToken>" - User exits the given markets
-          * E.g. "Comptroller ExitMarket slZRX"
+        * "Comptroller ExitMarket <GToken>" - User exits the given markets
+          * E.g. "Comptroller ExitMarket gZRX"
       `,
       "ExitMarket",
       [
         new Arg("comptroller", getComptroller, {implicit: true}),
-        new Arg("slToken", getSLTokenV)
+        new Arg("gToken", getGTokenV)
       ],
-      (world, from, {comptroller, slToken}) => exitMarket(world, from, comptroller, slToken._address)
+      (world, from, {comptroller, gToken}) => exitMarket(world, from, comptroller, gToken._address)
     ),
     new Command<{comptroller: Comptroller, maxAssets: NumberV}>(`
         #### SetMaxAssets
@@ -499,19 +499,19 @@ export function comptrollerCommands() {
       ],
       (world, from, {comptroller, priceOracle}) => setPriceOracle(world, from, comptroller, priceOracle.val)
     ),
-    new Command<{comptroller: Comptroller, slToken: SLToken, collateralFactor: NumberV}>(`
+    new Command<{comptroller: Comptroller, gToken: GToken, collateralFactor: NumberV}>(`
         #### SetCollateralFactor
 
-        * "Comptroller SetCollateralFactor <SLToken> <Number>" - Sets the collateral factor for given slToken to number
-          * E.g. "Comptroller SetCollateralFactor slZRX 0.1"
+        * "Comptroller SetCollateralFactor <GToken> <Number>" - Sets the collateral factor for given gToken to number
+          * E.g. "Comptroller SetCollateralFactor gZRX 0.1"
       `,
       "SetCollateralFactor",
       [
         new Arg("comptroller", getComptroller, {implicit: true}),
-        new Arg("slToken", getSLTokenV),
+        new Arg("gToken", getGTokenV),
         new Arg("collateralFactor", getExpNumberV)
       ],
-      (world, from, {comptroller, slToken, collateralFactor}) => setCollateralFactor(world, from, comptroller, slToken, collateralFactor)
+      (world, from, {comptroller, gToken, collateralFactor}) => setCollateralFactor(world, from, comptroller, gToken, collateralFactor)
     ),
     new Command<{comptroller: Comptroller, closeFactor: NumberV}>(`
         #### SetCloseFactor
@@ -568,7 +568,7 @@ export function comptrollerCommands() {
     new Command<{comptroller: Comptroller, action: StringV, isPaused: BoolV}>(`
         #### SetGuardianPaused
 
-        * "Comptroller SetGuardianPaused <Action> <Bool>" - Pauses or unpaused given slToken function
+        * "Comptroller SetGuardianPaused <Action> <Bool>" - Pauses or unpaused given gToken function
         * E.g. "Comptroller SetGuardianPaused "Transfer" True"
         `,
         "SetGuardianPaused",
@@ -580,26 +580,26 @@ export function comptrollerCommands() {
         (world, from, {comptroller, action, isPaused}) => setGuardianPaused(world, from, comptroller, action.val, isPaused.val)
     ),
 
-    new Command<{comptroller: Comptroller, slToken: SLToken, action: StringV, isPaused: BoolV}>(`
+    new Command<{comptroller: Comptroller, gToken: GToken, action: StringV, isPaused: BoolV}>(`
         #### SetGuardianMarketPaused
 
-        * "Comptroller SetGuardianMarketPaused <SLToken> <Action> <Bool>" - Pauses or unpaused given slToken function
-        * E.g. "Comptroller SetGuardianMarketPaused slREP "Mint" True"
+        * "Comptroller SetGuardianMarketPaused <GToken> <Action> <Bool>" - Pauses or unpaused given gToken function
+        * E.g. "Comptroller SetGuardianMarketPaused gREP "Mint" True"
         `,
         "SetGuardianMarketPaused",
         [
           new Arg("comptroller", getComptroller, {implicit: true}),
-          new Arg("slToken", getSLTokenV),
+          new Arg("gToken", getGTokenV),
           new Arg("action", getStringV),
           new Arg("isPaused", getBoolV)
         ],
-        (world, from, {comptroller, slToken, action, isPaused}) => setGuardianMarketPaused(world, from, comptroller, slToken, action.val, isPaused.val)
+        (world, from, {comptroller, gToken, action, isPaused}) => setGuardianMarketPaused(world, from, comptroller, gToken, action.val, isPaused.val)
     ),
 
     new Command<{comptroller: Comptroller, blocks: NumberV, _keyword: StringV}>(`
         #### FastForward
 
-        * "FastForward n:<Number> Blocks" - Moves the block number forward "n" blocks. Note: in "SLTokenScenario" and "ComptrollerScenario" the current block number is mocked (starting at 100000). This is the only way for the protocol to see a higher block number (for accruing interest).
+        * "FastForward n:<Number> Blocks" - Moves the block number forward "n" blocks. Note: in "GTokenScenario" and "ComptrollerScenario" the current block number is mocked (starting at 100000). This is the only way for the protocol to see a higher block number (for accruing interest).
           * E.g. "Comptroller FastForward 5 Blocks" - Move block number forward 5 blocks.
       `,
       "FastForward",
@@ -638,7 +638,7 @@ export function comptrollerCommands() {
     new Command<{comptroller: Comptroller, signature: StringV, callArgs: StringV[]}>(`
       #### Send
       * Comptroller Send functionSignature:<String> callArgs[] - Sends any transaction to comptroller
-      * E.g: Comptroller Send "setSashimiAddress(address)" (Address SASHIMI)
+      * E.g: Comptroller Send "setPlatformTokenAddress(address)" (Address PLATFORMTOKEN)
       `,
       "Send",
       [
@@ -648,84 +648,84 @@ export function comptrollerCommands() {
       ],
       (world, from, {comptroller, signature, callArgs}) => sendAny(world, from, comptroller, signature.val, rawValues(callArgs))
     ),
-    new Command<{comptroller: Comptroller, slTokens: SLToken[]}>(`
-      #### AddSashimiMarkets
+    new Command<{comptroller: Comptroller, gTokens: GToken[]}>(`
+      #### AddPlatformTokenMarkets
 
-      * "Comptroller AddSashimiMarkets (<Address> ...)" - Makes a market SASHIMI-enabled
-      * E.g. "Comptroller AddSashimiMarkets (slZRX cBAT)
+      * "Comptroller AddPlatformTokenMarkets (<Address> ...)" - Makes a market PLATFORMTOKEN-enabled
+      * E.g. "Comptroller AddPlatformTokenMarkets (gZRX cBAT)
       `,
-      "AddSashimiMarkets",
+      "AddPlatformTokenMarkets",
       [
         new Arg("comptroller", getComptroller, {implicit: true}),
-        new Arg("slTokens", getSLTokenV, {mapped: true})
+        new Arg("gTokens", getGTokenV, {mapped: true})
       ],
-      (world, from, {comptroller, slTokens}) => addSashimiMarkets(world, from, comptroller, slTokens)
+      (world, from, {comptroller, gTokens}) => addPlatformTokenMarkets(world, from, comptroller, gTokens)
      ),
-    new Command<{comptroller: Comptroller, slToken: SLToken}>(`
-      #### DropSashimiMarket
+    new Command<{comptroller: Comptroller, gToken: GToken}>(`
+      #### DropPlatformTokenMarket
 
-      * "Comptroller DropSashimiMarket <Address>" - Makes a market SASHIMI
-      * E.g. "Comptroller DropSashimiMarket slZRX
+      * "Comptroller DropPlatformTokenMarket <Address>" - Makes a market PLATFORMTOKEN
+      * E.g. "Comptroller DropPlatformTokenMarket gZRX
       `,
-      "DropSashimiMarket",
+      "DropPlatformTokenMarket",
       [
         new Arg("comptroller", getComptroller, {implicit: true}),
-        new Arg("slToken", getSLTokenV)
+        new Arg("gToken", getGTokenV)
       ],
-      (world, from, {comptroller, slToken}) => dropSashimiMarket(world, from, comptroller, slToken)
+      (world, from, {comptroller, gToken}) => dropPlatformTokenMarket(world, from, comptroller, gToken)
      ),
 
     new Command<{comptroller: Comptroller}>(`
-      #### RefreshSashimiSpeeds
+      #### RefreshPlatformTokenSpeeds
 
-      * "Comptroller RefreshSashimiSpeeds" - Recalculates all the SASHIMI market speeds
-      * E.g. "Comptroller RefreshSashimiSpeeds
+      * "Comptroller RefreshPlatformTokenSpeeds" - Recalculates all the PLATFORMTOKEN market speeds
+      * E.g. "Comptroller RefreshPlatformTokenSpeeds
       `,
-      "RefreshSashimiSpeeds",
+      "RefreshPlatformTokenSpeeds",
       [
         new Arg("comptroller", getComptroller, {implicit: true})
       ],
-      (world, from, {comptroller}) => refreshSashimiSpeeds(world, from, comptroller)
+      (world, from, {comptroller}) => refreshPlatformTokenSpeeds(world, from, comptroller)
     ),
     new Command<{comptroller: Comptroller, holder: AddressV}>(`
-      #### ClaimSashimi
+      #### ClaimPlatformToken
 
-      * "Comptroller ClaimSashimi <holder>" - Claims sashimi
-      * E.g. "Comptroller ClaimSashimi Geoff
+      * "Comptroller ClaimPlatformToken <holder>" - Claims platformToken
+      * E.g. "Comptroller ClaimPlatformToken Geoff
       `,
-      "ClaimSashimi",
+      "ClaimPlatformToken",
       [
         new Arg("comptroller", getComptroller, {implicit: true}),
         new Arg("holder", getAddressV)
       ],
-      (world, from, {comptroller, holder}) => claimSashimi(world, from, comptroller, holder.val)
+      (world, from, {comptroller, holder}) => claimPlatformToken(world, from, comptroller, holder.val)
     ),
     new Command<{comptroller: Comptroller, rate: NumberV}>(`
-      #### SetSashimiRate
+      #### SetPlatformTokenRate
 
-      * "Comptroller SetSashimiRate <rate>" - Sets SASHIMI rate
-      * E.g. "Comptroller SetSashimiRate 1e18
+      * "Comptroller SetPlatformTokenRate <rate>" - Sets PLATFORMTOKEN rate
+      * E.g. "Comptroller SetPlatformTokenRate 1e18
       `,
-      "SetSashimiRate",
+      "SetPlatformTokenRate",
       [
         new Arg("comptroller", getComptroller, {implicit: true}),
         new Arg("rate", getNumberV)
       ],
-      (world, from, {comptroller, rate}) => setSashimiRate(world, from, comptroller, rate)
+      (world, from, {comptroller, rate}) => setPlatformTokenRate(world, from, comptroller, rate)
     ),
-    new Command<{comptroller: Comptroller, slTokens: SLToken[], borrowCaps: NumberV[]}>(`
+    new Command<{comptroller: Comptroller, gTokens: GToken[], borrowCaps: NumberV[]}>(`
       #### SetMarketBorrowCaps
 
-      * "Comptroller SetMarketBorrowCaps (<SLToken> ...) (<borrowCap> ...)" - Sets Market Borrow Caps
-      * E.g "Comptroller SetMarketBorrowCaps (slZRX slUSDC) (10000.0e18, 1000.0e6)
+      * "Comptroller SetMarketBorrowCaps (<GToken> ...) (<borrowCap> ...)" - Sets Market Borrow Caps
+      * E.g "Comptroller SetMarketBorrowCaps (gZRX gUSDC) (10000.0e18, 1000.0e6)
       `,
       "SetMarketBorrowCaps",
       [
         new Arg("comptroller", getComptroller, {implicit: true}),
-        new Arg("slTokens", getSLTokenV, {mapped: true}),
+        new Arg("gTokens", getGTokenV, {mapped: true}),
         new Arg("borrowCaps", getNumberV, {mapped: true})
       ],
-      (world, from, {comptroller,slTokens,borrowCaps}) => setMarketBorrowCaps(world, from, comptroller, slTokens, borrowCaps)
+      (world, from, {comptroller,gTokens,borrowCaps}) => setMarketBorrowCaps(world, from, comptroller, gTokens, borrowCaps)
     ),
     new Command<{comptroller: Comptroller, newBorrowCapGuardian: AddressV}>(`
         #### SetBorrowCapGuardian

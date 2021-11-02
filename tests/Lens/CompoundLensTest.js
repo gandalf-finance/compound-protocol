@@ -4,8 +4,8 @@ const {
 } = require('../Utils/Ethereum');
 const {
   makeComptroller,
-  makeSLToken,
-} = require('../Utils/SashimiLending');
+  makeGToken,
+} = require('../Utils/GandalfLending');
 
 function cullTuple(tuple) {
   return Object.keys(tuple).reduce((acc, key) => {
@@ -20,23 +20,23 @@ function cullTuple(tuple) {
   }, {});
 }
 
-describe('SashimiLendingLens', () => {
-  let sashimiLendingLens;
+describe('GandalfLendingLens', () => {
+  let gandalfLendingLens;
   let acct;
 
   beforeEach(async () => {
-    sashimiLendingLens = await deploy('SashimiLendingLens');
+    gandalfLendingLens = await deploy('GandalfLendingLens');
     acct = accounts[0];
   });
 
-  describe('slTokenMetadata', () => {
-    it('is correct for a slErc20', async () => {
-      let slErc20 = await makeSLToken();
+  describe('gTokenMetadata', () => {
+    it('is correct for a gErc20', async () => {
+      let gErc20 = await makeGToken();
       expect(
-        cullTuple(await call(sashimiLendingLens, 'slTokenMetadata', [slErc20._address]))
+        cullTuple(await call(gandalfLendingLens, 'gTokenMetadata', [gErc20._address]))
       ).toEqual(
         {
-          slToken: slErc20._address,
+          gToken: gErc20._address,
           exchangeRateCurrent: "1000000000000000000",
           supplyRatePerBlock: "0",
           borrowRatePerBlock: "0",
@@ -47,21 +47,21 @@ describe('SashimiLendingLens', () => {
           totalCash: "0",
           isListed:false,
           collateralFactorMantissa: "0",
-          underlyingAssetAddress: await call(slErc20, 'underlying', []),
-          slTokenDecimals: "8",
+          underlyingAssetAddress: await call(gErc20, 'underlying', []),
+          gTokenDecimals: "8",
           underlyingDecimals: "18"
         }
       );
     });
 
-    it('is correct for slEth', async () => {
-      let slEth = await makeSLToken({kind: 'slether'});
+    it('is correct for gEth', async () => {
+      let gEth = await makeGToken({kind: 'gether'});
       expect(
-        cullTuple(await call(sashimiLendingLens, 'slTokenMetadata', [slEth._address]))
+        cullTuple(await call(gandalfLendingLens, 'gTokenMetadata', [gEth._address]))
       ).toEqual({
         borrowRatePerBlock: "0",
-        slToken: slEth._address,
-        slTokenDecimals: "8",
+        gToken: gEth._address,
+        gTokenDecimals: "8",
         collateralFactorMantissa: "0",
         exchangeRateCurrent: "1000000000000000000",
         isListed: false,
@@ -77,15 +77,15 @@ describe('SashimiLendingLens', () => {
     });
   });
 
-  describe('slTokenMetadataAll', () => {
-    it('is correct for a slErc20 and slEther', async () => {
-      let slErc20 = await makeSLToken();
-      let slEth = await makeSLToken({kind: 'slether'});
+  describe('gTokenMetadataAll', () => {
+    it('is correct for a gErc20 and gEther', async () => {
+      let gErc20 = await makeGToken();
+      let gEth = await makeGToken({kind: 'gether'});
       expect(
-        (await call(sashimiLendingLens, 'slTokenMetadataAll', [[slErc20._address, slEth._address]])).map(cullTuple)
+        (await call(gandalfLendingLens, 'gTokenMetadataAll', [[gErc20._address, gEth._address]])).map(cullTuple)
       ).toEqual([
         {
-          slToken: slErc20._address,
+          gToken: gErc20._address,
           exchangeRateCurrent: "1000000000000000000",
           supplyRatePerBlock: "0",
           borrowRatePerBlock: "0",
@@ -96,14 +96,14 @@ describe('SashimiLendingLens', () => {
           totalCash: "0",
           isListed:false,
           collateralFactorMantissa: "0",
-          underlyingAssetAddress: await call(slErc20, 'underlying', []),
-          slTokenDecimals: "8",
+          underlyingAssetAddress: await call(gErc20, 'underlying', []),
+          gTokenDecimals: "8",
           underlyingDecimals: "18"
         },
         {
           borrowRatePerBlock: "0",
-          slToken: slEth._address,
-          slTokenDecimals: "8",
+          gToken: gEth._address,
+          gTokenDecimals: "8",
           collateralFactorMantissa: "0",
           exchangeRateCurrent: "1000000000000000000",
           isListed: false,
@@ -120,34 +120,34 @@ describe('SashimiLendingLens', () => {
     });
   });
 
-  describe('slTokenBalances', () => {
-    it('is correct for slERC20', async () => {
-      let slErc20 = await makeSLToken();
+  describe('gTokenBalances', () => {
+    it('is correct for gERC20', async () => {
+      let gErc20 = await makeGToken();
       expect(
-        cullTuple(await call(sashimiLendingLens, 'slTokenBalances', [slErc20._address, acct]))
+        cullTuple(await call(gandalfLendingLens, 'gTokenBalances', [gErc20._address, acct]))
       ).toEqual(
         {
           balanceOf: "0",
           balanceOfUnderlying: "0",
           borrowBalanceCurrent: "0",
-          slToken: slErc20._address,
+          gToken: gErc20._address,
           tokenAllowance: "0",
           tokenBalance: "10000000000000000000000000",
         }
       );
     });
 
-    it('is correct for slETH', async () => {
-      let slEth = await makeSLToken({kind: 'slether'});
+    it('is correct for gETH', async () => {
+      let gEth = await makeGToken({kind: 'gether'});
       let ethBalance = await web3.eth.getBalance(acct);
       expect(
-        cullTuple(await call(sashimiLendingLens, 'slTokenBalances', [slEth._address, acct], {gasPrice: '0'}))
+        cullTuple(await call(gandalfLendingLens, 'gTokenBalances', [gEth._address, acct], {gasPrice: '0'}))
       ).toEqual(
         {
           balanceOf: "0",
           balanceOfUnderlying: "0",
           borrowBalanceCurrent: "0",
-          slToken: slEth._address,
+          gToken: gEth._address,
           tokenAllowance: ethBalance,
           tokenBalance: ethBalance,
         }
@@ -155,20 +155,20 @@ describe('SashimiLendingLens', () => {
     });
   });
 
-  describe('slTokenBalancesAll', () => {
-    it('is correct for slEth and slErc20', async () => {
-      let slErc20 = await makeSLToken();
-      let slEth = await makeSLToken({kind: 'slether'});
+  describe('gTokenBalancesAll', () => {
+    it('is correct for gEth and gErc20', async () => {
+      let gErc20 = await makeGToken();
+      let gEth = await makeGToken({kind: 'gether'});
       let ethBalance = await web3.eth.getBalance(acct);
       
       expect(
-        (await call(sashimiLendingLens, 'slTokenBalancesAll', [[slErc20._address, slEth._address], acct], {gasPrice: '0'})).map(cullTuple)
+        (await call(gandalfLendingLens, 'gTokenBalancesAll', [[gErc20._address, gEth._address], acct], {gasPrice: '0'})).map(cullTuple)
       ).toEqual([
         {
           balanceOf: "0",
           balanceOfUnderlying: "0",
           borrowBalanceCurrent: "0",
-          slToken: slErc20._address,
+          gToken: gErc20._address,
           tokenAllowance: "0",
           tokenBalance: "10000000000000000000000000",
         },
@@ -176,7 +176,7 @@ describe('SashimiLendingLens', () => {
           balanceOf: "0",
           balanceOfUnderlying: "0",
           borrowBalanceCurrent: "0",
-          slToken: slEth._address,
+          gToken: gEth._address,
           tokenAllowance: ethBalance,
           tokenBalance: ethBalance,
         }
@@ -184,45 +184,45 @@ describe('SashimiLendingLens', () => {
     })
   });
 
-  describe('slTokenUnderlyingPrice', () => {
-    it('gets correct price for slErc20', async () => {
-      let slErc20 = await makeSLToken();
+  describe('gTokenUnderlyingPrice', () => {
+    it('gets correct price for gErc20', async () => {
+      let gErc20 = await makeGToken();
       expect(
-        cullTuple(await call(sashimiLendingLens, 'slTokenUnderlyingPrice', [slErc20._address]))
+        cullTuple(await call(gandalfLendingLens, 'gTokenUnderlyingPrice', [gErc20._address]))
       ).toEqual(
         {
-          slToken: slErc20._address,
+          gToken: gErc20._address,
           underlyingPrice: "0",
         }
       );
     });
 
-    it('gets correct price for slEth', async () => {
-      let slEth = await makeSLToken({kind: 'slether'});
+    it('gets correct price for gEth', async () => {
+      let gEth = await makeGToken({kind: 'gether'});
       expect(
-        cullTuple(await call(sashimiLendingLens, 'slTokenUnderlyingPrice', [slEth._address]))
+        cullTuple(await call(gandalfLendingLens, 'gTokenUnderlyingPrice', [gEth._address]))
       ).toEqual(
         {
-          slToken: slEth._address,
+          gToken: gEth._address,
           underlyingPrice: "1000000000000000000",
         }
       );
     });
   });
 
-  describe('slTokenUnderlyingPriceAll', () => {
+  describe('gTokenUnderlyingPriceAll', () => {
     it('gets correct price for both', async () => {
-      let slErc20 = await makeSLToken();
-      let slEth = await makeSLToken({kind: 'slether'});
+      let gErc20 = await makeGToken();
+      let gEth = await makeGToken({kind: 'gether'});
       expect(
-        (await call(sashimiLendingLens, 'slTokenUnderlyingPriceAll', [[slErc20._address, slEth._address]])).map(cullTuple)
+        (await call(gandalfLendingLens, 'gTokenUnderlyingPriceAll', [[gErc20._address, gEth._address]])).map(cullTuple)
       ).toEqual([
         {
-          slToken: slErc20._address,
+          gToken: gErc20._address,
           underlyingPrice: "0",
         },
         {
-          slToken: slEth._address,
+          gToken: gEth._address,
           underlyingPrice: "1000000000000000000",
         }
       ]);
@@ -234,7 +234,7 @@ describe('SashimiLendingLens', () => {
       let comptroller = await makeComptroller();
 
       expect(
-        cullTuple(await call(sashimiLendingLens, 'getAccountLimits', [comptroller._address, acct]))
+        cullTuple(await call(gandalfLendingLens, 'getAccountLimits', [comptroller._address, acct]))
       ).toEqual({
         liquidity: "0",
         markets: [],
@@ -245,18 +245,18 @@ describe('SashimiLendingLens', () => {
 
   
 
-  describe('sashimi', () => {
-    let sashimi, currentBlock;
+  describe('platformToken', () => {
+    let platformToken, currentBlock;
 
     beforeEach(async () => {
       currentBlock = +(await web3.eth.getBlockNumber());
-      sashimi = await deploy('SashimiToken', [acct]);
+      platformToken = await deploy('PlatformTokenToken', [acct]);
     });
 
     describe('getCompBalanceMetadata', () => {
       it('gets correct values', async () => {
         expect(
-          cullTuple(await call(sashimiLendingLens, 'getSashimiBalanceMetadata', [sashimi._address, acct]))
+          cullTuple(await call(gandalfLendingLens, 'getPlatformTokenBalanceMetadata', [platformToken._address, acct]))
         ).toEqual({
           balance: "10000000000000000000000000",
           delegate: "0x0000000000000000000000000000000000000000",
@@ -265,13 +265,13 @@ describe('SashimiLendingLens', () => {
       });
     });
 
-    describe('getSashimiBalanceMetadataExt', () => {
+    describe('getPlatformTokenBalanceMetadataExt', () => {
       it('gets correct values', async () => {
         let comptroller = await makeComptroller();
-        await send(comptroller, 'setSashimiAccrued', [acct, 5]); // harness only
+        await send(comptroller, 'setPlatformTokenAccrued', [acct, 5]); // harness only
 
         expect(
-          cullTuple(await call(sashimiLendingLens, 'getSashimiBalanceMetadataExt', [sashimi._address, comptroller._address, acct]))
+          cullTuple(await call(gandalfLendingLens, 'getPlatformTokenBalanceMetadataExt', [platformToken._address, comptroller._address, acct]))
         ).toEqual({
           balance: "10000000000000000000000000",
           delegate: "0x0000000000000000000000000000000000000000",

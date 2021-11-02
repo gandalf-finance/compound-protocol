@@ -1,12 +1,12 @@
 pragma solidity ^0.5.16;
 
-import "../../../contracts/SLErc20Immutable.sol";
+import "../../../contracts/GErc20Immutable.sol";
 import "../../../contracts/EIP20Interface.sol";
 
-import "./SLTokenCollateral.sol";
+import "./GTokenCollateral.sol";
 
-contract SLErc20ImmutableCertora is SLErc20Immutable {
-    SLTokenCollateral public otherToken;
+contract GErc20ImmutableCertora is GErc20Immutable {
+    GTokenCollateral public otherToken;
 
     constructor(address underlying_,
                 ComptrollerInterface comptroller_,
@@ -15,7 +15,7 @@ contract SLErc20ImmutableCertora is SLErc20Immutable {
                 string memory name_,
                 string memory symbol_,
                 uint8 decimals_,
-                address payable admin_) public SLErc20Immutable(underlying_, comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_, admin_) {
+                address payable admin_) public GErc20Immutable(underlying_, comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_, admin_) {
     }
 
     function balanceOfInOther(address account) public view returns (uint) {

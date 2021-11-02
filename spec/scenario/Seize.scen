@@ -1,50 +1,50 @@
 
 Test "Fail to seize calling directly"
     NewComptroller
-    ListedSLToken ZRX slZRX initialExchangeRate:1e9
-    ListedSLToken BAT slBAT initialExchangeRate:1e9
-    Prep Geoff Some ZRX slZRX
-    Mint Geoff 50e18 slZRX
-    Invariant Remains (Erc20 slZRX TokenBalance Geoff) 50e9
+    ListedGToken ZRX gZRX initialExchangeRate:1e9
+    ListedGToken BAT gBAT initialExchangeRate:1e9
+    Prep Geoff Some ZRX gZRX
+    Mint Geoff 50e18 gZRX
+    Invariant Remains (Erc20 gZRX TokenBalance Geoff) 50e9
     AllowFailures
-    Seize 1e9 slZRX caller:Geoff liquidator:Geoff borrower:Torrey
-    -- The caller must be from another slToken market, thus this fails
+    Seize 1e9 gZRX caller:Geoff liquidator:Geoff borrower:Torrey
+    -- The caller must be from another gToken market, thus this fails
     Assert Failure COMPTROLLER_REJECTION LIQUIDATE_SEIZE_COMPTROLLER_REJECTION MARKET_NOT_LISTED
 
-Test "Seize tokens with a paused WBTC slToken-- like normal"
+Test "Seize tokens with a paused WBTC gToken-- like normal"
     NewComptroller
-    ListedSLToken ZRX slZRX initialExchangeRate:1e9
-    ListedSLToken WBTC slWBTC initialExchangeRate:0.1 tokenType:WBTC
-    Prep Geoff Some ZRX slZRX
-    Mint Geoff 50e18 slZRX
+    ListedGToken ZRX gZRX initialExchangeRate:1e9
+    ListedGToken WBTC gWBTC initialExchangeRate:0.1 tokenType:WBTC
+    Prep Geoff Some ZRX gZRX
+    Mint Geoff 50e18 gZRX
     Erc20 WBTC Pause
-    Invariant Remains (Erc20 slZRX TokenBalance Geoff) 50e9
+    Invariant Remains (Erc20 gZRX TokenBalance Geoff) 50e9
     AllowFailures
-    Seize 1e9 slWBTC caller:Geoff liquidator:Geoff borrower:Torrey
-    -- The caller must be from another slToken market, thus this fails
+    Seize 1e9 gWBTC caller:Geoff liquidator:Geoff borrower:Torrey
+    -- The caller must be from another gToken market, thus this fails
     Assert Failure COMPTROLLER_REJECTION LIQUIDATE_SEIZE_COMPTROLLER_REJECTION MARKET_NOT_LISTED
 
-Test "Not able to seize tokens with a malicious unlisted slToken"
+Test "Not able to seize tokens with a malicious unlisted gToken"
     NewComptroller
-    ListedSLToken ZRX slZRX initialExchangeRate:1e9
-    NewSLTokenImmutable EVL slEVL initialExchangeRate:1e9 slTokenType:SLEvil
-    Prep Geoff Some ZRX slZRX
-    Mint Geoff 50e18 slZRX
-    Invariant Remains (Erc20 slZRX TokenBalance Geoff) 50e9
-    Invariant Static (Erc20 slZRX TokenBalance Geoff)
-    Invariant Static (Erc20 slZRX TokenBalance Torrey)
+    ListedGToken ZRX gZRX initialExchangeRate:1e9
+    NewGTokenImmutable EVL gEVL initialExchangeRate:1e9 gTokenType:GEvil
+    Prep Geoff Some ZRX gZRX
+    Mint Geoff 50e18 gZRX
+    Invariant Remains (Erc20 gZRX TokenBalance Geoff) 50e9
+    Invariant Static (Erc20 gZRX TokenBalance Geoff)
+    Invariant Static (Erc20 gZRX TokenBalance Torrey)
     AllowFailures
-    EvilSeize slEVL 1e9 slZRX seizer:Geoff seizee:Torrey
-    -- The caller must be from another slToken market, thus this fails
+    EvilSeize gEVL 1e9 gZRX seizer:Geoff seizee:Torrey
+    -- The caller must be from another gToken market, thus this fails
     Assert Failure COMPTROLLER_REJECTION LIQUIDATE_SEIZE_COMPTROLLER_REJECTION MARKET_NOT_LISTED
 
-Test "Able to seize tokens with a malicious listed slToken"
+Test "Able to seize tokens with a malicious listed gToken"
     NewComptroller
-    ListedSLToken ZRX slZRX initialExchangeRate:1e9
-    ListedSLTokenImmutable EVL slEVL initialExchangeRate:1e9 slTokenType:SLEvil
-    Prep Geoff Some ZRX slZRX
-    Mint Geoff 50e18 slZRX
-    Assert Equal (Erc20 slZRX TokenBalance Geoff) 50e9
-    Expect Changes (Erc20 slZRX TokenBalance Geoff) -1e9
-    Expect Changes (Erc20 slZRX TokenBalance Torrey) +1e9
-    EvilSeize slEVL 1e9 slZRX seizer:Torrey seizee:Geoff
+    ListedGToken ZRX gZRX initialExchangeRate:1e9
+    ListedGTokenImmutable EVL gEVL initialExchangeRate:1e9 gTokenType:GEvil
+    Prep Geoff Some ZRX gZRX
+    Mint Geoff 50e18 gZRX
+    Assert Equal (Erc20 gZRX TokenBalance Geoff) 50e9
+    Expect Changes (Erc20 gZRX TokenBalance Geoff) -1e9
+    Expect Changes (Erc20 gZRX TokenBalance Torrey) +1e9
+    EvilSeize gEVL 1e9 gZRX seizer:Torrey seizee:Geoff

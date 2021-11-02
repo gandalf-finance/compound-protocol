@@ -3,7 +3,7 @@ pragma solidity ^0.5.16;
 import "./ComptrollerInterface.sol";
 import "./InterestRateModel.sol";
 
-contract SLTokenStorage {
+contract GTokenStorage {
     /**
      * @dev Guard variable for re-entrancy checks
      */
@@ -46,7 +46,7 @@ contract SLTokenStorage {
     address payable public pendingAdmin;
 
     /**
-     * @notice Contract which oversees inter-slToken operations
+     * @notice Contract which oversees inter-gToken operations
      */
     ComptrollerInterface public comptroller;
 
@@ -56,7 +56,7 @@ contract SLTokenStorage {
     InterestRateModel public interestRateModel;
 
     /**
-     * @notice Initial exchange rate used when minting the first SLTokens (used when totalSupply = 0)
+     * @notice Initial exchange rate used when minting the first GTokens (used when totalSupply = 0)
      */
     uint internal initialExchangeRateMantissa;
 
@@ -116,11 +116,11 @@ contract SLTokenStorage {
     mapping(address => BorrowSnapshot) internal accountBorrows;
 }
 
-contract SLTokenInterface is SLTokenStorage {
+contract GTokenInterface is GTokenStorage {
     /**
-     * @notice Indicator that this is a SLToken contract (for inspection)
+     * @notice Indicator that this is a GToken contract (for inspection)
      */
-    bool public constant isSLToken = true;
+    bool public constant isGToken = true;
 
 
     /*** Market Events ***/
@@ -153,7 +153,7 @@ contract SLTokenInterface is SLTokenStorage {
     /**
      * @notice Event emitted when a borrow is liquidated
      */
-    event LiquidateBorrow(address liquidator, address borrower, uint repayAmount, address slTokenCollateral, uint seizeTokens);
+    event LiquidateBorrow(address liquidator, address borrower, uint repayAmount, address gTokenCollateral, uint seizeTokens);
 
 
     /*** Admin Events ***/
@@ -240,14 +240,14 @@ contract SLTokenInterface is SLTokenStorage {
     function _setInterestRateModel(InterestRateModel newInterestRateModel) public returns (uint);
 }
 
-contract SLErc20Storage {
+contract GErc20Storage {
     /**
-     * @notice Underlying asset for this SLToken
+     * @notice Underlying asset for this GToken
      */
     address public underlying;
 }
 
-contract SLErc20Interface is SLErc20Storage {
+contract GErc20Interface is GErc20Storage {
 
     /*** User Interface ***/
 
@@ -257,7 +257,7 @@ contract SLErc20Interface is SLErc20Storage {
     function borrow(uint borrowAmount) external returns (uint);
     function repayBorrow(uint repayAmount) external returns (uint);
     function repayBorrowBehalf(address borrower, uint repayAmount) external returns (uint);
-    function liquidateBorrow(address borrower, uint repayAmount, SLTokenInterface slTokenCollateral) external returns (uint);
+    function liquidateBorrow(address borrower, uint repayAmount, GTokenInterface gTokenCollateral) external returns (uint);
 
 
     /*** Admin Functions ***/
@@ -265,14 +265,14 @@ contract SLErc20Interface is SLErc20Storage {
     function _addReserves(uint addAmount) external returns (uint);
 }
 
-contract SLDelegationStorage {
+contract GDelegationStorage {
     /**
      * @notice Implementation address for this contract
      */
     address public implementation;
 }
 
-contract SLDelegatorInterface is SLDelegationStorage {
+contract GDelegatorInterface is GDelegationStorage {
     /**
      * @notice Emitted when implementation is changed
      */
@@ -287,7 +287,7 @@ contract SLDelegatorInterface is SLDelegationStorage {
     function _setImplementation(address implementation_, bool allowResign, bytes memory becomeImplementationData) public;
 }
 
-contract SLDelegateInterface is SLDelegationStorage {
+contract GDelegateInterface is GDelegationStorage {
     /**
      * @notice Called by the delegator on a delegate to initialize it for duty
      * @dev Should revert if any issues arise which make it unfit for delegation

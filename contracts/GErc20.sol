@@ -1,13 +1,13 @@
 pragma solidity ^0.5.16;
 
-import "./SLToken.sol";
+import "./GToken.sol";
 
 /**
- * @title SashimiLending's SLErc20 Contract
- * @notice SLTokens which wrap an EIP-20 underlying
- * @author SashimiLending
+ * @title GandalfLending's GErc20 Contract
+ * @notice GTokens which wrap an EIP-20 underlying
+ * @author GandalfLending
  */
-contract SLErc20 is SLToken, SLErc20Interface {
+contract GErc20 is GToken, GErc20Interface {
     
     constructor() public {
         // Creator of the contract is admin during initialization
@@ -31,7 +31,7 @@ contract SLErc20 is SLToken, SLErc20Interface {
                         string memory name_,
                         string memory symbol_,
                         uint8 decimals_) public {
-        // SLToken initialize does the bulk of the work
+        // GToken initialize does the bulk of the work
         super.initialize(comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_);
 
         // Set underlying and sanity check it
@@ -42,7 +42,7 @@ contract SLErc20 is SLToken, SLErc20Interface {
     /*** User Interface ***/
 
     /**
-     * @notice Sender supplies assets into the market and receives slTokens in exchange
+     * @notice Sender supplies assets into the market and receives gTokens in exchange
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      * @param mintAmount The amount of the underlying asset to supply
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
@@ -53,9 +53,9 @@ contract SLErc20 is SLToken, SLErc20Interface {
     }
 
     /**
-     * @notice Sender redeems slTokens in exchange for the underlying asset
+     * @notice Sender redeems gTokens in exchange for the underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
-     * @param redeemTokens The number of slTokens to redeem into underlying
+     * @param redeemTokens The number of gTokens to redeem into underlying
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
     function redeem(uint redeemTokens) external returns (uint) {
@@ -63,7 +63,7 @@ contract SLErc20 is SLToken, SLErc20Interface {
     }
 
     /**
-     * @notice Sender redeems slTokens in exchange for a specified amount of underlying asset
+     * @notice Sender redeems gTokens in exchange for a specified amount of underlying asset
      * @dev Accrues interest whether or not the operation succeeds, unless reverted
      * @param redeemAmount The amount of underlying to redeem
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
@@ -105,13 +105,13 @@ contract SLErc20 is SLToken, SLErc20Interface {
     /**
      * @notice The sender liquidates the borrowers collateral.
      *  The collateral seized is transferred to the liquidator.
-     * @param borrower The borrower of this slToken to be liquidated
+     * @param borrower The borrower of this gToken to be liquidated
      * @param repayAmount The amount of the underlying borrowed asset to repay
-     * @param slTokenCollateral The market in which to seize collateral from the borrower
+     * @param gTokenCollateral The market in which to seize collateral from the borrower
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function liquidateBorrow(address borrower, uint repayAmount, SLTokenInterface slTokenCollateral) external returns (uint) {
-        (uint err,) = liquidateBorrowInternal(borrower, repayAmount, slTokenCollateral);
+    function liquidateBorrow(address borrower, uint repayAmount, GTokenInterface gTokenCollateral) external returns (uint) {
+        (uint err,) = liquidateBorrowInternal(borrower, repayAmount, gTokenCollateral);
         return err;
     }
 

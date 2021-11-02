@@ -6,7 +6,7 @@ interface ComptrollerMethods {
   getAccountLiquidity(string): Callable<{0: number, 1: number, 2: number}>
   getHypotheticalAccountLiquidity(account: string, asset: string, redeemTokens: encodedNumber, borrowAmount: encodedNumber): Callable<{0: number, 1: number, 2: number}>
   membershipLength(string): Callable<string>
-  checkMembership(user: string, slToken: string): Callable<string>
+  checkMembership(user: string, gToken: string): Callable<string>
   getAssetsIn(string): Callable<string[]>
   admin(): Callable<string>
   oracle(): Callable<string>
@@ -45,20 +45,20 @@ interface ComptrollerMethods {
   seizeGuardianPaused(): Callable<boolean>
   mintGuardianPaused(market: string): Callable<boolean>
   borrowGuardianPaused(market: string): Callable<boolean>
-  _addSashimiMarkets(markets: string[]): Sendable<void>
-  _dropSashimiMarket(market: string): Sendable<void>
-  getSashimiMarkets(): Callable<string[]>
-  refreshSashimiSpeeds(): Sendable<void>
-  sashimiRate(): Callable<number>
-  sashimiSupplyState(string): Callable<string>
-  sashimiBorrowState(string): Callable<string>
-  sashimiAccrued(string): Callable<string>
-  sashimiSupplierIndex(market: string, account: string): Callable<string>
-  sashimiBorrowerIndex(market: string, account: string): Callable<string>
-  sashimiSpeeds(string): Callable<string>
-  claimSashimi(string): Sendable<void>
-  _setSashimiRate(encodedNumber): Sendable<void>
-  _setMarketBorrowCaps(slTokens:string[], borrowCaps:encodedNumber[]): Sendable<void>
+  _addPlatformTokenMarkets(markets: string[]): Sendable<void>
+  _dropPlatformTokenMarket(market: string): Sendable<void>
+  getPlatformTokenMarkets(): Callable<string[]>
+  refreshPlatformTokenSpeeds(): Sendable<void>
+  platformTokenRate(): Callable<number>
+  platformTokenSupplyState(string): Callable<string>
+  platformTokenBorrowState(string): Callable<string>
+  platformTokenAccrued(string): Callable<string>
+  platformTokenSupplierIndex(market: string, account: string): Callable<string>
+  platformTokenBorrowerIndex(market: string, account: string): Callable<string>
+  platformTokenSpeeds(string): Callable<string>
+  claimPlatformToken(string): Sendable<void>
+  _setPlatformTokenRate(encodedNumber): Sendable<void>
+  _setMarketBorrowCaps(gTokens:string[], borrowCaps:encodedNumber[]): Sendable<void>
   _setBorrowCapGuardian(string): Sendable<void>
   borrowCapGuardian(): Callable<string>
   borrowCaps(string): Callable<string>

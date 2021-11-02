@@ -1,6 +1,6 @@
-const {makeSLToken} = require('../Utils/SashimiLending');
+const {makeGToken} = require('../Utils/GandalfLending');
 
-describe('SLToken', function () {
+describe('GToken', function () {
   let root, accounts;
   beforeEach(async () => {
     [root, ...accounts] = saddle.accounts;
@@ -8,38 +8,38 @@ describe('SLToken', function () {
 
   describe('transfer', () => {
     it("cannot transfer from a zero balance", async () => {
-      const slToken = await makeSLToken({supportMarket: true});
-      expect(await call(slToken, 'balanceOf', [root])).toEqualNumber(0);
-      expect(await send(slToken, 'transfer', [accounts[0], 100])).toHaveTokenFailure('MATH_ERROR', 'TRANSFER_NOT_ENOUGH');
+      const gToken = await makeGToken({supportMarket: true});
+      expect(await call(gToken, 'balanceOf', [root])).toEqualNumber(0);
+      expect(await send(gToken, 'transfer', [accounts[0], 100])).toHaveTokenFailure('MATH_ERROR', 'TRANSFER_NOT_ENOUGH');
     });
 
     it("transfers 50 tokens", async () => {
-      const slToken = await makeSLToken({supportMarket: true});
-      await send(slToken, 'harnessSetBalance', [root, 100]);
-      expect(await call(slToken, 'balanceOf', [root])).toEqualNumber(100);
-      await send(slToken, 'transfer', [accounts[0], 50]);
-      expect(await call(slToken, 'balanceOf', [root])).toEqualNumber(50);
-      expect(await call(slToken, 'balanceOf', [accounts[0]])).toEqualNumber(50);
+      const gToken = await makeGToken({supportMarket: true});
+      await send(gToken, 'harnessSetBalance', [root, 100]);
+      expect(await call(gToken, 'balanceOf', [root])).toEqualNumber(100);
+      await send(gToken, 'transfer', [accounts[0], 50]);
+      expect(await call(gToken, 'balanceOf', [root])).toEqualNumber(50);
+      expect(await call(gToken, 'balanceOf', [accounts[0]])).toEqualNumber(50);
     });
 
     it("doesn't transfer when src == dst", async () => {
-      const slToken = await makeSLToken({supportMarket: true});
-      await send(slToken, 'harnessSetBalance', [root, 100]);
-      expect(await call(slToken, 'balanceOf', [root])).toEqualNumber(100);
-      expect(await send(slToken, 'transfer', [root, 50])).toHaveTokenFailure('BAD_INPUT', 'TRANSFER_NOT_ALLOWED');
+      const gToken = await makeGToken({supportMarket: true});
+      await send(gToken, 'harnessSetBalance', [root, 100]);
+      expect(await call(gToken, 'balanceOf', [root])).toEqualNumber(100);
+      expect(await send(gToken, 'transfer', [root, 50])).toHaveTokenFailure('BAD_INPUT', 'TRANSFER_NOT_ALLOWED');
     });
 
     it("rejects transfer when not allowed and reverts if not verified", async () => {
-      const slToken = await makeSLToken({comptrollerOpts: {kind: 'bool'}});
-      await send(slToken, 'harnessSetBalance', [root, 100]);
-      expect(await call(slToken, 'balanceOf', [root])).toEqualNumber(100);
+      const gToken = await makeGToken({comptrollerOpts: {kind: 'bool'}});
+      await send(gToken, 'harnessSetBalance', [root, 100]);
+      expect(await call(gToken, 'balanceOf', [root])).toEqualNumber(100);
 
-      await send(slToken.comptroller, 'setTransferAllowed', [false])
-      expect(await send(slToken, 'transfer', [root, 50])).toHaveTrollReject('TRANSFER_COMPTROLLER_REJECTION');
+      await send(gToken.comptroller, 'setTransferAllowed', [false])
+      expect(await send(gToken, 'transfer', [root, 50])).toHaveTrollReject('TRANSFER_COMPTROLLER_REJECTION');
 
-      await send(slToken.comptroller, 'setTransferAllowed', [true])
-      await send(slToken.comptroller, 'setTransferVerify', [false])
-      await expect(send(slToken, 'transfer', [accounts[0], 50])).rejects.toRevert("revert transferVerify rejected transfer");
+      await send(gToken.comptroller, 'setTransferAllowed', [true])
+      await send(gToken.comptroller, 'setTransferVerify', [false])
+      await expect(send(gToken, 'transfer', [accounts[0], 50])).rejects.toRevert("revert transferVerify rejected transfer");
     });
   });
 });

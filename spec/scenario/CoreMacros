@@ -11,7 +11,7 @@ Macro PricedComptroller closeFactor=0.1 maxAssets=20
     PriceOracle Deploy Simple
     ComptrollerImpl Deploy ScenarioG1 ScenComptrollerG1
     Unitroller SetPendingImpl ScenComptrollerG1
-    PriceOracleProxy Deploy Admin (PriceOracle Address) (Address Zero) (Address Zero) (Address Zero) (Address Zero) (Address Zero) -- if listing slEther use ListedEtherToken to replace proxy
+    PriceOracleProxy Deploy Admin (PriceOracle Address) (Address Zero) (Address Zero) (Address Zero) (Address Zero) (Address Zero) -- if listing gEther use ListedEtherToken to replace proxy
     ComptrollerImpl ScenComptrollerG1 BecomeG1 (PriceOracleProxy Address) closeFactor maxAssets
     ComptrollerImpl Deploy Scenario ScenComptroller
     Unitroller SetPendingImpl ScenComptroller
@@ -23,7 +23,7 @@ Macro NewComptroller price=1.0 closeFactor=0.1 maxAssets=20
     PriceOracle Deploy Fixed price
     ComptrollerImpl Deploy ScenarioG1 ScenComptrollerG1
     Unitroller SetPendingImpl ScenComptrollerG1
-    PriceOracleProxy Deploy Admin (PriceOracle Address) (Address Zero) (Address Zero) (Address Zero) (Address Zero) (Address Zero) -- if listing slEther use ListedEtherToken to replace proxy
+    PriceOracleProxy Deploy Admin (PriceOracle Address) (Address Zero) (Address Zero) (Address Zero) (Address Zero) (Address Zero) -- if listing gEther use ListedEtherToken to replace proxy
     ComptrollerImpl ScenComptrollerG1 BecomeG1 (PriceOracleProxy Address) closeFactor maxAssets
     --g2
     ComptrollerImpl Deploy StandardG2 ComptrollerG2
@@ -38,135 +38,135 @@ Macro NewComptroller price=1.0 closeFactor=0.1 maxAssets=20
     Unitroller SetPendingImpl ScenComptroller
     ComptrollerImpl ScenComptroller Become
 
-Macro NewSLToken erc20 slToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 tokenType=Standard delegatorType=SLErc20DelegatorScenario slTokenType=SLErc20DelegateScenario admin=Admin becomeImplementationData="0x0"
+Macro NewGToken erc20 gToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 tokenType=Standard delegatorType=GErc20DelegatorScenario gTokenType=GErc20DelegateScenario admin=Admin becomeImplementationData="0x0"
     Erc20 Deploy tokenType erc20 erc20
     InterestRateModel Deploy Fixed StdInterest borrowRate -- Note: interest rate model probably shouldn't be global
-    SLTokenDelegate Deploy slTokenType slErc20Delegate
-    SLToken Deploy delegatorType slToken slToken (Erc20 erc20 Address) (Comptroller Address) (InterestRateModel StdInterest Address) initialExchangeRate decimals admin (SLTokenDelegate slErc20Delegate Address) becomeImplementationData
+    GTokenDelegate Deploy gTokenType gErc20Delegate
+    GToken Deploy delegatorType gToken gToken (Erc20 erc20 Address) (Comptroller Address) (InterestRateModel StdInterest Address) initialExchangeRate decimals admin (GTokenDelegate gErc20Delegate Address) becomeImplementationData
 
--- Same as NewSLToken but does not deploy an ERC20. Used for special ERC20s that are initialized differently
-Macro NewSLTokenBringERC20 erc20 slToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 delegatorType=SLErc20DelegatorScenario slTokenType=SLErc20DelegateScenario admin=Admin becomeImplementationData="0x0"
+-- Same as NewGToken but does not deploy an ERC20. Used for special ERC20s that are initialized differently
+Macro NewGTokenBringERC20 erc20 gToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 delegatorType=GErc20DelegatorScenario gTokenType=GErc20DelegateScenario admin=Admin becomeImplementationData="0x0"
     InterestRateModel Deploy Fixed StdInterest borrowRate -- Note: interest rate model probably shouldn't be global
-    SLTokenDelegate Deploy slTokenType slErc20Delegate
-    SLToken Deploy delegatorType slToken slToken (Erc20 erc20 Address) (Comptroller Address) (InterestRateModel StdInterest Address) initialExchangeRate decimals admin (SLTokenDelegate slErc20Delegate Address) becomeImplementationData
+    GTokenDelegate Deploy gTokenType gErc20Delegate
+    GToken Deploy delegatorType gToken gToken (Erc20 erc20 Address) (Comptroller Address) (InterestRateModel StdInterest Address) initialExchangeRate decimals admin (GTokenDelegate gErc20Delegate Address) becomeImplementationData
 
-Macro NewSLTokenImmutable erc20 slToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 tokenType=Standard slTokenType=Scenario admin=Admin
+Macro NewGTokenImmutable erc20 gToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 tokenType=Standard gTokenType=Scenario admin=Admin
     Erc20 Deploy tokenType erc20 erc20
     InterestRateModel Deploy Fixed StdInterest borrowRate -- Note: interest rate model probably shouldn't be global
-    SLToken Deploy slTokenType slToken slToken (Erc20 erc20 Address) (Comptroller Address) (InterestRateModel StdInterest Address) initialExchangeRate decimals admin
+    GToken Deploy gTokenType gToken gToken (Erc20 erc20 Address) (Comptroller Address) (InterestRateModel StdInterest Address) initialExchangeRate decimals admin
 
-Macro NewEtherToken slToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 admin=Admin
+Macro NewEtherToken gToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 admin=Admin
     InterestRateModel Deploy Fixed StdInterest borrowRate -- Note: interest rate model probably shouldn't be global
-    SLToken Deploy slEtherScenario slToken slToken (Comptroller Address) (InterestRateModel StdInterest Address) initialExchangeRate decimals admin
+    GToken Deploy gEtherScenario gToken gToken (Comptroller Address) (InterestRateModel StdInterest Address) initialExchangeRate decimals admin
 
-Macro ListedSLToken erc20 slToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 tokenType=Standard delegatorType=SLErc20DelegatorScenario slTokenType=SLErc20DelegateScenario admin=Admin
-    NewSLToken erc20 slToken borrowRate initialExchangeRate decimals tokenType delegatorType slTokenType admin
-    Comptroller SupportMarket slToken
+Macro ListedGToken erc20 gToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 tokenType=Standard delegatorType=GErc20DelegatorScenario gTokenType=GErc20DelegateScenario admin=Admin
+    NewGToken erc20 gToken borrowRate initialExchangeRate decimals tokenType delegatorType gTokenType admin
+    Comptroller SupportMarket gToken
 
-Macro ListedSLTokenImmutable erc20 slToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 tokenType=Standard slTokenType=Scenario admin=Admin
-    NewSLTokenImmutable erc20 slToken borrowRate initialExchangeRate decimals tokenType slTokenType admin
-    Comptroller SupportMarket slToken
+Macro ListedGTokenImmutable erc20 gToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 tokenType=Standard gTokenType=Scenario admin=Admin
+    NewGTokenImmutable erc20 gToken borrowRate initialExchangeRate decimals tokenType gTokenType admin
+    Comptroller SupportMarket gToken
 
-Macro ListedEtherToken slToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 admin=Admin
-    NewEtherToken slToken borrowRate initialExchangeRate decimals admin
-    Comptroller SupportMarket slToken
-    PriceOracleProxy Deploy Admin (PriceOracle Address) (Address slETH) (Address Zero) (Address Zero) (Address Zero) (Address Zero)
+Macro ListedEtherToken gToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 admin=Admin
+    NewEtherToken gToken borrowRate initialExchangeRate decimals admin
+    Comptroller SupportMarket gToken
+    PriceOracleProxy Deploy Admin (PriceOracle Address) (Address gETH) (Address Zero) (Address Zero) (Address Zero) (Address Zero)
     Comptroller SetPriceOracle (PriceOracleProxy Address)
 
-Macro ListedEtherTokenMinted slToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 admin=Admin
-    NewEtherToken slToken borrowRate initialExchangeRate decimals admin
-    Comptroller SupportMarket slToken
-    CallMintEth Root 1e18 slToken
+Macro ListedEtherTokenMinted gToken borrowRate=0.000005 initialExchangeRate=2e9 decimals=8 admin=Admin
+    NewEtherToken gToken borrowRate initialExchangeRate decimals admin
+    Comptroller SupportMarket gToken
+    CallMintEth Root 1e18 gToken
 
-Macro SetPriceCF slToken price collateralFactor
-    PriceOracle SetPrice slToken price
-    Comptroller SetCollateralFactor slToken collateralFactor
+Macro SetPriceCF gToken price collateralFactor
+    PriceOracle SetPrice gToken price
+    Comptroller SetCollateralFactor gToken collateralFactor
 
 Macro Give user amount erc20
     Erc20 erc20 Faucet user amount
 
 Macro Donate token amount
-    (Trx Value amount (SLToken token Donate))
+    (Trx Value amount (GToken token Donate))
 
 Macro Prep user amount erc20 token allowanceAmount=Nothing
     Erc20 erc20 Faucet user amount
     From user (Erc20 erc20 Approve token (Default allowanceAmount amount))
 
 Macro Allow user token
-    From user (Erc20 (SLToken token Underlying) Approve token UInt256Max)
+    From user (Erc20 (GToken token Underlying) Approve token UInt256Max)
 
 Macro AccrueInterest token
-    SLToken token AccrueInterest
+    GToken token AccrueInterest
 
 Macro Mint user amount token
-    From user (SLToken token Mint amount)
+    From user (GToken token Mint amount)
 
 Macro SendMintEth user amount token
     From user (Trx GasPrice 0 (Trx Value amount (Send token amount)))
 
 Macro CallMintEth user amount token
-    From user (Trx GasPrice 0 (Trx Value amount (SLToken token Mint)))
+    From user (Trx GasPrice 0 (Trx Value amount (GToken token Mint)))
 
 Macro Redeem user amount token
-    From user (SLToken token Redeem amount)
+    From user (GToken token Redeem amount)
 
 Macro RedeemEth user amount token
-    Trx GasPrice 0 (From user (SLToken token Redeem amount))
+    Trx GasPrice 0 (From user (GToken token Redeem amount))
 
 Macro RedeemUnderlying user amount token
-    From user (SLToken token RedeemUnderlying amount)
+    From user (GToken token RedeemUnderlying amount)
 
 Macro RedeemUnderlyingEth user amount token
-    Trx GasPrice 0 (From user (SLToken token RedeemUnderlying amount))
+    Trx GasPrice 0 (From user (GToken token RedeemUnderlying amount))
 
 Macro BorrowEth user amount token
-    Trx GasPrice 0 (From user (SLToken token Borrow amount))
+    Trx GasPrice 0 (From user (GToken token Borrow amount))
 
 Macro Borrow user amount token
-    From user (SLToken token Borrow amount)
+    From user (GToken token Borrow amount)
 
 Macro RepayBorrow user amount token
-    From user (SLToken token RepayBorrow amount)
+    From user (GToken token RepayBorrow amount)
 
 Macro RepayBorrowEth user amount token
-    From user (Trx GasPrice 0 (Trx Value amount (SLToken token RepayBorrow)))
+    From user (Trx GasPrice 0 (Trx Value amount (GToken token RepayBorrow)))
 
 Macro RepayBorrowEthMax user amount token
     From user (Trx GasPrice 0 (Trx Value amount (Maximillion RepayBehalf user)))
 
 Macro RepayBorrowBehalf user behalf amount token
-    From user (SLToken token RepayBorrowBehalf behalf amount)
+    From user (GToken token RepayBorrowBehalf behalf amount)
 
 Macro RepayBorrowEthBehalf user behalf amount token
-    From user (Trx GasPrice 0 (Trx Value amount (SLToken token RepayBorrowBehalf behalf)))
+    From user (Trx GasPrice 0 (Trx Value amount (GToken token RepayBorrowBehalf behalf)))
 
 Macro Liquidate liquidator _ borrower amount token _ collateral
-    From liquidator (SLToken token Liquidate borrower collateral amount)
+    From liquidator (GToken token Liquidate borrower collateral amount)
 
 Macro LiquidateEthColl liquidator _ borrower amount token _ collateral
-    From liquidator (Trx GasPrice 0 (SLToken token Liquidate borrower collateral amount))
+    From liquidator (Trx GasPrice 0 (GToken token Liquidate borrower collateral amount))
 
 Macro LiquidateEthBorrow liquidator _ borrower amount token _ collateral
-    From liquidator (Trx GasPrice 0 (Trx Value amount (SLToken token Liquidate borrower collateral)))
+    From liquidator (Trx GasPrice 0 (Trx Value amount (GToken token Liquidate borrower collateral)))
 
 Macro Seize amount token caller liquidator borrower
-    From caller (SLToken token Seize liquidator borrower amount)
+    From caller (GToken token Seize liquidator borrower amount)
 
 Macro EvilSeize token amount treasure seizer seizee
-    SLToken token EvilSeize treasure seizer seizee amount
+    GToken token EvilSeize treasure seizer seizee amount
 
-Macro Support slToken collateralFactor=0.5
-    Comptroller SupportMarket slToken
-    Comptroller SetCollateralFactor slToken collateralFactor
+Macro Support gToken collateralFactor=0.5
+    Comptroller SupportMarket gToken
+    Comptroller SetCollateralFactor gToken collateralFactor
 
-Macro SetCollateralFactor slToken collateralFactor=0.5
-    Comptroller SetCollateralFactor slToken collateralFactor
+Macro SetCollateralFactor gToken collateralFactor=0.5
+    Comptroller SetCollateralFactor gToken collateralFactor
 
 Macro AddReserves amount token user=Root
-    From user (SLToken token AddReserves amount)
+    From user (GToken token AddReserves amount)
 
 Macro ReduceReserves amount token
-    SLToken token ReduceReserves amount
+    GToken token ReduceReserves amount
 
 Macro FastForward n blocks
     Comptroller FastForward n blocks
@@ -180,64 +180,64 @@ Macro ExitMarket user market
 Macro Transfer from to amount token
     From from (Erc20 token Transfer to amount)
 
-Macro Cash slToken
-    Read Erc20 (SLToken slToken Underlying) TokenBalance slToken
+Macro Cash gToken
+    Read Erc20 (GToken gToken Underlying) TokenBalance gToken
 
-Macro QuickMint amount slToken from=Me
-    Give from amount (SLToken slToken Underlying)
-    Allow from slToken
-    From from (SLToken slToken Mint amount)
+Macro QuickMint amount gToken from=Me
+    Give from amount (GToken gToken Underlying)
+    Allow from gToken
+    From from (GToken gToken Mint amount)
 
-Macro QuickBorrow amount slToken ...collateral
+Macro QuickBorrow amount gToken ...collateral
     From Me (Comptroller EnterMarkets collateral)
-    From Me (Comptroller EnterMarkets (slToken))
-    From Me (SLToken slToken Borrow amount)
+    From Me (Comptroller EnterMarkets (gToken))
+    From Me (GToken gToken Borrow amount)
 
 -- Macro for performing a borrow with the sole
 -- purpose of adding interest to the erc20 market
-Macro BorrowAndRepayWithInterest erc20 slToken amount interestAmount interestRate blocks reserveRate=0
+Macro BorrowAndRepayWithInterest erc20 gToken amount interestAmount interestRate blocks reserveRate=0
     -- TODO: Make invariant success for these?
     -- TODO: Named args as macros
     InterestRateModel Deploy Fixed Std interestRate
-    SLToken slToken SetInterestRateModel (InterestRateModel Std Address)
-    SLToken slToken SetReserveFactor reserveRate
-    ListedSLToken COLLAT slCOLLAT
-    Comptroller SetCollateralFactor slCOLLAT 0.9
-    Prep Torrey 1e30 COLLAT slCOLLAT
-    Mint Torrey 1e30 slCOLLAT
-    EnterMarkets Torrey slCOLLAT slToken
-    Assert True (Comptroller CheckMembership Torrey slCOLLAT)
-    Assert True (Comptroller CheckMembership Torrey slToken)
-    Borrow Torrey amount slToken
+    GToken gToken SetInterestRateModel (InterestRateModel Std Address)
+    GToken gToken SetReserveFactor reserveRate
+    ListedGToken COLLAT gCOLLAT
+    Comptroller SetCollateralFactor gCOLLAT 0.9
+    Prep Torrey 1e30 COLLAT gCOLLAT
+    Mint Torrey 1e30 gCOLLAT
+    EnterMarkets Torrey gCOLLAT gToken
+    Assert True (Comptroller CheckMembership Torrey gCOLLAT)
+    Assert True (Comptroller CheckMembership Torrey gToken)
+    Borrow Torrey amount gToken
     -- Cool, we've borrowed, now let's accrue interest then repay all
     FastForward blocks Blocks
-    -- RepayBorrow Torrey (SLToken BorrowBalance Torrey) slToken
-    From Torrey (Erc20 erc20 Approve slToken amount)
-    RepayBorrow Torrey amount slToken
-    From Torrey (Erc20 erc20 Approve slToken interestAmount)
+    -- RepayBorrow Torrey (GToken BorrowBalance Torrey) gToken
+    From Torrey (Erc20 erc20 Approve gToken amount)
+    RepayBorrow Torrey amount gToken
+    From Torrey (Erc20 erc20 Approve gToken interestAmount)
     Give Torrey interestAmount erc20
-    RepayBorrow Torrey interestAmount slToken
-    Assert Equal (SLToken slToken BorrowBalance Torrey) Zero
+    RepayBorrow Torrey interestAmount gToken
+    Assert Equal (GToken gToken BorrowBalance Torrey) Zero
 
 -- Macro for performing a borrow with the sole
 -- purpose of adding interest to the ether market
-Macro BorrowAndRepayEthWithInterest slEther amount interestAmount interestRate blocks reserveRate=0
+Macro BorrowAndRepayEthWithInterest gEther amount interestAmount interestRate blocks reserveRate=0
     -- TODO: Make invariant success for these?
     -- TODO: Named args as macros
     InterestRateModel Deploy Fixed Std interestRate
-    SLToken slEther SetInterestRateModel (InterestRateModel Std Address)
-    SLToken slEther SetReserveFactor reserveRate
-    ListedSLToken COLLAT slCOLLAT
-    Comptroller SetCollateralFactor slCOLLAT 0.9
-    Prep Torrey 1e30 COLLAT slCOLLAT
-    Mint Torrey 1e30 slCOLLAT
-    EnterMarkets Torrey slCOLLAT slEther
-    Assert True (Comptroller CheckMembership Torrey slCOLLAT)
-    Assert True (Comptroller CheckMembership Torrey slEther)
-    Borrow Torrey amount slEther
+    GToken gEther SetInterestRateModel (InterestRateModel Std Address)
+    GToken gEther SetReserveFactor reserveRate
+    ListedGToken COLLAT gCOLLAT
+    Comptroller SetCollateralFactor gCOLLAT 0.9
+    Prep Torrey 1e30 COLLAT gCOLLAT
+    Mint Torrey 1e30 gCOLLAT
+    EnterMarkets Torrey gCOLLAT gEther
+    Assert True (Comptroller CheckMembership Torrey gCOLLAT)
+    Assert True (Comptroller CheckMembership Torrey gEther)
+    Borrow Torrey amount gEther
     -- Cool, we've borrowed, now let's accrue interest then repay all
     FastForward blocks Blocks
-    -- RepayBorrow Torrey (SLToken BorrowBalance Torrey) slEther
-    RepayBorrowEth Torrey amount slEther
-    RepayBorrowEth Torrey interestAmount slEther
-    Assert Equal (SLToken slEther BorrowBalance Torrey) Zero
+    -- RepayBorrow Torrey (GToken BorrowBalance Torrey) gEther
+    RepayBorrowEth Torrey amount gEther
+    RepayBorrowEth Torrey interestAmount gEther
+    Assert Equal (GToken gEther BorrowBalance Torrey) Zero

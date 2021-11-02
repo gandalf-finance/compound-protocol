@@ -1,8 +1,8 @@
 const { address, both, etherMantissa } = require('../Utils/Ethereum');
-const { makeComptroller, makeSLToken } = require('../Utils/SashimiLending');
+const { makeComptroller, makeGToken } = require('../Utils/GandalfLending');
 
 describe('Comptroller', () => {
-  let comptroller, slToken;
+  let comptroller, gToken;
   let root, accounts;
 
   beforeEach(async () => {
@@ -56,8 +56,8 @@ describe('Comptroller', () => {
 
   describe('setting paused', () => {
     beforeEach(async () => {
-      slToken = await makeSLToken({supportMarket: true});
-      comptroller = slToken.comptroller;
+      gToken = await makeGToken({supportMarket: true});
+      comptroller = gToken.comptroller;
     });
 
     let globalMethods = ["Transfer", "Seize"];
@@ -124,39 +124,39 @@ describe('Comptroller', () => {
 
       marketMethods.forEach(async (method) => {
         it(`only pause guardian or admin can pause ${method}`, async () => {
-          await expect(send(comptroller, `_set${method}Paused`, [slToken._address, true], {from: accounts[2]})).rejects.toRevert("revert only pause guardian and admin can pause");
-          await expect(send(comptroller, `_set${method}Paused`, [slToken._address, false], {from: accounts[2]})).rejects.toRevert("revert only pause guardian and admin can pause");
+          await expect(send(comptroller, `_set${method}Paused`, [gToken._address, true], {from: accounts[2]})).rejects.toRevert("revert only pause guardian and admin can pause");
+          await expect(send(comptroller, `_set${method}Paused`, [gToken._address, false], {from: accounts[2]})).rejects.toRevert("revert only pause guardian and admin can pause");
         });
 
         it(`PauseGuardian can pause of ${method}GuardianPaused`, async () => {
-          result = await send(comptroller, `_set${method}Paused`, [slToken._address, true], {from: pauseGuardian});
-          expect(result).toHaveLog(`ActionPaused`, {slToken: slToken._address, action: method, pauseState: true});
+          result = await send(comptroller, `_set${method}Paused`, [gToken._address, true], {from: pauseGuardian});
+          expect(result).toHaveLog(`ActionPaused`, {gToken: gToken._address, action: method, pauseState: true});
 
           let camelCase = method.charAt(0).toLowerCase() + method.substring(1);
 
-          state = await call(comptroller, `${camelCase}GuardianPaused`, [slToken._address]);
+          state = await call(comptroller, `${camelCase}GuardianPaused`, [gToken._address]);
           expect(state).toEqual(true);
 
-          await expect(send(comptroller, `_set${method}Paused`, [slToken._address, false], {from: pauseGuardian})).rejects.toRevert("revert only admin can unpause");
-          result = await send(comptroller, `_set${method}Paused`, [slToken._address, false]);
+          await expect(send(comptroller, `_set${method}Paused`, [gToken._address, false], {from: pauseGuardian})).rejects.toRevert("revert only admin can unpause");
+          result = await send(comptroller, `_set${method}Paused`, [gToken._address, false]);
 
-          expect(result).toHaveLog(`ActionPaused`, {slToken: slToken._address, action: method, pauseState: false});
+          expect(result).toHaveLog(`ActionPaused`, {gToken: gToken._address, action: method, pauseState: false});
 
-          state = await call(comptroller, `${camelCase}GuardianPaused`, [slToken._address]);
+          state = await call(comptroller, `${camelCase}GuardianPaused`, [gToken._address]);
           expect(state).toEqual(false);
         });
 
         it(`pauses ${method}`, async() => {
-          await send(comptroller, `_set${method}Paused`, [slToken._address, true], {from: pauseGuardian});
+          await send(comptroller, `_set${method}Paused`, [gToken._address, true], {from: pauseGuardian});
           switch (method) {
           case "Mint":
             expect(await call(comptroller, 'mintAllowed', [address(1), address(2), 1])).toHaveTrollError('MARKET_NOT_LISTED');
-            await expect(send(comptroller, 'mintAllowed', [slToken._address, address(2), 1])).rejects.toRevert(`revert ${method.toLowerCase()} is paused`);
+            await expect(send(comptroller, 'mintAllowed', [gToken._address, address(2), 1])).rejects.toRevert(`revert ${method.toLowerCase()} is paused`);
             break;
 
           case "Borrow":
             expect(await call(comptroller, 'borrowAllowed', [address(1), address(2), 1])).toHaveTrollError('MARKET_NOT_LISTED');
-            await expect(send(comptroller, 'borrowAllowed', [slToken._address, address(2), 1])).rejects.toRevert(`revert ${method.toLowerCase()} is paused`);
+            await expect(send(comptroller, 'borrowAllowed', [gToken._address, address(2), 1])).rejects.toRevert(`revert ${method.toLowerCase()} is paused`);
             break;
 
           default:

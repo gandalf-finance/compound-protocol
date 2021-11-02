@@ -2,7 +2,7 @@ import { Contract } from '../Contract';
 import { Callable, Sendable } from '../Invokation';
 import { encodedNumber } from '../Encoding';
 
-export interface SLTokenMethods {
+export interface GTokenMethods {
   _resignImplementation(): Sendable<void>;
   balanceOfUnderlying(address: string): Callable<number>;
   borrowBalanceCurrent(address: string): Callable<string>;
@@ -49,17 +49,17 @@ export interface SLTokenMethods {
   _acceptAdmin(): Sendable<number>;
 }
 
-export interface SLTokenScenarioMethods extends SLTokenMethods {
+export interface GTokenScenarioMethods extends GTokenMethods {
   setTotalBorrows(amount: encodedNumber): Sendable<void>;
   setTotalReserves(amount: encodedNumber): Sendable<void>;
 }
 
-export interface SLToken extends Contract {
-  methods: SLTokenMethods;
+export interface GToken extends Contract {
+  methods: GTokenMethods;
   name: string;
 }
 
-export interface SLTokenScenario extends Contract {
-  methods: SLTokenScenarioMethods;
+export interface GTokenScenario extends Contract {
+  methods: GTokenScenarioMethods;
   name: string;
 }

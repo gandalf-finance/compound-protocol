@@ -4,148 +4,148 @@ Test "Enter Markets Idempotent"
 	NewComptroller
 	Assert Equal (Comptroller MembershipLength Geoff) Zero
 	Assert Equal (Comptroller AssetsIn Geoff) []
-	ListedSLToken ZRX slZRX
-	EnterMarkets Geoff slZRX
-	Assert Log MarketEntered (slToken (Address slZRX)) (account (Address Geoff))
+	ListedGToken ZRX gZRX
+	EnterMarkets Geoff gZRX
+	Assert Log MarketEntered (gToken (Address gZRX)) (account (Address Geoff))
 	Assert Equal (Comptroller MembershipLength Geoff) (Exactly 1)
-	Assert True (Comptroller CheckMembership Geoff slZRX)
-	ListedSLToken OMG slOMG
-	EnterMarkets Geoff slZRX slOMG
+	Assert True (Comptroller CheckMembership Geoff gZRX)
+	ListedGToken OMG gOMG
+	EnterMarkets Geoff gZRX gOMG
 	Assert Equal (Comptroller MembershipLength Geoff) (Exactly 2)
-	Assert True (Comptroller CheckMembership Geoff slZRX)
-	Assert True (Comptroller CheckMembership Geoff slOMG)
-	Assert Equal (Comptroller AssetsIn Geoff) [(Address slZRX) (Address slOMG)]
+	Assert True (Comptroller CheckMembership Geoff gZRX)
+	Assert True (Comptroller CheckMembership Geoff gOMG)
+	Assert Equal (Comptroller AssetsIn Geoff) [(Address gZRX) (Address gOMG)]
 
 Test "Entered Market Must Be Supported"
 	NewComptroller
 	Assert Equal (Comptroller MembershipLength Geoff) Zero
-	ListedSLToken ZRX slZRX
-	EnterMarkets Geoff slZRX
+	ListedGToken ZRX gZRX
+	EnterMarkets Geoff gZRX
 	Assert Equal (Comptroller MembershipLength Geoff) (Exactly 1)
-	NewSLToken OMG slOMG
-	EnterMarkets Geoff slZRX slOMG
+	NewGToken OMG gOMG
+	EnterMarkets Geoff gZRX gOMG
 	Assert Equal (Comptroller MembershipLength Geoff) (Exactly 1)
-	Assert True (Comptroller CheckMembership Geoff slZRX)
-	Assert False (Comptroller CheckMembership Geoff slOMG)
-	Support slOMG
-	EnterMarkets Geoff slZRX slOMG
+	Assert True (Comptroller CheckMembership Geoff gZRX)
+	Assert False (Comptroller CheckMembership Geoff gOMG)
+	Support gOMG
+	EnterMarkets Geoff gZRX gOMG
 	Assert Equal (Comptroller MembershipLength Geoff) (Exactly 2)
-	Assert True (Comptroller CheckMembership Geoff slZRX)
-	Assert True (Comptroller CheckMembership Geoff slOMG)
+	Assert True (Comptroller CheckMembership Geoff gZRX)
+	Assert True (Comptroller CheckMembership Geoff gOMG)
 
 Test "Cannot enter Markets beyond max assets"
 	NewComptroller
 	Comptroller SetMaxAssets 1
 	Assert Equal (Comptroller MembershipLength Geoff) Zero
-	ListedSLToken ZRX slZRX
-	ListedSLToken OMG slOMG
-	EnterMarkets Geoff slZRX slOMG
+	ListedGToken ZRX gZRX
+	ListedGToken OMG gOMG
+	EnterMarkets Geoff gZRX gOMG
 	Assert Equal (Comptroller MembershipLength Geoff) (Exactly 1)
-	Assert True (Comptroller CheckMembership Geoff slZRX)
-	Assert False (Comptroller CheckMembership Geoff slOMG)
+	Assert True (Comptroller CheckMembership Geoff gZRX)
+	Assert False (Comptroller CheckMembership Geoff gOMG)
 
 Test "Exit single market"
 	NewComptroller
-	ListedSLToken ZRX slZRX
-	EnterMarkets Geoff slZRX
-	Assert Equal (Comptroller AssetsIn Geoff) [(Address slZRX)]
-	ExitMarket Geoff slZRX
+	ListedGToken ZRX gZRX
+	EnterMarkets Geoff gZRX
+	Assert Equal (Comptroller AssetsIn Geoff) [(Address gZRX)]
+	ExitMarket Geoff gZRX
 	Assert Equal (Comptroller AssetsIn Geoff) []
 
 Test "Exit non-entered market"
 	NewComptroller
-	ListedSLToken ZRX slZRX
-	ExitMarket Geoff slZRX
+	ListedGToken ZRX gZRX
+	ExitMarket Geoff gZRX
 	Assert Equal (Comptroller AssetsIn Geoff) []
 
 Test "Exit one of two market from the front"
 	NewComptroller
-	ListedSLToken ZRX slZRX
-	ListedSLToken OMG slOMG
-	EnterMarkets Geoff slZRX slOMG
-	Assert Equal (Comptroller AssetsIn Geoff) [(Address slZRX) (Address slOMG)]
-	ExitMarket Geoff slZRX
-	Assert Equal (Comptroller AssetsIn Geoff) [(Address slOMG)]
+	ListedGToken ZRX gZRX
+	ListedGToken OMG gOMG
+	EnterMarkets Geoff gZRX gOMG
+	Assert Equal (Comptroller AssetsIn Geoff) [(Address gZRX) (Address gOMG)]
+	ExitMarket Geoff gZRX
+	Assert Equal (Comptroller AssetsIn Geoff) [(Address gOMG)]
 
 Test "Exit one of two market from the back"
 	NewComptroller
-	ListedSLToken ZRX slZRX
-	ListedSLToken OMG slOMG
-	EnterMarkets Geoff slZRX slOMG
-	Assert Equal (Comptroller AssetsIn Geoff) [(Address slZRX) (Address slOMG)]
-	ExitMarket Geoff slOMG
-	Assert Equal (Comptroller AssetsIn Geoff) [(Address slZRX)]
+	ListedGToken ZRX gZRX
+	ListedGToken OMG gOMG
+	EnterMarkets Geoff gZRX gOMG
+	Assert Equal (Comptroller AssetsIn Geoff) [(Address gZRX) (Address gOMG)]
+	ExitMarket Geoff gOMG
+	Assert Equal (Comptroller AssetsIn Geoff) [(Address gZRX)]
 
 Test "Exit multiple markets"
 	NewComptroller
-	ListedSLToken ZRX slZRX
-	ListedSLToken OMG slOMG
-	ListedSLToken BAT slBAT
-	ListedSLToken REP slREP
-	ListedSLToken DAI slDAI
-	EnterMarkets Geoff slZRX slOMG slBAT slREP slDAI
-	Assert Equal (Comptroller AssetsIn Geoff) [(Address slZRX) (Address slOMG) (Address slBAT) (Address slREP) (Address slDAI)]
-	ExitMarket Geoff slZRX
-	Assert Equal (Comptroller AssetsIn Geoff) [(Address slDAI) (Address slOMG) (Address slBAT) (Address slREP)]
-	ExitMarket Geoff slREP
-	Assert Equal (Comptroller AssetsIn Geoff) [(Address slDAI) (Address slOMG) (Address slBAT)]
-	ExitMarket Geoff slOMG
-	Assert Equal (Comptroller AssetsIn Geoff) [(Address slDAI) (Address slBAT)]
-	ExitMarket Geoff slDAI
-	Assert Equal (Comptroller AssetsIn Geoff) [(Address slBAT)]
-	ExitMarket Geoff slBAT
+	ListedGToken ZRX gZRX
+	ListedGToken OMG gOMG
+	ListedGToken BAT gBAT
+	ListedGToken REP gREP
+	ListedGToken DAI gDAI
+	EnterMarkets Geoff gZRX gOMG gBAT gREP gDAI
+	Assert Equal (Comptroller AssetsIn Geoff) [(Address gZRX) (Address gOMG) (Address gBAT) (Address gREP) (Address gDAI)]
+	ExitMarket Geoff gZRX
+	Assert Equal (Comptroller AssetsIn Geoff) [(Address gDAI) (Address gOMG) (Address gBAT) (Address gREP)]
+	ExitMarket Geoff gREP
+	Assert Equal (Comptroller AssetsIn Geoff) [(Address gDAI) (Address gOMG) (Address gBAT)]
+	ExitMarket Geoff gOMG
+	Assert Equal (Comptroller AssetsIn Geoff) [(Address gDAI) (Address gBAT)]
+	ExitMarket Geoff gDAI
+	Assert Equal (Comptroller AssetsIn Geoff) [(Address gBAT)]
+	ExitMarket Geoff gBAT
 	Assert Equal (Comptroller AssetsIn Geoff) []
 
 Test "Realistic Market Scenario"
 	PricedComptroller
-	ListedSLToken ZRX slZRX
-	SetPriceCF slZRX 0.002 0.4
-	ListedEtherToken slETH
-	Comptroller SetCollateralFactor slETH 0.8
-	ListedSLToken BAT slBAT
-	SetPriceCF slBAT 0.0015 0.3
-	-- Mint some slZRX and slETH
-	Prep Geoff 1250e18 ZRX slZRX
-	Mint Geoff 1250e18 slZRX -- Liquidity -> 0.4 * 0.002 * 1250e18 = 1.0e18
-	SendMintEth Geoff 2.5e18 slETH -- Liqiuidity -> 0.8 * 1.0 * 2.5e18 = 2.0e18
+	ListedGToken ZRX gZRX
+	SetPriceCF gZRX 0.002 0.4
+	ListedEtherToken gETH
+	Comptroller SetCollateralFactor gETH 0.8
+	ListedGToken BAT gBAT
+	SetPriceCF gBAT 0.0015 0.3
+	-- Mint some gZRX and gETH
+	Prep Geoff 1250e18 ZRX gZRX
+	Mint Geoff 1250e18 gZRX -- Liquidity -> 0.4 * 0.002 * 1250e18 = 1.0e18
+	SendMintEth Geoff 2.5e18 gETH -- Liqiuidity -> 0.8 * 1.0 * 2.5e18 = 2.0e18
 	-- Check liquidity is zero when not in any markets
 	Assert Equal (Comptroller Liquidity Geoff) Zero
 	-- Enter ZRX and check liquidity
-	EnterMarkets Geoff slZRX
+	EnterMarkets Geoff gZRX
 	Assert Equal (Comptroller Liquidity Geoff) 1.0e18
 	-- Fail to borrow BAT due to liquidity
-	Give slBAT 1000e18 BAT
+	Give gBAT 1000e18 BAT
 	HoldInvariants
-	Borrow Geoff 1000e18 slBAT -- 1000e18 * 0.0015 = 1.5e18 required liquidity
+	Borrow Geoff 1000e18 gBAT -- 1000e18 * 0.0015 = 1.5e18 required liquidity
 							  -- But since we're only in ZRX, we only have 1.0e18 liquidity
 	Assert Failure COMPTROLLER_REJECTION BORROW_COMPTROLLER_REJECTION INSUFFICIENT_LIQUIDITY
-	-- Enter slETH and check liquidity
-	EnterMarkets Geoff slETH
-	Assert Equal (Comptroller Liquidity Geoff) 3.0e18 -- Sum of slETH and slZRX liquidity from above
+	-- Enter gETH and check liquidity
+	EnterMarkets Geoff gETH
+	Assert Equal (Comptroller Liquidity Geoff) 3.0e18 -- Sum of gETH and gZRX liquidity from above
 	-- Borrow previous BAT amount given liquidity
-	Borrow Geoff 1000e18 slBAT
+	Borrow Geoff 1000e18 gBAT
 	Assert Equal (Comptroller Liquidity Geoff) 1.5e18 -- Less the borrow amount's toll
 	-- Try to exit a eth market but fail due to given borrow requiring eth as collateral
 	HoldInvariants
-	ExitMarket Geoff slETH
+	ExitMarket Geoff gETH
 	Assert Failure REJECTION EXIT_MARKET_REJECTION INSUFFICIENT_LIQUIDITY -- Liquidity check fails
-	Assert Equal (Comptroller AssetsIn Geoff) [(Address slZRX) (Address slBAT) (Address slETH)]
+	Assert Equal (Comptroller AssetsIn Geoff) [(Address gZRX) (Address gBAT) (Address gETH)]
 	-- Repay some borrow and exit market OMG
-	Allow Geoff slBAT
-	RepayBorrow Geoff 500e18 slBAT
+	Allow Geoff gBAT
+	RepayBorrow Geoff 500e18 gBAT
 	Assert Equal (Comptroller Liquidity Geoff) 2.25e18 -- With 0.75e18 repaid
-	ExitMarket Geoff slETH
-	Assert Equal (Comptroller AssetsIn Geoff) [(Address slZRX) (Address slBAT)]
+	ExitMarket Geoff gETH
+	Assert Equal (Comptroller AssetsIn Geoff) [(Address gZRX) (Address gBAT)]
 	Assert Equal (Comptroller Liquidity Geoff) 0.25e18 -- Less Eth's 2.0e18 collateral weight
-	-- Try and exit slBAT (firist without, then after, repaying)
+	-- Try and exit gBAT (firist without, then after, repaying)
 	HoldInvariants
-	ExitMarket Geoff slBAT
+	ExitMarket Geoff gBAT
 	Assert Failure NONZERO_BORROW_BALANCE EXIT_MARKET_BALANCE_OWED
-	RepayBorrow Geoff UInt256Max slBAT
-	ExitMarket Geoff slBAT
-	Assert Equal (Comptroller AssetsIn Geoff) [(Address slZRX)]
-	Assert Equal (Comptroller Liquidity Geoff) 1.0e18 -- Back to just slZRX
-	-- Exit slZRX
-	ExitMarket Geoff slZRX
+	RepayBorrow Geoff UInt256Max gBAT
+	ExitMarket Geoff gBAT
+	Assert Equal (Comptroller AssetsIn Geoff) [(Address gZRX)]
+	Assert Equal (Comptroller Liquidity Geoff) 1.0e18 -- Back to just gZRX
+	-- Exit gZRX
+	ExitMarket Geoff gZRX
 	Assert Equal (Comptroller AssetsIn Geoff) []
 	Assert Equal (Comptroller Liquidity Geoff) 0e18 -- Back to nothing

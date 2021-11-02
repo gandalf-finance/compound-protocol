@@ -1,108 +1,108 @@
 
-Test "Simple slToken Transfer"
+Test "Simple gToken Transfer"
     NewComptroller
-    ListedSLToken ZRX slZRX initialExchangeRate:1e9
-    Prep Geoff Some ZRX slZRX
-    Mint Geoff 50e18 slZRX
+    ListedGToken ZRX gZRX initialExchangeRate:1e9
+    Prep Geoff Some ZRX gZRX
+    Mint Geoff 50e18 gZRX
     -- Just to be sure, check initial balances
-    Assert Equal (Erc20 slZRX TokenBalance Geoff) (Exactly 50e9)
-    Assert Equal (Erc20 slZRX TokenBalance Torrey) Zero
+    Assert Equal (Erc20 gZRX TokenBalance Geoff) (Exactly 50e9)
+    Assert Equal (Erc20 gZRX TokenBalance Torrey) Zero
     -- Just transfer
-    Transfer Geoff Torrey 10e9 slZRX
-    Assert Equal (Erc20 slZRX TokenBalance Geoff) (Exactly 40e9)
-    Assert Equal (Erc20 slZRX TokenBalance Torrey) (Exactly 10e9)
+    Transfer Geoff Torrey 10e9 gZRX
+    Assert Equal (Erc20 gZRX TokenBalance Geoff) (Exactly 40e9)
+    Assert Equal (Erc20 gZRX TokenBalance Torrey) (Exactly 10e9)
 
-Test "Simple slToken Transfer When Underlying Paused"
+Test "Simple gToken Transfer When Underlying Paused"
     NewComptroller
-    ListedSLToken WBTC slWBTC initialExchangeRate:0.1 tokenType:WBTC
-    Prep Geoff Some WBTC slWBTC
-    Mint Geoff 50e8 slWBTC
+    ListedGToken WBTC gWBTC initialExchangeRate:0.1 tokenType:WBTC
+    Prep Geoff Some WBTC gWBTC
+    Mint Geoff 50e8 gWBTC
     -- Just to be sure, check initial balances
-    Assert Equal (Erc20 slWBTC TokenBalance Geoff) (Exactly 50e9)
-    Assert Equal (Erc20 slWBTC TokenBalance Torrey) Zero
+    Assert Equal (Erc20 gWBTC TokenBalance Geoff) (Exactly 50e9)
+    Assert Equal (Erc20 gWBTC TokenBalance Torrey) Zero
     -- Just transfer
     Erc20 WBTC Pause
-    Transfer Geoff Torrey 10e9 slWBTC
-    Assert Equal (Erc20 slWBTC TokenBalance Geoff) (Exactly 40e9)
-    Assert Equal (Erc20 slWBTC TokenBalance Torrey) (Exactly 10e9)
+    Transfer Geoff Torrey 10e9 gWBTC
+    Assert Equal (Erc20 gWBTC TokenBalance Geoff) (Exactly 40e9)
+    Assert Equal (Erc20 gWBTC TokenBalance Torrey) (Exactly 10e9)
 
-Test "Simple slToken Transfer 1:1 Rate"
+Test "Simple gToken Transfer 1:1 Rate"
     NewComptroller
-    ListedSLToken ZRX slZRX initialExchangeRate:1e0
-    Prep Geoff Some ZRX slZRX
-    Mint Geoff 50e18 slZRX
+    ListedGToken ZRX gZRX initialExchangeRate:1e0
+    Prep Geoff Some ZRX gZRX
+    Mint Geoff 50e18 gZRX
     -- Just to be sure, check initial balances
-    Assert Equal (Erc20 slZRX TokenBalance Geoff) (Exactly 50e18)
-    Assert Equal (Erc20 slZRX TokenBalance Torrey) Zero
+    Assert Equal (Erc20 gZRX TokenBalance Geoff) (Exactly 50e18)
+    Assert Equal (Erc20 gZRX TokenBalance Torrey) Zero
     -- Just transfer
-    Transfer Geoff Torrey 10e18 slZRX
-    Assert Equal (Erc20 slZRX TokenBalance Geoff) (Exactly 40e18)
-    Assert Equal (Erc20 slZRX TokenBalance Torrey) (Exactly 10e18)
+    Transfer Geoff Torrey 10e18 gZRX
+    Assert Equal (Erc20 gZRX TokenBalance Geoff) (Exactly 40e18)
+    Assert Equal (Erc20 gZRX TokenBalance Torrey) (Exactly 10e18)
 
-Test "Simple slToken Transfer Not Allowed by Comptroller"
+Test "Simple gToken Transfer Not Allowed by Comptroller"
     NewComptroller
-    ListedSLToken ZRX slZRX initialExchangeRate:1e0
-    Comptroller SetCollateralFactor slZRX 0.1
-    EnterMarkets Geoff slZRX
-    Prep Geoff Some ZRX slZRX
-    Mint Geoff 50e18 slZRX
+    ListedGToken ZRX gZRX initialExchangeRate:1e0
+    Comptroller SetCollateralFactor gZRX 0.1
+    EnterMarkets Geoff gZRX
+    Prep Geoff Some ZRX gZRX
+    Mint Geoff 50e18 gZRX
     -- Just to be sure, check initial balances
-    Invariant Remains (Erc20 slZRX TokenBalance Geoff) (Exactly 50e18)
-    Invariant Remains (Erc20 slZRX TokenBalance Torrey) Zero
+    Invariant Remains (Erc20 gZRX TokenBalance Geoff) (Exactly 50e18)
+    Invariant Remains (Erc20 gZRX TokenBalance Torrey) Zero
     -- Just transfer
     AllowFailures
-    Transfer Geoff Torrey 60e18 slZRX
+    Transfer Geoff Torrey 60e18 gZRX
     Assert Failure COMPTROLLER_REJECTION TRANSFER_COMPTROLLER_REJECTION INSUFFICIENT_LIQUIDITY
 
-Test "Simple slToken Transfer From"
+Test "Simple gToken Transfer From"
     NewComptroller
-    ListedSLToken ZRX slZRX initialExchangeRate:1e9
-    Prep Geoff Some ZRX slZRX
-    Mint Geoff 50e18 slZRX
+    ListedGToken ZRX gZRX initialExchangeRate:1e9
+    Prep Geoff Some ZRX gZRX
+    Mint Geoff 50e18 gZRX
     -- Just to be sure, check initial balances
-    Invariant Remains (Erc20 slZRX TokenBalance Torrey) Zero
-    Assert Equal (Erc20 slZRX TokenBalance Geoff) (Exactly 50e9)
-    Assert Equal (Erc20 slZRX TokenBalance Coburn) Zero
+    Invariant Remains (Erc20 gZRX TokenBalance Torrey) Zero
+    Assert Equal (Erc20 gZRX TokenBalance Geoff) (Exactly 50e9)
+    Assert Equal (Erc20 gZRX TokenBalance Coburn) Zero
     -- Add approval
-    From Geoff (Erc20 slZRX Approve Torrey 25e9)
-    Assert Equal (Erc20 slZRX Allowance Geoff Torrey) (Exactly 25e9)
+    From Geoff (Erc20 gZRX Approve Torrey 25e9)
+    Assert Equal (Erc20 gZRX Allowance Geoff Torrey) (Exactly 25e9)
     -- Perform transfer from
-    From Torrey (Erc20 slZRX TransferFrom Geoff Coburn 10e9)
-    Assert Equal (Erc20 slZRX TokenBalance Geoff) (Exactly 40e9)
-    Assert Equal (Erc20 slZRX TokenBalance Coburn) (Exactly 10e9)
-    Assert Equal (Erc20 slZRX Allowance Geoff Torrey) (Exactly 15e9)
+    From Torrey (Erc20 gZRX TransferFrom Geoff Coburn 10e9)
+    Assert Equal (Erc20 gZRX TokenBalance Geoff) (Exactly 40e9)
+    Assert Equal (Erc20 gZRX TokenBalance Coburn) (Exactly 10e9)
+    Assert Equal (Erc20 gZRX Allowance Geoff Torrey) (Exactly 15e9)
 
-Test "slToken Transfer From Not Allowed"
+Test "gToken Transfer From Not Allowed"
     NewComptroller
-    ListedSLToken ZRX slZRX initialExchangeRate:1e9
-    Prep Geoff Some ZRX slZRX
-    Mint Geoff 50e18 slZRX
+    ListedGToken ZRX gZRX initialExchangeRate:1e9
+    Prep Geoff Some ZRX gZRX
+    Mint Geoff 50e18 gZRX
     --
-    Invariant Remains (Erc20 slZRX TokenBalance Geoff) (Exactly 50e9)
-    Invariant Remains (Erc20 slZRX TokenBalance Torrey) (Exactly 0e9)
+    Invariant Remains (Erc20 gZRX TokenBalance Geoff) (Exactly 50e9)
+    Invariant Remains (Erc20 gZRX TokenBalance Torrey) (Exactly 0e9)
     AllowFailures
-    Erc20 slZRX TransferFrom Geoff Torrey 10e9
+    Erc20 gZRX TransferFrom Geoff Torrey 10e9
     Assert Failure MATH_ERROR TRANSFER_NOT_ALLOWED
 
-Test "slToken Transfer paused"
+Test "gToken Transfer paused"
     NewComptroller
-    ListedSLToken ZRX slZRX initialExchangeRate:1e9
-    Prep Geoff Some ZRX slZRX
-    Mint Geoff 50e18 slZRX
+    ListedGToken ZRX gZRX initialExchangeRate:1e9
+    Prep Geoff Some ZRX gZRX
+    Mint Geoff 50e18 gZRX
     -- Just to be sure, check initial balances
-    Assert Equal (Erc20 slZRX TokenBalance Geoff) (Exactly 50e9)
-    Assert Equal (Erc20 slZRX TokenBalance Coburn) Zero
+    Assert Equal (Erc20 gZRX TokenBalance Geoff) (Exactly 50e9)
+    Assert Equal (Erc20 gZRX TokenBalance Coburn) Zero
     -- Pause and attempt transfer
     Comptroller SetPauseGuardian Coburn
     From Coburn (Comptroller SetGuardianPaused "Transfer" True)
     AllowFailures
-    Transfer Geoff Torrey 10e9 slZRX
+    Transfer Geoff Torrey 10e9 gZRX
     Assert Revert "revert transfer is paused"
-    Assert Equal (Erc20 slZRX TokenBalance Geoff) (Exactly 50e9)
-    Assert Equal (Erc20 slZRX TokenBalance Coburn) Zero
+    Assert Equal (Erc20 gZRX TokenBalance Geoff) (Exactly 50e9)
+    Assert Equal (Erc20 gZRX TokenBalance Coburn) Zero
     -- unPause and complete transfer
     Invariant Success
     Comptroller SetGuardianPaused "Transfer" False
-    Transfer Geoff Coburn 10e9 slZRX
-    Assert Equal (Erc20 slZRX TokenBalance Geoff) (Exactly 40e9)
-    Assert Equal (Erc20 slZRX TokenBalance Coburn) (Exactly 10e9)
+    Transfer Geoff Coburn 10e9 gZRX
+    Assert Equal (Erc20 gZRX TokenBalance Geoff) (Exactly 40e9)
+    Assert Equal (Erc20 gZRX TokenBalance Coburn) (Exactly 10e9)

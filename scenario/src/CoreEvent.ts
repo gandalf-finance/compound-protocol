@@ -15,8 +15,8 @@ import { assertionCommands, processAssertionEvent } from './Event/AssertionEvent
 import { comptrollerCommands, processComptrollerEvent } from './Event/ComptrollerEvent';
 import { processUnitrollerEvent, unitrollerCommands } from './Event/UnitrollerEvent';
 import { comptrollerImplCommands, processComptrollerImplEvent } from './Event/ComptrollerImplEvent';
-import { slTokenCommands, processSLTokenEvent } from './Event/SLTokenEvent';
-import { slTokenDelegateCommands, processSLTokenDelegateEvent } from './Event/SLTokenDelegateEvent';
+import { gTokenCommands, processGTokenEvent } from './Event/GTokenEvent';
+import { gTokenDelegateCommands, processGTokenDelegateEvent } from './Event/GTokenDelegateEvent';
 import { erc20Commands, processErc20Event } from './Event/Erc20Event';
 import { interestRateModelCommands, processInterestRateModelEvent } from './Event/InterestRateModelEvent';
 import { priceOracleCommands, processPriceOracleEvent } from './Event/PriceOracleEvent';
@@ -37,7 +37,7 @@ import { loadContracts } from './Networks';
 import { fork } from './Hypothetical';
 import { buildContractEvent } from './EventBuilder';
 import { Counter } from './Contract/Counter';
-import { SashimiLendingLens } from './Contract/SashimiLendingLens';
+import { GandalfLendingLens } from './Contract/GandalfLendingLens';
 import { Reservoir } from './Contract/Reservoir';
 import Web3 from 'web3';
 
@@ -219,7 +219,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
         #### Read
 
         * "Read ..." - Reads given value and prints result
-          * E.g. "Read SLToken cBAT ExchangeRateStored" - Returns exchange rate of cBAT
+          * E.g. "Read GToken cBAT ExchangeRateStored" - Returns exchange rate of cBAT
       `,
       'Read',
       [new Arg('res', getCoreValue, { variadic: true })],
@@ -433,7 +433,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
       #### Block
 
       * "Block 10 (...event)" - Set block to block N and run event
-        * E.g. "Block 10 (Sashimi Deploy Admin)"
+        * E.g. "Block 10 (PlatformToken Deploy Admin)"
     `,
     'Block',
     [
@@ -489,7 +489,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
       #### From
 
       * "From <User> <Event>" - Runs event as the given user
-        * E.g. "From Geoff (SLToken slZRX Mint 5e18)"
+        * E.g. "From Geoff (GToken gZRX Mint 5e18)"
     `,
     'From',
     [new Arg('account', getAddressV), new Arg('event', getEventV)],
@@ -501,7 +501,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
       #### Trx
 
       * "Trx ...trxEvent" - Handles event to set details of next transaction
-        * E.g. "Trx Value 1.0e18 (SLToken slETH Mint 1.0e18)"
+        * E.g. "Trx Value 1.0e18 (GToken gETH Mint 1.0e18)"
     `,
     'Trx',
     [new Arg('event', getEventV, { variadic: true })],
@@ -514,7 +514,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
       #### Invariant
 
       * "Invariant ...invariant" - Adds a new invariant to the world which is checked after each transaction
-        * E.g. "Invariant Static (SLToken slZRX TotalSupply)"
+        * E.g. "Invariant Static (GToken gZRX TotalSupply)"
     `,
     'Invariant',
     [new Arg('event', getEventV, { variadic: true })],
@@ -527,7 +527,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
       #### Expect
 
       * "Expect ...expectation" - Adds an expectation to hold after the next transaction
-        * E.g. "Expect Changes (SLToken slZRX TotalSupply) +10.0e18"
+        * E.g. "Expect Changes (GToken gZRX TotalSupply) +10.0e18"
     `,
     'Expect',
     [new Arg('event', getEventV, { variadic: true })],
@@ -621,7 +621,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
       #### Send
 
       * "Send <Address> <Amount>" - Sends a given amount of eth to given address
-        * E.g. "Send slETH 0.5e18"
+        * E.g. "Send gETH 0.5e18"
     `,
     'Send',
     [new Arg('address', getAddressV), new Arg('amount', getNumberV)],
@@ -669,28 +669,28 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
 
   new Command<{ event: EventV }>(
     `
-      #### SLToken
+      #### GToken
 
-      * "SLToken ...event" - Runs given SLToken event
-        * E.g. "SLToken slZRX Mint 5e18"
+      * "GToken ...event" - Runs given GToken event
+        * E.g. "GToken gZRX Mint 5e18"
     `,
-    'SLToken',
+    'GToken',
     [new Arg('event', getEventV, { variadic: true })],
-    (world, from, { event }) => processSLTokenEvent(world, event.val, from),
-    { subExpressions: slTokenCommands() }
+    (world, from, { event }) => processGTokenEvent(world, event.val, from),
+    { subExpressions: gTokenCommands() }
   ),
 
   new Command<{ event: EventV }>(
     `
-      #### SLTokenDelegate
+      #### GTokenDelegate
 
-      * "SLTokenDelegate ...event" - Runs given SLTokenDelegate event
-        * E.g. "SLTokenDelegate Deploy CDaiDelegate slDaiDelegate"
+      * "GTokenDelegate ...event" - Runs given GTokenDelegate event
+        * E.g. "GTokenDelegate Deploy CDaiDelegate gDaiDelegate"
     `,
-    'SLTokenDelegate',
+    'GTokenDelegate',
     [new Arg('event', getEventV, { variadic: true })],
-    (world, from, { event }) => processSLTokenDelegateEvent(world, event.val, from),
-    { subExpressions: slTokenDelegateCommands() }
+    (world, from, { event }) => processGTokenDelegateEvent(world, event.val, from),
+    { subExpressions: gTokenDelegateCommands() }
   ),
 
   new Command<{ event: EventV }>(
@@ -724,7 +724,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
       #### PriceOracle
 
       * "PriceOracle ...event" - Runs given Price Oracle event
-        * E.g. "PriceOracle SetPrice slZRX 1.5"
+        * E.g. "PriceOracle SetPrice gZRX 1.5"
     `,
     'PriceOracle',
     [new Arg('event', getEventV, { variadic: true })],
@@ -737,7 +737,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
       #### PriceOracleProxy
 
       * "PriceOracleProxy ...event" - Runs given Price Oracle event
-      * E.g. "PriceOracleProxy Deploy (Unitroller Address) (PriceOracle Address) (SLToken slETH Address)"
+      * E.g. "PriceOracleProxy Deploy (Unitroller Address) (PriceOracle Address) (GToken gETH Address)"
     `,
     'PriceOracleProxy',
     [new Arg('event', getEventV, { variadic: true })],
@@ -752,7 +752,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
       #### Maximillion
 
       * "Maximillion ...event" - Runs given Maximillion event
-      * E.g. "Maximillion Deploy (SLToken slETH Address)"
+      * E.g. "Maximillion Deploy (GToken gETH Address)"
     `,
     'Maximillion',
     [new Arg('event', getEventV, { variadic: true })],
@@ -779,12 +779,12 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
 
   // new Command<{ event: EventV }>(
   //   `
-  //     #### Sashimi
+  //     #### PlatformToken
 
-  //     * "Sashimi ...event" - Runs given sashimi event
-  //     * E.g. "Sashimi Deploy"
+  //     * "PlatformToken ...event" - Runs given platformToken event
+  //     * E.g. "PlatformToken Deploy"
   //   `,
-  //   'Sashimi',
+  //   'PlatformToken',
   //   [new Arg('event', getEventV, { variadic: true })],
   //   (world, from, { event }) => {
   //     return processCompEvent(world, event.val, from);
@@ -793,7 +793,7 @@ export const commands: (View<any> | ((world: World) => Promise<View<any>>))[] = 
   // ),
 
   buildContractEvent<Counter>("Counter", false),
-  buildContractEvent<SashimiLendingLens>("SashimiLendingLens", false),
+  buildContractEvent<GandalfLendingLens>("GandalfLendingLens", false),
   buildContractEvent<Reservoir>("Reservoir", true),
 
   new View<{ event: EventV }>(

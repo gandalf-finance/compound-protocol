@@ -2,205 +2,205 @@
 
 Macro SetupBorrow borrowRate
     NewComptroller price:1.0 -- TODO: This should really be a price for a specific asset
-    ListedSLToken ZRX slZRX borrowRate
-    ListedEtherToken slETH borrowRate 0.005e9
-    SetCollateralFactor slZRX collateralFactor:0.5
-    SetCollateralFactor slETH collateralFactor:0.5
-    Donate slETH 0.003e18
-    Prep Geoff Some ZRX slZRX
-    Mint Geoff 100e18 slZRX
-    EnterMarkets Geoff slZRX slETH
+    ListedGToken ZRX gZRX borrowRate
+    ListedEtherToken gETH borrowRate 0.005e9
+    SetCollateralFactor gZRX collateralFactor:0.5
+    SetCollateralFactor gETH collateralFactor:0.5
+    Donate gETH 0.003e18
+    Prep Geoff Some ZRX gZRX
+    Mint Geoff 100e18 gZRX
+    EnterMarkets Geoff gZRX gETH
 
 Macro NewBorrowEth borrowAmount borrowRate
     SetupBorrow borrowRate
-    Borrow Geoff borrowAmount slETH
+    Borrow Geoff borrowAmount gETH
 
 Test "Borrow, hold a few blocks, and repay part"
     NewBorrowEth borrowAmount:0.001e18 borrowRate:0.000005
-    Assert Equal (SLToken slETH BorrowBalance Geoff) 0.001e18
-    Assert Equal (SLToken slETH TotalBorrowsCurrent) 0.001e18
+    Assert Equal (GToken gETH BorrowBalance Geoff) 0.001e18
+    Assert Equal (GToken gETH TotalBorrowsCurrent) 0.001e18
     -- Now let's add some blocks and see what happs
     FastForward 300000 Blocks -- 0.001e18 * (1 + 300000 * 0.000005)
-    Assert Equal (SLToken slETH BorrowBalance Geoff) 0.0025e18
+    Assert Equal (GToken gETH BorrowBalance Geoff) 0.0025e18
     -- Now let's repay one full token
     Expect Changes (EtherBalance Geoff) -0.001e18
-    Expect Changes (EtherBalance slETH) +0.001e18
-    RepayBorrowEth Geoff 0.001e18 slETH
+    Expect Changes (EtherBalance gETH) +0.001e18
+    RepayBorrowEth Geoff 0.001e18 gETH
     ---- Let's check the overall numbers
-    Assert Equal (SLToken slETH BorrowBalance Geoff) 0.0015e18
-    Assert Equal (SLToken slETH TotalBorrowsCurrent) 0.0015e18
+    Assert Equal (GToken gETH BorrowBalance Geoff) 0.0015e18
+    Assert Equal (GToken gETH TotalBorrowsCurrent) 0.0015e18
     FastForward 200000 Blocks -- 0.0015e18 * (1 + 2000 * 0.000005)
-    Assert Equal (SLToken slETH BorrowBalance Geoff) 0.003e18
-    Assert Equal (SLToken slETH TotalBorrowsCurrent) 0.003e18
+    Assert Equal (GToken gETH BorrowBalance Geoff) 0.003e18
+    Assert Equal (GToken gETH TotalBorrowsCurrent) 0.003e18
 
 Test "Borrow, hold a few blocks, and repay part via maximillion"
     NewBorrowEth borrowAmount:0.001e18 borrowRate:0.000005
-    Maximillion Deploy slETH
-    Assert Equal (SLToken slETH BorrowBalance Geoff) 0.001e18
-    Assert Equal (SLToken slETH TotalBorrowsCurrent) 0.001e18
+    Maximillion Deploy gETH
+    Assert Equal (GToken gETH BorrowBalance Geoff) 0.001e18
+    Assert Equal (GToken gETH TotalBorrowsCurrent) 0.001e18
     -- Now let's add some blocks and see what happs
     FastForward 300000 Blocks -- 0.001e18 * (1 + 300000 * 0.000005)
-    Assert Equal (SLToken slETH BorrowBalance Geoff) 0.0025e18
+    Assert Equal (GToken gETH BorrowBalance Geoff) 0.0025e18
     -- Now let's repay one full token
     Expect Changes (EtherBalance Geoff) -0.001e18
-    Expect Changes (EtherBalance slETH) +0.001e18
-    RepayBorrowEthMax Geoff 0.001e18 slETH
+    Expect Changes (EtherBalance gETH) +0.001e18
+    RepayBorrowEthMax Geoff 0.001e18 gETH
     ---- Let's check the overall numbers
-    Assert Equal (SLToken slETH BorrowBalance Geoff) 0.0015e18
-    Assert Equal (SLToken slETH TotalBorrowsCurrent) 0.0015e18
+    Assert Equal (GToken gETH BorrowBalance Geoff) 0.0015e18
+    Assert Equal (GToken gETH TotalBorrowsCurrent) 0.0015e18
     FastForward 200000 Blocks -- 0.0015e18 * (1 + 200000 * 0.000005)
-    Assert Equal (SLToken slETH BorrowBalance Geoff) 0.003e18
-    Assert Equal (SLToken slETH TotalBorrowsCurrent) 0.003e18
+    Assert Equal (GToken gETH BorrowBalance Geoff) 0.003e18
+    Assert Equal (GToken gETH TotalBorrowsCurrent) 0.003e18
 
 Test "Don't borrow and then do repay"
     SetupBorrow borrowRate:0.000005
-    Assert Equal (SLToken slETH BorrowBalance Geoff) Zero
-    Assert Equal (SLToken slETH TotalBorrowsCurrent) Zero
+    Assert Equal (GToken gETH BorrowBalance Geoff) Zero
+    Assert Equal (GToken gETH TotalBorrowsCurrent) Zero
     -- Now let's add some blocks and see what happs
     FastForward 300000 Blocks -- 0 * (1 + 300000 * 0.000005)
-    Assert Equal (SLToken slETH BorrowBalance Geoff) Zero
+    Assert Equal (GToken gETH BorrowBalance Geoff) Zero
     -- Now let's repay one full token
     Expect Changes (EtherBalance Geoff) Zero
-    Expect Changes (EtherBalance slETH) Zero
-    RepayBorrowEth Geoff 0 slETH
+    Expect Changes (EtherBalance gETH) Zero
+    RepayBorrowEth Geoff 0 gETH
     ---- Let's check the overall numbers
-    Assert Equal (SLToken slETH BorrowBalance Geoff) Zero
-    Assert Equal (SLToken slETH TotalBorrowsCurrent) Zero
+    Assert Equal (GToken gETH BorrowBalance Geoff) Zero
+    Assert Equal (GToken gETH TotalBorrowsCurrent) Zero
 
 Test "Don't borrow and repay part via maximillion"
     SetupBorrow borrowRate:0.000005
-    Maximillion Deploy slETH
-    Assert Equal (SLToken slETH BorrowBalance Geoff) Zero
-    Assert Equal (SLToken slETH TotalBorrowsCurrent) Zero
+    Maximillion Deploy gETH
+    Assert Equal (GToken gETH BorrowBalance Geoff) Zero
+    Assert Equal (GToken gETH TotalBorrowsCurrent) Zero
     -- Now let's add some blocks and see what happs
     FastForward 300000 Blocks -- 0 * (1 + 300000 * 0.000005)
-    Assert Equal (SLToken slETH BorrowBalance Geoff) Zero
+    Assert Equal (GToken gETH BorrowBalance Geoff) Zero
     -- Now let's repay one full token
     Expect Changes (EtherBalance Geoff) Zero
-    Expect Changes (EtherBalance slETH) Zero
-    RepayBorrowEthMax Geoff 0.001e18 slETH
+    Expect Changes (EtherBalance gETH) Zero
+    RepayBorrowEthMax Geoff 0.001e18 gETH
     ---- Let's check the overall numbers
-    Assert Equal (SLToken slETH BorrowBalance Geoff) Zero
-    Assert Equal (SLToken slETH TotalBorrowsCurrent) Zero
+    Assert Equal (GToken gETH BorrowBalance Geoff) Zero
+    Assert Equal (GToken gETH TotalBorrowsCurrent) Zero
 
 Test "Borrow, hold a few blocks, and repay full"
     NewBorrowEth borrowAmount:0.001e18 borrowRate:0.000005
-    Assert Equal (SLToken slETH BorrowBalance Geoff) 0.001e18
-    Assert Equal (SLToken slETH TotalBorrowsCurrent) 0.001e18
+    Assert Equal (GToken gETH BorrowBalance Geoff) 0.001e18
+    Assert Equal (GToken gETH TotalBorrowsCurrent) 0.001e18
     -- Now let's add some blocks and see what happs
     FastForward 300000 Blocks -- 0.001e18 * (1 + 300000 * 0.000005)
-    Assert Equal (SLToken slETH BorrowBalance Geoff) 0.0025e18
+    Assert Equal (GToken gETH BorrowBalance Geoff) 0.0025e18
     -- Now let's repay fully
     Expect Changes (EtherBalance Geoff) -0.0025e18
-    Expect Changes (EtherBalance slETH) +0.0025e18
-    RepayBorrowEth Geoff 0.0025e18 slETH
+    Expect Changes (EtherBalance gETH) +0.0025e18
+    RepayBorrowEth Geoff 0.0025e18 gETH
     -- Let's check the overall numbers
-    Assert Equal (SLToken slETH BorrowBalance Geoff) Zero
-    Assert Equal (SLToken slETH TotalBorrowsCurrent) Zero
+    Assert Equal (GToken gETH BorrowBalance Geoff) Zero
+    Assert Equal (GToken gETH TotalBorrowsCurrent) Zero
     FastForward 200000 Blocks -- 0e18 * (1 + 200000 * 0.000005)
-    Assert Equal (SLToken slETH BorrowBalance Geoff) Zero
-    Assert Equal (SLToken slETH TotalBorrowsCurrent) Zero
+    Assert Equal (GToken gETH BorrowBalance Geoff) Zero
+    Assert Equal (GToken gETH TotalBorrowsCurrent) Zero
 
 Test "Borrow, hold a few blocks, and repay full via maximillion"
     NewBorrowEth borrowAmount:0.001e18 borrowRate:0.000005
-    Maximillion Deploy slETH
-    Assert Equal (SLToken slETH BorrowBalance Geoff) 0.001e18
-    Assert Equal (SLToken slETH TotalBorrowsCurrent) 0.001e18
+    Maximillion Deploy gETH
+    Assert Equal (GToken gETH BorrowBalance Geoff) 0.001e18
+    Assert Equal (GToken gETH TotalBorrowsCurrent) 0.001e18
     -- Now let's add some blocks and see what happs
     FastForward 300000 Blocks -- 0.001e18 * (1 + 300000 * 0.000005)
-    Assert Equal (SLToken slETH BorrowBalance Geoff) 0.0025e18
+    Assert Equal (GToken gETH BorrowBalance Geoff) 0.0025e18
     -- Now let's repay fully
     Expect Changes (EtherBalance Geoff) -0.0025e18
-    Expect Changes (EtherBalance slETH) +0.0025e18
-    RepayBorrowEthMax Geoff 0.0025e18 slETH
+    Expect Changes (EtherBalance gETH) +0.0025e18
+    RepayBorrowEthMax Geoff 0.0025e18 gETH
     -- Let's check the overall numbers
-    Assert Equal (SLToken slETH BorrowBalance Geoff) Zero
-    Assert Equal (SLToken slETH TotalBorrowsCurrent) Zero
+    Assert Equal (GToken gETH BorrowBalance Geoff) Zero
+    Assert Equal (GToken gETH TotalBorrowsCurrent) Zero
     FastForward 200000 Blocks -- 0e18 * (1 + 200000 * 0.000005)
-    Assert Equal (SLToken slETH BorrowBalance Geoff) Zero
-    Assert Equal (SLToken slETH TotalBorrowsCurrent) Zero
+    Assert Equal (GToken gETH BorrowBalance Geoff) Zero
+    Assert Equal (GToken gETH TotalBorrowsCurrent) Zero
 
 Test "Borrow, hold a few blocks, and repay too much"
     NewBorrowEth borrowAmount:0.001e18 borrowRate:0.000005
-    Assert Equal (SLToken slETH BorrowBalance Geoff) 0.001e18
-    Assert Equal (SLToken slETH TotalBorrowsCurrent) 0.001e18
+    Assert Equal (GToken gETH BorrowBalance Geoff) 0.001e18
+    Assert Equal (GToken gETH TotalBorrowsCurrent) 0.001e18
     -- Now let's add some blocks and see what happs
     FastForward 300000 Blocks -- 0.001e18 * (1 + 300000 * 0.000005)
-    Assert Equal (SLToken slETH BorrowBalance Geoff) 0.0025e18
+    Assert Equal (GToken gETH BorrowBalance Geoff) 0.0025e18
     -- Now let's repay fully
     Expect Changes (EtherBalance Geoff) Zero
-    Expect Changes (EtherBalance slETH) Zero
+    Expect Changes (EtherBalance gETH) Zero
     -- TODO: This currently drains the sent-eth
     AllowFailures
-    RepayBorrowEth Geoff 1.0e18 slETH
+    RepayBorrowEth Geoff 1.0e18 gETH
     Assert Revert "revert REPAY_BORROW_NEW_ACCOUNT_BORROW_BALANCE_CALCULATION_FAILED"
     -- Let's check the overall numbers
-    Assert Equal (SLToken slETH BorrowBalance Geoff) 0.0025e18
-    Assert Equal (SLToken slETH TotalBorrowsCurrent) 0.0025e18
+    Assert Equal (GToken gETH BorrowBalance Geoff) 0.0025e18
+    Assert Equal (GToken gETH TotalBorrowsCurrent) 0.0025e18
 
 Test "Borrow, hold a few blocks, and repay too much via maximillion"
     NewBorrowEth borrowAmount:0.001e18 borrowRate:0.000005
-    Maximillion Deploy slETH
-    Assert Equal (SLToken slETH BorrowBalance Geoff) 0.001e18
-    Assert Equal (SLToken slETH TotalBorrowsCurrent) 0.001e18
+    Maximillion Deploy gETH
+    Assert Equal (GToken gETH BorrowBalance Geoff) 0.001e18
+    Assert Equal (GToken gETH TotalBorrowsCurrent) 0.001e18
     -- Now let's add some blocks and see what happs
     FastForward 300000 Blocks -- 0.001e18 * (1 + 300000 * 0.000005)
-    Assert Equal (SLToken slETH BorrowBalance Geoff) 0.0025e18
+    Assert Equal (GToken gETH BorrowBalance Geoff) 0.0025e18
     -- Now let's repay fully
     Expect Changes (EtherBalance Geoff) -0.0025e18
-    Expect Changes (EtherBalance slETH) +0.0025e18
-    RepayBorrowEthMax Geoff 1.0e18 slETH
+    Expect Changes (EtherBalance gETH) +0.0025e18
+    RepayBorrowEthMax Geoff 1.0e18 gETH
     -- Let's check the overall numbers
-    Assert Equal (SLToken slETH BorrowBalance Geoff) Zero
-    Assert Equal (SLToken slETH TotalBorrowsCurrent) Zero
+    Assert Equal (GToken gETH BorrowBalance Geoff) Zero
+    Assert Equal (GToken gETH TotalBorrowsCurrent) Zero
     FastForward 200000 Blocks -- 0e18 * (1 + 200000 * 0.000005)
-    Assert Equal (SLToken slETH BorrowBalance Geoff) Zero
-    Assert Equal (SLToken slETH TotalBorrowsCurrent) Zero
+    Assert Equal (GToken gETH BorrowBalance Geoff) Zero
+    Assert Equal (GToken gETH TotalBorrowsCurrent) Zero
 
 Test "Borrow, and get a negative total cash situation"
     NewBorrowEth borrowAmount:0.001e18 borrowRate:0.000005
-    Assert Equal (SLToken slETH BorrowBalance Geoff) 0.001e18
-    Assert Equal (SLToken slETH TotalBorrowsCurrent) 0.001e18
+    Assert Equal (GToken gETH BorrowBalance Geoff) 0.001e18
+    Assert Equal (GToken gETH TotalBorrowsCurrent) 0.001e18
     -- Let's zoom way forward into the future
     FastForward 9800000 Blocks -- 0.001e18 * (1 + 9800000 * 0.000005)
-    Assert Equal (SLToken slETH BorrowBalance Geoff) 0.05e18
-    Assert Equal (SLToken slETH TotalBorrowsCurrent) 0.05e18
+    Assert Equal (GToken gETH BorrowBalance Geoff) 0.05e18
+    Assert Equal (GToken gETH TotalBorrowsCurrent) 0.05e18
     -- Now let's repay one bit
-    RepayBorrowEth Geoff 0.001e18 slETH
-    Assert Equal (SLToken slETH BorrowBalance Geoff) 0.049e18
-    Assert Equal (SLToken slETH TotalBorrowsCurrent) 0.049e18
+    RepayBorrowEth Geoff 0.001e18 gETH
+    Assert Equal (GToken gETH BorrowBalance Geoff) 0.049e18
+    Assert Equal (GToken gETH TotalBorrowsCurrent) 0.049e18
 
 Test "Borrow, hold a few blocks, and repay behalf part"
     NewBorrowEth borrowAmount:0.001e18 borrowRate:0.000005
-    Assert Equal (SLToken slETH BorrowBalance Geoff) 0.001e18
-    Assert Equal (SLToken slETH TotalBorrowsCurrent) 0.001e18
+    Assert Equal (GToken gETH BorrowBalance Geoff) 0.001e18
+    Assert Equal (GToken gETH TotalBorrowsCurrent) 0.001e18
     -- Now let's add some blocks and see what happs
     FastForward 300000 Blocks -- 0.001e18 * (1 + 300000 * 0.000005)
-    Assert Equal (SLToken slETH BorrowBalance Geoff) 0.0025e18
+    Assert Equal (GToken gETH BorrowBalance Geoff) 0.0025e18
     -- Now let's repay one full token from another user
-    RepayBorrowEthBehalf Torrey Geoff 0.001e18 slETH
-    Assert Equal (SLToken slETH BorrowBalance Torrey) Zero
-    Assert Equal (SLToken slETH BorrowBalance Geoff) 0.0015e18
-    Assert Equal (SLToken slETH TotalBorrowsCurrent) 0.0015e18
+    RepayBorrowEthBehalf Torrey Geoff 0.001e18 gETH
+    Assert Equal (GToken gETH BorrowBalance Torrey) Zero
+    Assert Equal (GToken gETH BorrowBalance Geoff) 0.0015e18
+    Assert Equal (GToken gETH TotalBorrowsCurrent) 0.0015e18
     FastForward 200000 Blocks -- 0.0015e18 * (1 + 200000 * 0.000005)
-    Assert Equal (SLToken slETH BorrowBalance Torrey) Zero
-    Assert Equal (SLToken slETH BorrowBalance Geoff) 0.003e18
-    Assert Equal (SLToken slETH TotalBorrowsCurrent) 0.003e18
+    Assert Equal (GToken gETH BorrowBalance Torrey) Zero
+    Assert Equal (GToken gETH BorrowBalance Geoff) 0.003e18
+    Assert Equal (GToken gETH TotalBorrowsCurrent) 0.003e18
 
 Test "Prohibit repay by comptroller hook"
     NewBorrowEth borrowAmount:0.001e18 borrowRate:0.000005
-    Assert Equal (SLToken slETH BorrowBalance Geoff) 0.001e18
-    Assert Equal (SLToken slETH TotalBorrowsCurrent) 0.001e18
+    Assert Equal (GToken gETH BorrowBalance Geoff) 0.001e18
+    Assert Equal (GToken gETH TotalBorrowsCurrent) 0.001e18
     -- Now let's add some blocks and see what happs
     FastForward 300000 Blocks -- 0.001e18 * (1 + 300000 * 0.000005)
-    Assert Equal (SLToken slETH BorrowBalance Geoff) 0.0025e18
+    Assert Equal (GToken gETH BorrowBalance Geoff) 0.0025e18
     -- Now let's repay one full token
     Expect Changes (EtherBalance Geoff) Zero
-    Expect Changes (EtherBalance slETH) Zero
-    Comptroller UnList slETH -- Mock unlist slETH
+    Expect Changes (EtherBalance gETH) Zero
+    Comptroller UnList gETH -- Mock unlist gETH
     AllowFailures
-    RepayBorrowEth Geoff 0.001e18 slETH
+    RepayBorrowEth Geoff 0.001e18 gETH
     Assert RevertFailure COMPTROLLER_REJECTION "revert repayBorrow failed"
     ---- Let's check the overall numbers
-    Assert Equal (SLToken slETH BorrowBalance Geoff) 0.0025e18
-    Assert Equal (SLToken slETH TotalBorrowsCurrent) 0.0025e18
+    Assert Equal (GToken gETH BorrowBalance Geoff) 0.0025e18
+    Assert Equal (GToken gETH TotalBorrowsCurrent) 0.0025e18

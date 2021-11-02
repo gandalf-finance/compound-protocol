@@ -1,22 +1,22 @@
 pragma solidity ^0.5.16;
 
 import "./PriceOracle.sol";
-import "./SLErc20.sol";
+import "./GErc20.sol";
 
 contract SimplePriceOracle is PriceOracle {
     mapping(address => uint) prices;
     event PricePosted(address asset, uint previousPriceMantissa, uint requestedPriceMantissa, uint newPriceMantissa);
 
-    function getUnderlyingPrice(SLToken slToken) public view returns (uint) {
-        if (compareStrings(slToken.symbol(), "slETH")) {
+    function getUnderlyingPrice(GToken gToken) public view returns (uint) {
+        if (compareStrings(gToken.symbol(), "gETH")) {
             return 1e18;
         } else {
-            return prices[address(SLErc20(address(slToken)).underlying())];
+            return prices[address(GErc20(address(gToken)).underlying())];
         }
     }
 
-    function setUnderlyingPrice(SLToken slToken, uint underlyingPriceMantissa) public {
-        address asset = address(SLErc20(address(slToken)).underlying());
+    function setUnderlyingPrice(GToken gToken, uint underlyingPriceMantissa) public {
+        address asset = address(GErc20(address(gToken)).underlying());
         emit PricePosted(asset, prices[asset], underlyingPriceMantissa, underlyingPriceMantissa);
         prices[asset] = underlyingPriceMantissa;
     }

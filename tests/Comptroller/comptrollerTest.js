@@ -6,9 +6,9 @@ const {
 const {
   makeComptroller,
   makePriceOracle,
-  makeSLToken,
+  makeGToken,
   makeToken
-} = require('../Utils/SashimiLending');
+} = require('../Utils/GandalfLending');
 
 describe('Comptroller', () => {
   let root, accounts;
@@ -122,20 +122,20 @@ describe('Comptroller', () => {
 
   describe('_setCloseFactor', () => {
     it("fails if not called by admin", async () => {
-      const slToken = await makeSLToken();
+      const gToken = await makeGToken();
       expect(
-        await send(slToken.comptroller, '_setCloseFactor', [1], {from: accounts[0]})
+        await send(gToken.comptroller, '_setCloseFactor', [1], {from: accounts[0]})
       ).toHaveTrollFailure('UNAUTHORIZED', 'SET_CLOSE_FACTOR_OWNER_CHECK');
     });
 
     it("fails if close factor too low", async () => {
-      const slToken = await makeSLToken();
-      expect(await send(slToken.comptroller, '_setCloseFactor', [1])).toHaveTrollFailure('INVALID_CLOSE_FACTOR', 'SET_CLOSE_FACTOR_VALIDATION');
+      const gToken = await makeGToken();
+      expect(await send(gToken.comptroller, '_setCloseFactor', [1])).toHaveTrollFailure('INVALID_CLOSE_FACTOR', 'SET_CLOSE_FACTOR_VALIDATION');
     });
 
     it("fails if close factor too low", async () => {
-      const slToken = await makeSLToken();
-      expect(await send(slToken.comptroller, '_setCloseFactor', [etherMantissa(1e18)])).toHaveTrollFailure('INVALID_CLOSE_FACTOR', 'SET_CLOSE_FACTOR_VALIDATION');
+      const gToken = await makeGToken();
+      expect(await send(gToken.comptroller, '_setCloseFactor', [etherMantissa(1e18)])).toHaveTrollFailure('INVALID_CLOSE_FACTOR', 'SET_CLOSE_FACTOR_VALIDATION');
     });
   });
 
@@ -144,38 +144,38 @@ describe('Comptroller', () => {
     const one = etherMantissa(1);
 
     it("fails if not called by admin", async () => {
-      const slToken = await makeSLToken();
+      const gToken = await makeGToken();
       expect(
-        await send(slToken.comptroller, '_setCollateralFactor', [slToken._address, half], {from: accounts[0]})
+        await send(gToken.comptroller, '_setCollateralFactor', [gToken._address, half], {from: accounts[0]})
       ).toHaveTrollFailure('UNAUTHORIZED', 'SET_COLLATERAL_FACTOR_OWNER_CHECK');
     });
 
     it("fails if asset is not listed", async () => {
-      const slToken = await makeSLToken();
+      const gToken = await makeGToken();
       expect(
-        await send(slToken.comptroller, '_setCollateralFactor', [slToken._address, half])
+        await send(gToken.comptroller, '_setCollateralFactor', [gToken._address, half])
       ).toHaveTrollFailure('MARKET_NOT_LISTED', 'SET_COLLATERAL_FACTOR_NO_EXISTS');
     });
 
     it("fails if factor is too high", async () => {
-      const slToken = await makeSLToken({supportMarket: true});
+      const gToken = await makeGToken({supportMarket: true});
       expect(
-        await send(slToken.comptroller, '_setCollateralFactor', [slToken._address, one])
+        await send(gToken.comptroller, '_setCollateralFactor', [gToken._address, one])
       ).toHaveTrollFailure('INVALID_COLLATERAL_FACTOR', 'SET_COLLATERAL_FACTOR_VALIDATION');
     });
 
     it("fails if factor is set without an underlying price", async () => {
-      const slToken = await makeSLToken({supportMarket: true});
+      const gToken = await makeGToken({supportMarket: true});
       expect(
-        await send(slToken.comptroller, '_setCollateralFactor', [slToken._address, half])
+        await send(gToken.comptroller, '_setCollateralFactor', [gToken._address, half])
       ).toHaveTrollFailure('PRICE_ERROR', 'SET_COLLATERAL_FACTOR_WITHOUT_PRICE');
     });
 
     it("succeeds and sets market", async () => {
-      const slToken = await makeSLToken({supportMarket: true, underlyingPrice: 1});
-      const result = await send(slToken.comptroller, '_setCollateralFactor', [slToken._address, half]);
+      const gToken = await makeGToken({supportMarket: true, underlyingPrice: 1});
+      const result = await send(gToken.comptroller, '_setCollateralFactor', [gToken._address, half]);
       expect(result).toHaveLog('NewCollateralFactor', {
-        slToken: slToken._address,
+        gToken: gToken._address,
         oldCollateralFactorMantissa: '0',
         newCollateralFactorMantissa: half.toString()
       });
@@ -184,59 +184,59 @@ describe('Comptroller', () => {
 
   describe('_supportMarket', () => {
     it("fails if not called by admin", async () => {
-      const slToken = await makeSLToken(root);
+      const gToken = await makeGToken(root);
       expect(
-        await send(slToken.comptroller, '_supportMarket', [slToken._address], {from: accounts[0]})
+        await send(gToken.comptroller, '_supportMarket', [gToken._address], {from: accounts[0]})
       ).toHaveTrollFailure('UNAUTHORIZED', 'SUPPORT_MARKET_OWNER_CHECK');
     });
 
-    it("fails if asset is not a SLToken", async () => {
+    it("fails if asset is not a GToken", async () => {
       const comptroller = await makeComptroller()
       const asset = await makeToken(root);
       await expect(send(comptroller, '_supportMarket', [asset._address])).rejects.toRevert();
     });
 
     it("succeeds and sets market", async () => {
-      const slToken = await makeSLToken();
-      const result = await send(slToken.comptroller, '_supportMarket', [slToken._address]);
-      expect(result).toHaveLog('MarketListed', {slToken: slToken._address});
+      const gToken = await makeGToken();
+      const result = await send(gToken.comptroller, '_supportMarket', [gToken._address]);
+      expect(result).toHaveLog('MarketListed', {gToken: gToken._address});
     });
 
     it("cannot list a market a second time", async () => {
-      const slToken = await makeSLToken();
-      const result1 = await send(slToken.comptroller, '_supportMarket', [slToken._address]);
-      const result2 = await send(slToken.comptroller, '_supportMarket', [slToken._address]);
-      expect(result1).toHaveLog('MarketListed', {slToken: slToken._address});
+      const gToken = await makeGToken();
+      const result1 = await send(gToken.comptroller, '_supportMarket', [gToken._address]);
+      const result2 = await send(gToken.comptroller, '_supportMarket', [gToken._address]);
+      expect(result1).toHaveLog('MarketListed', {gToken: gToken._address});
       expect(result2).toHaveTrollFailure('MARKET_ALREADY_LISTED', 'SUPPORT_MARKET_EXISTS');
     });
 
     it("can list two different markets", async () => {
-      const slToken1 = await makeSLToken();
-      const slToken2 = await makeSLToken({comptroller: slToken1.comptroller});
-      const result1 = await send(slToken1.comptroller, '_supportMarket', [slToken1._address]);
-      const result2 = await send(slToken1.comptroller, '_supportMarket', [slToken2._address]);
-      expect(result1).toHaveLog('MarketListed', {slToken: slToken1._address});
-      expect(result2).toHaveLog('MarketListed', {slToken: slToken2._address});
+      const gToken1 = await makeGToken();
+      const gToken2 = await makeGToken({comptroller: gToken1.comptroller});
+      const result1 = await send(gToken1.comptroller, '_supportMarket', [gToken1._address]);
+      const result2 = await send(gToken1.comptroller, '_supportMarket', [gToken2._address]);
+      expect(result1).toHaveLog('MarketListed', {gToken: gToken1._address});
+      expect(result2).toHaveLog('MarketListed', {gToken: gToken2._address});
     });
   });
 
   describe('redeemVerify', () => {
     it('should allow you to redeem 0 underlying for 0 tokens', async () => {
       const comptroller = await makeComptroller();
-      const slToken = await makeSLToken({comptroller: comptroller});
-      await call(comptroller, 'redeemVerify', [slToken._address, accounts[0], 0, 0]);
+      const gToken = await makeGToken({comptroller: comptroller});
+      await call(comptroller, 'redeemVerify', [gToken._address, accounts[0], 0, 0]);
     });
 
     it('should allow you to redeem 5 underlyig for 5 tokens', async () => {
       const comptroller = await makeComptroller();
-      const slToken = await makeSLToken({comptroller: comptroller});
-      await call(comptroller, 'redeemVerify', [slToken._address, accounts[0], 5, 5]);
+      const gToken = await makeGToken({comptroller: comptroller});
+      await call(comptroller, 'redeemVerify', [gToken._address, accounts[0], 5, 5]);
     });
 
     it('should not allow you to redeem 5 underlying for 0 tokens', async () => {
       const comptroller = await makeComptroller();
-      const slToken = await makeSLToken({comptroller: comptroller});
-      await expect(call(comptroller, 'redeemVerify', [slToken._address, accounts[0], 5, 0])).rejects.toRevert("revert redeemTokens zero");
+      const gToken = await makeGToken({comptroller: comptroller});
+      await expect(call(comptroller, 'redeemVerify', [gToken._address, accounts[0], 5, 0])).rejects.toRevert("revert redeemTokens zero");
     });
   })
 });

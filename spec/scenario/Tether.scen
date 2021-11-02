@@ -32,55 +32,55 @@ Pending "TODO: Add Back Tether Tests"
 --     ForkTether
 --     NewComptroller price:1.0
 --     Erc20 Deploy ExistingTether USDT TetherAddress
---     NewSLTokenBringERC20 USDT slUSDT
+--     NewGTokenBringERC20 USDT gUSDT
 --     From TetherAdmin (Erc20 USDT SetFee 10 10)
---     Invariant Static (SLToken slUSDT ExchangeRate)
---     Support slUSDT
---     From TetherHolder (Erc20 USDT Approve slUSDT 1e8)
---     Mint TetherHolder 1e8 slUSDT
---     Assert Equal (ERC20 USDT TokenBalance slUSDT) 0.999e8
+--     Invariant Static (GToken gUSDT ExchangeRate)
+--     Support gUSDT
+--     From TetherHolder (Erc20 USDT Approve gUSDT 1e8)
+--     Mint TetherHolder 1e8 gUSDT
+--     Assert Equal (ERC20 USDT TokenBalance gUSDT) 0.999e8
 
--- Test "Should be able to redeem a fee SLToken, exchange Rate should not change"
+-- Test "Should be able to redeem a fee GToken, exchange Rate should not change"
 --     ForkTether
 --     NewComptroller price:1.0
 --     Erc20 Deploy ExistingTether USDT TetherAddress
---     NewSLTokenBringERC20 USDT slUSDT
+--     NewGTokenBringERC20 USDT gUSDT
 --     From TetherAdmin (Erc20 USDT SetFee 10 10)
---     Support slUSDT
---     Invariant Static (SLToken slUSDT ExchangeRate)
---     From TetherHolder (Erc20 USDT Approve slUSDT 1e8)
---     Mint TetherHolder 1e8 slUSDT
---     Redeem Torrey (Erc20 slUSDT TokenBalance TetherHolder) slUSDT
+--     Support gUSDT
+--     Invariant Static (GToken gUSDT ExchangeRate)
+--     From TetherHolder (Erc20 USDT Approve gUSDT 1e8)
+--     Mint TetherHolder 1e8 gUSDT
+--     Redeem Torrey (Erc20 gUSDT TokenBalance TetherHolder) gUSDT
 
 -- Test "Repay borrow should work and not change exchange rate"
 --     ForkTether
 --     PricedComptroller
 --     Erc20 Deploy ExistingTether USDT TetherAddress
---     NewSLTokenBringERC20 USDT slUSDT
---     NewSLToken ZRX slZRX 0.000005 2e9 8 Standard
---     PriceOracle SetPrice slZRX 1.0
---     PriceOracle SetPrice slUSDT 1.0
---     Support slZRX 0.5
---     Support slUSDT 0.5
---     Invariant Static (SLToken slUSDT ExchangeRate)
+--     NewGTokenBringERC20 USDT gUSDT
+--     NewGToken ZRX gZRX 0.000005 2e9 8 Standard
+--     PriceOracle SetPrice gZRX 1.0
+--     PriceOracle SetPrice gUSDT 1.0
+--     Support gZRX 0.5
+--     Support gUSDT 0.5
+--     Invariant Static (GToken gUSDT ExchangeRate)
 --     --
---     From TetherHolder (Erc20 USDT Approve slUSDT 1e8)
---     Mint TetherHolder 1e8 slUSDT
+--     From TetherHolder (Erc20 USDT Approve gUSDT 1e8)
+--     Mint TetherHolder 1e8 gUSDT
 --     From TetherAdmin (Erc20 USDT SetFee 10 10)
 --     --
---     Prep Torrey 100e8 ZRX slZRX
---     Mint Torrey 100e8 slZRX
---     EnterMarkets Torrey slUSDT
---     EnterMarkets Torrey slZRX
---     Borrow Torrey 1e8 slUSDT -- we only received 0.999e8 tether bc of fee
+--     Prep Torrey 100e8 ZRX gZRX
+--     Mint Torrey 100e8 gZRX
+--     EnterMarkets Torrey gUSDT
+--     EnterMarkets Torrey gZRX
+--     Borrow Torrey 1e8 gUSDT -- we only received 0.999e8 tether bc of fee
 --     Assert Equal (ERC20 USDT TokenBalance Torrey) 0.999e8
 --     FastForward 199600 Blocks -- 1e8 * 199800 * 0.000005 = 0.998e8 interest accrued
---     Assert Equal (SLToken slUSDT TotalBorrowsCurrent) 1.998e8
+--     Assert Equal (GToken gUSDT TotalBorrowsCurrent) 1.998e8
 --     From TetherHolder (Erc20 USDT Transfer Torrey 2e8)
---     From Torrey (Erc20 USDT Approve slUSDT 2e8)
---     RepayBorrow Torrey 2e8 slUSDT -- repay more than we owe to account for fee
---     Assert Equal (SLToken slUSDT BorrowBalance Torrey) 0
---     Assert Equal (SLToken slUSDT TotalBorrowsCurrent) 0
+--     From Torrey (Erc20 USDT Approve gUSDT 2e8)
+--     RepayBorrow Torrey 2e8 gUSDT -- repay more than we owe to account for fee
+--     Assert Equal (GToken gUSDT BorrowBalance Torrey) 0
+--     Assert Equal (GToken gUSDT TotalBorrowsCurrent) 0
 --     --Assert Equal (ERC20 USDT TokenBalance Torrey) 0
 
 -- Test "Should be able to liquidate Tether token borrow"
@@ -88,30 +88,30 @@ Pending "TODO: Add Back Tether Tests"
 --     PricedComptroller
 --     Comptroller LiquidationIncentive 1.1
 --     Erc20 Deploy ExistingTether USDT TetherAddress-- FYI tether is 6 decimals
---     NewSLTokenBringERC20 USDT slUSDT
---     NewSLToken ZRX slZRX 0.000005 2e9 8 Standard
---     PriceOracle SetPrice slZRX 1.0
---     PriceOracle SetPrice slUSDT 1e12
---     Support slZRX 0.5
---     Support slUSDT 0.5
---     Invariant Static (SLToken slUSDT ExchangeRate)
---     -- Give some Tether to slUSDT
---     From TetherHolder (Erc20 USDT Approve slUSDT 2e8)
---     Mint TetherHolder 2e8 slUSDT
+--     NewGTokenBringERC20 USDT gUSDT
+--     NewGToken ZRX gZRX 0.000005 2e9 8 Standard
+--     PriceOracle SetPrice gZRX 1.0
+--     PriceOracle SetPrice gUSDT 1e12
+--     Support gZRX 0.5
+--     Support gUSDT 0.5
+--     Invariant Static (GToken gUSDT ExchangeRate)
+--     -- Give some Tether to gUSDT
+--     From TetherHolder (Erc20 USDT Approve gUSDT 2e8)
+--     Mint TetherHolder 2e8 gUSDT
 --     From TetherAdmin (Erc20 USDT SetFee 10 10)
 --     -- Prep our Tether borrower
---     Prep Torrey 2e18 ZRX slZRX
---     Mint Torrey 2e18 slZRX
---     EnterMarkets Torrey slUSDT
---     EnterMarkets Torrey slZRX
---     Borrow Torrey 1e6 slUSDT -- fyi we only received 0.999e8 tether bc of fee
+--     Prep Torrey 2e18 ZRX gZRX
+--     Mint Torrey 2e18 gZRX
+--     EnterMarkets Torrey gUSDT
+--     EnterMarkets Torrey gZRX
+--     Borrow Torrey 1e6 gUSDT -- fyi we only received 0.999e8 tether bc of fee
 --     Assert Equal (ERC20 USDT TokenBalance Torrey) 0.999e6
 --     FastForward 199600 Blocks -- 1e6 * 199800 * 0.000005 = 0.998e6 interest accrued
---     Assert Equal (SLToken slUSDT TotalBorrowsCurrent) 1.998e6
+--     Assert Equal (GToken gUSDT TotalBorrowsCurrent) 1.998e6
 --     -- ok.. ready the liquidator
 --     From TetherHolder (Erc20 USDT Transfer Coburn 2e6) -- should give 1.001001001
---     From Coburn (Erc20 USDT Approve slUSDT 2e6)
---     Liquidate Coburn "->" Torrey 0.1e6 slUSDT "Seizing" slZRX
+--     From Coburn (Erc20 USDT Approve gUSDT 2e6)
+--     Liquidate Coburn "->" Torrey 0.1e6 gUSDT "Seizing" gZRX
 --     -- 5.4945e7 = (1e18 / 1e6) * 0.1e6 (amt liquidated) * 1.1 (liq discount) * .999 (fee) / 2e9 (exchange rate)
---     Assert Equal (Erc20 slZRX TokenBalance Coburn) 5.4945e7
---     Assert Equal (SLToken slUSDT BorrowBalance Torrey) 1.8981e6 -- 1.998 - (.1 * .999) was liquidated
+--     Assert Equal (Erc20 gZRX TokenBalance Coburn) 5.4945e7
+--     Assert Equal (GToken gUSDT BorrowBalance Torrey) 1.8981e6 -- 1.998 - (.1 * .999) was liquidated

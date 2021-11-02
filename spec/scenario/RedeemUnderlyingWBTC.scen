@@ -2,182 +2,182 @@
 
 Test "Mint then Redeem All"
     NewComptroller
-    ListedSLToken WBTC slWBTC initialExchangeRate:0.1 tokenType:WBTC
-    Prep Geoff 70e8 WBTC slWBTC
-    Mint Geoff 50e8 slWBTC
+    ListedGToken WBTC gWBTC initialExchangeRate:0.1 tokenType:WBTC
+    Prep Geoff 70e8 WBTC gWBTC
+    Mint Geoff 50e8 gWBTC
     -- Check current affairs
-    Assert Equal (Erc20 slWBTC TokenBalance Geoff) 500e8
+    Assert Equal (Erc20 gWBTC TokenBalance Geoff) 500e8
     Assert Equal (Erc20 WBTC TokenBalance Geoff) 20e8
     -- Any other good invariants?
-    Invariant Static (SLToken slWBTC ExchangeRateStored)
+    Invariant Static (GToken gWBTC ExchangeRateStored)
     -- Now redeem after some time
     FastForward 2 Blocks
-    RedeemUnderlying Geoff 50e8 slWBTC
-    Assert Equal (Erc20 slWBTC TokenBalance Geoff) Zero
+    RedeemUnderlying Geoff 50e8 gWBTC
+    Assert Equal (Erc20 gWBTC TokenBalance Geoff) Zero
     Assert Equal (Erc20 WBTC TokenBalance Geoff) 70e8
 
 Test "Mint then Redeem Part"
     NewComptroller
-    ListedSLToken WBTC slWBTC initialExchangeRate:0.1 tokenType:WBTC
-    Prep Geoff 70e8 WBTC slWBTC
-    Mint Geoff 50e8 slWBTC
+    ListedGToken WBTC gWBTC initialExchangeRate:0.1 tokenType:WBTC
+    Prep Geoff 70e8 WBTC gWBTC
+    Mint Geoff 50e8 gWBTC
     -- Check current affairs
-    Assert Equal (Erc20 slWBTC TokenBalance Geoff) 500e8
+    Assert Equal (Erc20 gWBTC TokenBalance Geoff) 500e8
     Assert Equal (Erc20 WBTC TokenBalance Geoff) 20e8
     -- Any other good invariants?
-    Invariant Static (SLToken slWBTC ExchangeRateStored)
+    Invariant Static (GToken gWBTC ExchangeRateStored)
     -- Now redeem after some time
     FastForward 2 Blocks
-    RedeemUnderlying Geoff 25e8 slWBTC
-    Assert Equal (Erc20 slWBTC TokenBalance Geoff) 250e8
+    RedeemUnderlying Geoff 25e8 gWBTC
+    Assert Equal (Erc20 gWBTC TokenBalance Geoff) 250e8
     Assert Equal (Erc20 WBTC TokenBalance Geoff) 45e8
 
 Test "Mint then Redeem Too Much"
     NewComptroller
-    ListedSLToken WBTC slWBTC initialExchangeRate:0.1 tokenType:WBTC
-    Prep Geoff 70e8 WBTC slWBTC
-    Mint Geoff 50e8 slWBTC
+    ListedGToken WBTC gWBTC initialExchangeRate:0.1 tokenType:WBTC
+    Prep Geoff 70e8 WBTC gWBTC
+    Mint Geoff 50e8 gWBTC
     -- Check and hold static
-    Invariant Static (SLToken slWBTC ExchangeRateStored)
-    Invariant Remains (Erc20 slWBTC TokenBalance Geoff) 500e8
+    Invariant Static (GToken gWBTC ExchangeRateStored)
+    Invariant Remains (Erc20 gWBTC TokenBalance Geoff) 500e8
     Invariant Remains (Erc20 WBTC TokenBalance Geoff) 20e8
     -- Now redeem after some time
     FastForward 2 Blocks
     AllowFailures
-    RedeemUnderlying Geoff 50.1e8 slWBTC
+    RedeemUnderlying Geoff 50.1e8 gWBTC
     Assert Failure MATH_ERROR REDEEM_NEW_TOTAL_SUPPLY_CALCULATION_FAILED "3"
 
 Test "Mint then Redeem Zero"
     NewComptroller
-    ListedSLToken WBTC slWBTC initialExchangeRate:0.1 tokenType:WBTC
-    Prep Geoff 70e8 WBTC slWBTC
-    Mint Geoff 50e8 slWBTC
+    ListedGToken WBTC gWBTC initialExchangeRate:0.1 tokenType:WBTC
+    Prep Geoff 70e8 WBTC gWBTC
+    Mint Geoff 50e8 gWBTC
     -- Check current affairs
-    Assert Equal (Erc20 slWBTC TokenBalance Geoff) 500e8
+    Assert Equal (Erc20 gWBTC TokenBalance Geoff) 500e8
     Assert Equal (Erc20 WBTC TokenBalance Geoff) 20e8
     -- Any other good invariants?
-    Invariant Static (SLToken slWBTC ExchangeRateStored)
+    Invariant Static (GToken gWBTC ExchangeRateStored)
     -- Now redeem after some time
     FastForward 2 Blocks
-    RedeemUnderlying Geoff 0e8 slWBTC
-    Assert Equal (Erc20 slWBTC TokenBalance Geoff) 500e8
+    RedeemUnderlying Geoff 0e8 gWBTC
+    Assert Equal (Erc20 gWBTC TokenBalance Geoff) 500e8
     Assert Equal (Erc20 WBTC TokenBalance Geoff) 20e8
 
 Test "Mint then redeem with interest - no reserves"
     NewComptroller
-    ListedSLToken WBTC slWBTC initialExchangeRate:0.1 tokenType:WBTC
-    Invariant Remains (SLToken slWBTC Reserves) Zero
-    Prep Geoff 50e8 WBTC slWBTC
-    Mint Geoff 50e8 slWBTC
-    Assert Equal (Erc20 slWBTC TokenBalance Geoff) 500e8
-    Assert Equal (SLToken slWBTC UnderlyingBalance Geoff) 50e8
-    Assert Equal (SLToken slWBTC ExchangeRate) 0.1
+    ListedGToken WBTC gWBTC initialExchangeRate:0.1 tokenType:WBTC
+    Invariant Remains (GToken gWBTC Reserves) Zero
+    Prep Geoff 50e8 WBTC gWBTC
+    Mint Geoff 50e8 gWBTC
+    Assert Equal (Erc20 gWBTC TokenBalance Geoff) 500e8
+    Assert Equal (GToken gWBTC UnderlyingBalance Geoff) 50e8
+    Assert Equal (GToken gWBTC ExchangeRate) 0.1
     -- Get some brah to borrow then repay
-    BorrowAndRepayWithInterest WBTC slWBTC 10e8 5e8 interestRate:0.000001 blocks:500000
+    BorrowAndRepayWithInterest WBTC gWBTC 10e8 5e8 interestRate:0.000001 blocks:500000
     -- We've accrued .001% interest for 500000 blocks, or 50% of the principal,
     --   thus, we should have accrued 5e8 of interest for the protocol
     --   This is due pro-rata to all suppliers, but we just have one, so
     --   let's check that account is given correct new balance.
-    Assert Equal (Erc20 slWBTC TokenBalance Geoff) 500e8
-    Assert Equal (SLToken slWBTC UnderlyingBalance Geoff) 55e8
-    Assert Equal (SLToken slWBTC ExchangeRate) 0.11
+    Assert Equal (Erc20 gWBTC TokenBalance Geoff) 500e8
+    Assert Equal (GToken gWBTC UnderlyingBalance Geoff) 55e8
+    Assert Equal (GToken gWBTC ExchangeRate) 0.11
     -- Now redeem all with interest
     -- Exchange rate is now 55e8 ÷ 50e-1 = 1.1e-1
     -- 500e-1 * 1.1e-1 = 55e8
-    RedeemUnderlying Geoff 55e8 slWBTC
+    RedeemUnderlying Geoff 55e8 gWBTC
     Assert Equal (Erc20 WBTC TokenBalance Geoff) 55e8
-    Assert Equal (Erc20 WBTC TokenBalance slWBTC) 0e8
-    Assert Equal (Erc20 slWBTC TokenBalance Geoff) 0e8
-    Assert Equal (SLToken slWBTC UnderlyingBalance Geoff) 0e8
-    Assert Equal (SLToken slWBTC ExchangeRate) 0.1
+    Assert Equal (Erc20 WBTC TokenBalance gWBTC) 0e8
+    Assert Equal (Erc20 gWBTC TokenBalance Geoff) 0e8
+    Assert Equal (GToken gWBTC UnderlyingBalance Geoff) 0e8
+    Assert Equal (GToken gWBTC ExchangeRate) 0.1
 
 Test "Mint then redeem part with interest - no reserves"
     NewComptroller
-    ListedSLToken WBTC slWBTC initialExchangeRate:0.1 tokenType:WBTC
-    Invariant Remains (SLToken slWBTC Reserves) Zero
-    Prep Geoff 50e8 WBTC slWBTC
-    Mint Geoff 50e8 slWBTC
-    Assert Equal (Erc20 slWBTC TokenBalance Geoff) 500e8
-    Assert Equal (SLToken slWBTC UnderlyingBalance Geoff) 50e8
-    Assert Equal (SLToken slWBTC ExchangeRate) 0.1
+    ListedGToken WBTC gWBTC initialExchangeRate:0.1 tokenType:WBTC
+    Invariant Remains (GToken gWBTC Reserves) Zero
+    Prep Geoff 50e8 WBTC gWBTC
+    Mint Geoff 50e8 gWBTC
+    Assert Equal (Erc20 gWBTC TokenBalance Geoff) 500e8
+    Assert Equal (GToken gWBTC UnderlyingBalance Geoff) 50e8
+    Assert Equal (GToken gWBTC ExchangeRate) 0.1
     -- Get some brah to borrow then repay
-    BorrowAndRepayWithInterest WBTC slWBTC 10e8 5e8 interestRate:0.000001 blocks:500000
+    BorrowAndRepayWithInterest WBTC gWBTC 10e8 5e8 interestRate:0.000001 blocks:500000
     -- We've accrued .001% interest for 500000 blocks, or 50% of the principal,
     --   thus, we should have accrued 5e8 of interest for the protocol
     --   This is due pro-rata to all suppliers, but we just have one, so
     --   let's check that account is given correct new balance.
-    Assert Equal (Erc20 slWBTC TokenBalance Geoff) 500e8
-    Assert Equal (SLToken slWBTC UnderlyingBalance Geoff) 55e8
-    Assert Equal (SLToken slWBTC ExchangeRate) 0.11
+    Assert Equal (Erc20 gWBTC TokenBalance Geoff) 500e8
+    Assert Equal (GToken gWBTC UnderlyingBalance Geoff) 55e8
+    Assert Equal (GToken gWBTC ExchangeRate) 0.11
     -- Now redeem all with interest
     -- Exchange rate is now 55e8 ÷ 50e-1 = 1.1e-1
     -- 499e-1 * 1.1e-1 = 54.89e8
-    RedeemUnderlying Geoff 54.89e8 slWBTC
-    Assert Equal (Erc20 slWBTC TokenBalance Geoff) 1e8
-    Assert Equal (SLToken slWBTC UnderlyingBalance Geoff) 0.11e8
-    Assert Equal (SLToken slWBTC ExchangeRate) 0.11
+    RedeemUnderlying Geoff 54.89e8 gWBTC
+    Assert Equal (Erc20 gWBTC TokenBalance Geoff) 1e8
+    Assert Equal (GToken gWBTC UnderlyingBalance Geoff) 0.11e8
+    Assert Equal (GToken gWBTC ExchangeRate) 0.11
 
 Test "Mint then redeem with reserves and interest"
     NewComptroller
-    ListedSLToken WBTC slWBTC initialExchangeRate:0.1 tokenType:WBTC
-    Prep Geoff 50e8 WBTC slWBTC
-    Mint Geoff 50e8 slWBTC
-    Assert Equal (Erc20 slWBTC TokenBalance Geoff) 500e8
-    Assert Equal (SLToken slWBTC UnderlyingBalance Geoff) 50e8
-    Assert Equal (SLToken slWBTC ExchangeRate) 0.1
+    ListedGToken WBTC gWBTC initialExchangeRate:0.1 tokenType:WBTC
+    Prep Geoff 50e8 WBTC gWBTC
+    Mint Geoff 50e8 gWBTC
+    Assert Equal (Erc20 gWBTC TokenBalance Geoff) 500e8
+    Assert Equal (GToken gWBTC UnderlyingBalance Geoff) 50e8
+    Assert Equal (GToken gWBTC ExchangeRate) 0.1
     -- Get some brah to borrow then repay
-    BorrowAndRepayWithInterest WBTC slWBTC 10e8 5e8 interestRate:0.000001 blocks:500000 reserveRate:0.2
+    BorrowAndRepayWithInterest WBTC gWBTC 10e8 5e8 interestRate:0.000001 blocks:500000 reserveRate:0.2
     -- We've accrued .001% interest for 500000 blocks, or 50% of the principal,
     --   thus, we should have accrued 5e8 of interest for the protocol
     --   The reserves should get 20% of this, or 1e8, and the rest
     --   is due pro-rata to all suppliers. We just have one, so
     --   let's check that account is given correct new balance.
-    Assert Equal (Erc20 slWBTC TokenBalance Geoff) 500e8
-    Assert Equal (SLToken slWBTC Reserves) 1e8
-    Assert Equal (SLToken slWBTC UnderlyingBalance Geoff) 54e8
+    Assert Equal (Erc20 gWBTC TokenBalance Geoff) 500e8
+    Assert Equal (GToken gWBTC Reserves) 1e8
+    Assert Equal (GToken gWBTC UnderlyingBalance Geoff) 54e8
     -- 55e8 + 0e8 - 1e8 / 500
-    Assert Equal (SLToken slWBTC ExchangeRate) 0.108
+    Assert Equal (GToken gWBTC ExchangeRate) 0.108
     -- Now redeem all with interest
     -- Exchange rate is 1.08e-1
     -- 500e8 * 1.08e-1 = 54e8
-    RedeemUnderlying Geoff 54e8 slWBTC
+    RedeemUnderlying Geoff 54e8 gWBTC
     Assert Equal (Erc20 WBTC TokenBalance Geoff) 54e8
-    Assert Equal (Erc20 WBTC TokenBalance slWBTC) 1e8
-    Assert Equal (Erc20 slWBTC TokenBalance Geoff) 0e8
-    Assert Equal (SLToken slWBTC Reserves) 1e8
-    Assert Equal (SLToken slWBTC UnderlyingBalance Geoff) 0e8
-    Assert Equal (SLToken slWBTC ExchangeRate) 0.1
+    Assert Equal (Erc20 WBTC TokenBalance gWBTC) 1e8
+    Assert Equal (Erc20 gWBTC TokenBalance Geoff) 0e8
+    Assert Equal (GToken gWBTC Reserves) 1e8
+    Assert Equal (GToken gWBTC UnderlyingBalance Geoff) 0e8
+    Assert Equal (GToken gWBTC ExchangeRate) 0.1
 
 Test "Two users Mint, one redeems"
     NewComptroller
-    ListedSLToken WBTC slWBTC initialExchangeRate:0.1 tokenType:WBTC
-    Prep Geoff Some WBTC slWBTC
-    Prep Torrey Some WBTC slWBTC
-    Mint Geoff 2e8 slWBTC
-    Assert Equal (Erc20 slWBTC TokenBalance Geoff) 20e8
-    Assert Equal (Erc20 slWBTC TotalSupply) 20e8
-    Mint Torrey 2e8 slWBTC
-    Assert Equal (Erc20 slWBTC TokenBalance Geoff) 20e8
-    Assert Equal (Erc20 slWBTC TokenBalance Torrey) 20e8
-    Assert Equal (Erc20 slWBTC TotalSupply) 40e8
-    RedeemUnderlying Torrey 1e8 slWBTC
-    Assert Equal (Erc20 slWBTC TokenBalance Geoff) 20e8
-    Assert Equal (Erc20 slWBTC TokenBalance Torrey) 10e8
-    Assert Equal (Erc20 slWBTC TotalSupply) 30e8
+    ListedGToken WBTC gWBTC initialExchangeRate:0.1 tokenType:WBTC
+    Prep Geoff Some WBTC gWBTC
+    Prep Torrey Some WBTC gWBTC
+    Mint Geoff 2e8 gWBTC
+    Assert Equal (Erc20 gWBTC TokenBalance Geoff) 20e8
+    Assert Equal (Erc20 gWBTC TotalSupply) 20e8
+    Mint Torrey 2e8 gWBTC
+    Assert Equal (Erc20 gWBTC TokenBalance Geoff) 20e8
+    Assert Equal (Erc20 gWBTC TokenBalance Torrey) 20e8
+    Assert Equal (Erc20 gWBTC TotalSupply) 40e8
+    RedeemUnderlying Torrey 1e8 gWBTC
+    Assert Equal (Erc20 gWBTC TokenBalance Geoff) 20e8
+    Assert Equal (Erc20 gWBTC TokenBalance Torrey) 10e8
+    Assert Equal (Erc20 gWBTC TotalSupply) 30e8
 
 Test "Mint then Redeem 1 wei of underlying is allowed for 1:1 assets"
     NewComptroller
-    ListedSLToken WBTC slWBTC initialExchangeRate:0.1 tokenType:WBTC
-    Prep Geoff 70e8 WBTC slWBTC
-    Mint Geoff 50e8 slWBTC
+    ListedGToken WBTC gWBTC initialExchangeRate:0.1 tokenType:WBTC
+    Prep Geoff 70e8 WBTC gWBTC
+    Mint Geoff 50e8 gWBTC
     -- Check current affairs
-    Assert Equal (Erc20 slWBTC TokenBalance Geoff) 500e8
+    Assert Equal (Erc20 gWBTC TokenBalance Geoff) 500e8
     Assert Equal (Erc20 WBTC TokenBalance Geoff) 20e8
     -- Any other good invariants?
-    Invariant Static (SLToken slWBTC ExchangeRateStored)
+    Invariant Static (GToken gWBTC ExchangeRateStored)
     -- Now redeem after some time
     FastForward 2 Blocks
-    RedeemUnderlying Geoff 1 slWBTC
+    RedeemUnderlying Geoff 1 gWBTC
     -- After affairs
-    Assert Equal (Erc20 slWBTC TokenBalance Geoff) 49999999990
+    Assert Equal (Erc20 gWBTC TokenBalance Geoff) 49999999990
     Assert Equal (Erc20 WBTC TokenBalance Geoff) 2000000001

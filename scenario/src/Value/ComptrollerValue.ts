@@ -1,7 +1,7 @@
 import {Event} from '../Event';
 import {World} from '../World';
 import {Comptroller} from '../Contract/Comptroller';
-import {SLToken} from '../Contract/SLToken';
+import {GToken} from '../Contract/GToken';
 import {
   getAddressV,
   getCoreValue,
@@ -19,7 +19,7 @@ import {
 import {Arg, Fetcher, getFetcherValue} from '../Command';
 import {getComptroller} from '../ContractLookup';
 import {encodedNumber} from '../Encoding';
-import {getSLTokenV} from './SLTokenValue';
+import {getGTokenV} from './GTokenValue';
 import { encodeParameters, encodeABI } from '../Utils';
 
 export async function getComptrollerAddress(world: World, comptroller: Comptroller): Promise<AddressV> {
@@ -74,8 +74,8 @@ async function getPendingAdmin(world: World, comptroller: Comptroller): Promise<
   return new AddressV(await comptroller.methods.pendingAdmin().call());
 }
 
-async function getCollateralFactor(world: World, comptroller: Comptroller, slToken: SLToken): Promise<NumberV> {
-  let {0: _isListed, 1: collateralFactorMantissa} = await comptroller.methods.markets(slToken._address).call();
+async function getCollateralFactor(world: World, comptroller: Comptroller, gToken: GToken): Promise<NumberV> {
+  let {0: _isListed, 1: collateralFactorMantissa} = await comptroller.methods.markets(gToken._address).call();
   return new NumberV(collateralFactorMantissa, 1e18);
 }
 
@@ -83,8 +83,8 @@ async function membershipLength(world: World, comptroller: Comptroller, user: st
   return new NumberV(await comptroller.methods.membershipLength(user).call());
 }
 
-async function checkMembership(world: World, comptroller: Comptroller, user: string, slToken: SLToken): Promise<BoolV> {
-  return new BoolV(await comptroller.methods.checkMembership(user, slToken._address).call());
+async function checkMembership(world: World, comptroller: Comptroller, user: string, gToken: GToken): Promise<BoolV> {
+  return new BoolV(await comptroller.methods.checkMembership(user, gToken._address).call());
 }
 
 async function getAssetsIn(world: World, comptroller: Comptroller, user: string): Promise<ListV> {
@@ -93,21 +93,21 @@ async function getAssetsIn(world: World, comptroller: Comptroller, user: string)
   return new ListV(assetsList.map((a) => new AddressV(a)));
 }
 
-async function getSashimiMarkets(world: World, comptroller: Comptroller): Promise<ListV> {
-  let mkts = await comptroller.methods.getSashimiMarkets().call();
+async function getPlatformTokenMarkets(world: World, comptroller: Comptroller): Promise<ListV> {
+  let mkts = await comptroller.methods.getPlatformTokenMarkets().call();
 
   return new ListV(mkts.map((a) => new AddressV(a)));
 }
 
-async function checkListed(world: World, comptroller: Comptroller, slToken: SLToken): Promise<BoolV> {
-  let {0: isListed, 1: _collateralFactorMantissa} = await comptroller.methods.markets(slToken._address).call();
+async function checkListed(world: World, comptroller: Comptroller, gToken: GToken): Promise<BoolV> {
+  let {0: isListed, 1: _collateralFactorMantissa} = await comptroller.methods.markets(gToken._address).call();
 
   return new BoolV(isListed);
 }
 
-async function checkIsSashimied(world: World, comptroller: Comptroller, slToken: SLToken): Promise<BoolV> {
-  let {0: isListed, 1: _collateralFactorMantissa, 2: isSashimied} = await comptroller.methods.markets(slToken._address).call();
-  return new BoolV(isSashimied);
+async function checkIsPlatformTokened(world: World, comptroller: Comptroller, gToken: GToken): Promise<BoolV> {
+  let {0: isListed, 1: _collateralFactorMantissa, 2: isPlatformTokened} = await comptroller.methods.markets(gToken._address).call();
+  return new BoolV(isPlatformTokened);
 }
 
 
@@ -135,12 +135,12 @@ export function comptrollerFetchers() {
       ],
       (world, {comptroller, account}) => getLiquidity(world, comptroller, account.val)
     ),
-    new Fetcher<{comptroller: Comptroller, account: AddressV, action: StringV, amount: NumberV, slToken: SLToken}, NumberV>(`
+    new Fetcher<{comptroller: Comptroller, account: AddressV, action: StringV, amount: NumberV, gToken: GToken}, NumberV>(`
         #### Hypothetical
 
         * "Comptroller Hypothetical <User> <Action> <Asset> <Number>" - Returns a given user's trued up liquidity given a hypothetical change in asset with redeeming a certain number of tokens and/or borrowing a given amount.
-          * E.g. "Comptroller Hypothetical Geoff Redeems 6.0 slZRX"
-          * E.g. "Comptroller Hypothetical Geoff Borrows 5.0 slZRX"
+          * E.g. "Comptroller Hypothetical Geoff Redeems 6.0 gZRX"
+          * E.g. "Comptroller Hypothetical Geoff Borrows 5.0 gZRX"
       `,
       "Hypothetical",
       [
@@ -148,9 +148,9 @@ export function comptrollerFetchers() {
         new Arg("account", getAddressV),
         new Arg("action", getStringV),
         new Arg("amount", getNumberV),
-        new Arg("slToken", getSLTokenV)
+        new Arg("gToken", getGTokenV)
       ],
-      async (world, {comptroller, account, action, slToken, amount}) => {
+      async (world, {comptroller, account, action, gToken, amount}) => {
         let redeemTokens: NumberV;
         let borrowAmount: NumberV;
 
@@ -167,7 +167,7 @@ export function comptrollerFetchers() {
             throw new Error(`Unknown hypothetical: ${action.val}`);
         }
 
-        return await getHypotheticalLiquidity(world, comptroller, account.val, slToken._address, redeemTokens.encode(), borrowAmount.encode());
+        return await getHypotheticalLiquidity(world, comptroller, account.val, gToken._address, redeemTokens.encode(), borrowAmount.encode());
       }
     ),
     new Fetcher<{comptroller: Comptroller}, AddressV>(`
@@ -252,18 +252,18 @@ export function comptrollerFetchers() {
       [new Arg("comptroller", getComptroller, {implicit: true})],
       (world, {comptroller}) => getBlockNumber(world, comptroller)
     ),
-    new Fetcher<{comptroller: Comptroller, slToken: SLToken}, NumberV>(`
+    new Fetcher<{comptroller: Comptroller, gToken: GToken}, NumberV>(`
         #### CollateralFactor
 
-        * "Comptroller CollateralFactor <SLToken>" - Returns the collateralFactor associated with a given asset
-          * E.g. "Comptroller CollateralFactor slZRX"
+        * "Comptroller CollateralFactor <GToken>" - Returns the collateralFactor associated with a given asset
+          * E.g. "Comptroller CollateralFactor gZRX"
       `,
       "CollateralFactor",
       [
         new Arg("comptroller", getComptroller, {implicit: true}),
-        new Arg("slToken", getSLTokenV)
+        new Arg("gToken", getGTokenV)
       ],
-      (world, {comptroller, slToken}) => getCollateralFactor(world, comptroller, slToken)
+      (world, {comptroller, gToken}) => getCollateralFactor(world, comptroller, gToken)
     ),
     new Fetcher<{comptroller: Comptroller, account: AddressV}, NumberV>(`
         #### MembershipLength
@@ -278,19 +278,19 @@ export function comptrollerFetchers() {
       ],
       (world, {comptroller, account}) => membershipLength(world, comptroller, account.val)
     ),
-    new Fetcher<{comptroller: Comptroller, account: AddressV, slToken: SLToken}, BoolV>(`
+    new Fetcher<{comptroller: Comptroller, account: AddressV, gToken: GToken}, BoolV>(`
         #### CheckMembership
 
-        * "Comptroller CheckMembership <User> <SLToken>" - Returns one if user is in asset, zero otherwise.
-          * E.g. "Comptroller CheckMembership Geoff slZRX"
+        * "Comptroller CheckMembership <User> <GToken>" - Returns one if user is in asset, zero otherwise.
+          * E.g. "Comptroller CheckMembership Geoff gZRX"
       `,
       "CheckMembership",
       [
         new Arg("comptroller", getComptroller, {implicit: true}),
         new Arg("account", getAddressV),
-        new Arg("slToken", getSLTokenV)
+        new Arg("gToken", getGTokenV)
       ],
-      (world, {comptroller, account, slToken}) => checkMembership(world, comptroller, account.val, slToken)
+      (world, {comptroller, account, gToken}) => checkMembership(world, comptroller, account.val, gToken)
     ),
     new Fetcher<{comptroller: Comptroller, account: AddressV}, ListV>(`
         #### AssetsIn
@@ -305,31 +305,31 @@ export function comptrollerFetchers() {
       ],
       (world, {comptroller, account}) => getAssetsIn(world, comptroller, account.val)
     ),
-    new Fetcher<{comptroller: Comptroller, slToken: SLToken}, BoolV>(`
+    new Fetcher<{comptroller: Comptroller, gToken: GToken}, BoolV>(`
         #### CheckListed
 
-        * "Comptroller CheckListed <SLToken>" - Returns true if market is listed, false otherwise.
-          * E.g. "Comptroller CheckListed slZRX"
+        * "Comptroller CheckListed <GToken>" - Returns true if market is listed, false otherwise.
+          * E.g. "Comptroller CheckListed gZRX"
       `,
       "CheckListed",
       [
         new Arg("comptroller", getComptroller, {implicit: true}),
-        new Arg("slToken", getSLTokenV)
+        new Arg("gToken", getGTokenV)
       ],
-      (world, {comptroller, slToken}) => checkListed(world, comptroller, slToken)
+      (world, {comptroller, gToken}) => checkListed(world, comptroller, gToken)
     ),
-    new Fetcher<{comptroller: Comptroller, slToken: SLToken}, BoolV>(`
-        #### CheckIsSashimied
+    new Fetcher<{comptroller: Comptroller, gToken: GToken}, BoolV>(`
+        #### CheckIsPlatformTokened
 
-        * "Comptroller CheckIsSashimied <SLToken>" - Returns true if market is listed, false otherwise.
-          * E.g. "Comptroller CheckIsSashimied slZRX"
+        * "Comptroller CheckIsPlatformTokened <GToken>" - Returns true if market is listed, false otherwise.
+          * E.g. "Comptroller CheckIsPlatformTokened gZRX"
       `,
-      "CheckIsSashimied",
+      "CheckIsPlatformTokened",
       [
         new Arg("comptroller", getComptroller, {implicit: true}),
-        new Arg("slToken", getSLTokenV)
+        new Arg("gToken", getGTokenV)
       ],
-      (world, {comptroller, slToken}) => checkIsSashimied(world, comptroller, slToken)
+      (world, {comptroller, gToken}) => checkIsPlatformTokened(world, comptroller, gToken)
     ),
     new Fetcher<{comptroller: Comptroller}, AddressV>(`
         #### PauseGuardian
@@ -386,60 +386,60 @@ export function comptrollerFetchers() {
         async (world, {comptroller}) => new BoolV(await comptroller.methods.seizeGuardianPaused().call())
     ),
 
-    new Fetcher<{comptroller: Comptroller, slToken: SLToken}, BoolV>(`
+    new Fetcher<{comptroller: Comptroller, gToken: GToken}, BoolV>(`
         #### MintGuardianMarketPaused
 
         * "MintGuardianMarketPaused" - Returns the Comptrollers's Mint paused status in market
-        * E.g. "Comptroller MintGuardianMarketPaused slREP"
+        * E.g. "Comptroller MintGuardianMarketPaused gREP"
         `,
         "MintGuardianMarketPaused",
         [
           new Arg("comptroller", getComptroller, {implicit: true}),
-          new Arg("slToken", getSLTokenV)
+          new Arg("gToken", getGTokenV)
         ],
-        async (world, {comptroller, slToken}) => new BoolV(await comptroller.methods.mintGuardianPaused(slToken._address).call())
+        async (world, {comptroller, gToken}) => new BoolV(await comptroller.methods.mintGuardianPaused(gToken._address).call())
     ),
-    new Fetcher<{comptroller: Comptroller, slToken: SLToken}, BoolV>(`
+    new Fetcher<{comptroller: Comptroller, gToken: GToken}, BoolV>(`
         #### BorrowGuardianMarketPaused
 
         * "BorrowGuardianMarketPaused" - Returns the Comptrollers's Borrow paused status in market
-        * E.g. "Comptroller BorrowGuardianMarketPaused slREP"
+        * E.g. "Comptroller BorrowGuardianMarketPaused gREP"
         `,
         "BorrowGuardianMarketPaused",
         [
           new Arg("comptroller", getComptroller, {implicit: true}),
-          new Arg("slToken", getSLTokenV)
+          new Arg("gToken", getGTokenV)
         ],
-        async (world, {comptroller, slToken}) => new BoolV(await comptroller.methods.borrowGuardianPaused(slToken._address).call())
+        async (world, {comptroller, gToken}) => new BoolV(await comptroller.methods.borrowGuardianPaused(gToken._address).call())
     ),
 
     new Fetcher<{comptroller: Comptroller}, ListV>(`
-      #### GetSashimiMarkets
+      #### GetPlatformTokenMarkets
 
-      * "GetSashimiMarkets" - Returns an array of the currently enabled Sashimi markets. To use the auto-gen array getter sashimiMarkets(uint), use SashimiMarkets
-      * E.g. "Comptroller GetSashimiMarkets"
+      * "GetPlatformTokenMarkets" - Returns an array of the currently enabled PlatformToken markets. To use the auto-gen array getter platformTokenMarkets(uint), use PlatformTokenMarkets
+      * E.g. "Comptroller GetPlatformTokenMarkets"
       `,
-      "GetSashimiMarkets",
+      "GetPlatformTokenMarkets",
       [new Arg("comptroller", getComptroller, {implicit: true})],
-      async(world, {comptroller}) => await getSashimiMarkets(world, comptroller)
+      async(world, {comptroller}) => await getPlatformTokenMarkets(world, comptroller)
      ),
 
     new Fetcher<{comptroller: Comptroller}, NumberV>(`
-      #### SashimiRate
+      #### PlatformTokenRate
 
-      * "SashimiRate" - Returns the current sashimi rate.
-      * E.g. "Comptroller SashimiRate"
+      * "PlatformTokenRate" - Returns the current platformToken rate.
+      * E.g. "Comptroller PlatformTokenRate"
       `,
-      "SashimiRate",
+      "PlatformTokenRate",
       [new Arg("comptroller", getComptroller, {implicit: true})],
-      async(world, {comptroller}) => new NumberV(await comptroller.methods.sashimiRate().call())
+      async(world, {comptroller}) => new NumberV(await comptroller.methods.platformTokenRate().call())
     ),
 
     new Fetcher<{comptroller: Comptroller, signature: StringV, callArgs: StringV[]}, NumberV>(`
         #### CallNum
 
         * "CallNum signature:<String> ...callArgs<CoreValue>" - Simple direct call method
-          * E.g. "Comptroller CallNum \"sashimiSpeeds(address)\" (Address Coburn)"
+          * E.g. "Comptroller CallNum \"platformTokenSpeeds(address)\" (Address Coburn)"
       `,
       "CallNum",
       [
@@ -457,95 +457,95 @@ export function comptrollerFetchers() {
         return new NumberV(resNum);
       }
     ),
-    new Fetcher<{comptroller: Comptroller, SLToken: SLToken, key: StringV}, NumberV>(`
-        #### SashimiSupplyState(address)
+    new Fetcher<{comptroller: Comptroller, GToken: GToken, key: StringV}, NumberV>(`
+        #### PlatformTokenSupplyState(address)
 
-        * "Comptroller SashimiBorrowState slZRX "index"
+        * "Comptroller PlatformTokenBorrowState gZRX "index"
       `,
-      "SashimiSupplyState",
+      "PlatformTokenSupplyState",
       [
         new Arg("comptroller", getComptroller, {implicit: true}),
-        new Arg("SLToken", getSLTokenV),
+        new Arg("GToken", getGTokenV),
         new Arg("key", getStringV),
       ],
-      async (world, {comptroller, SLToken, key}) => {
-        const result = await comptroller.methods.sashimiSupplyState(SLToken._address).call();
+      async (world, {comptroller, GToken, key}) => {
+        const result = await comptroller.methods.platformTokenSupplyState(GToken._address).call();
         return new NumberV(result[key.val]);
       }
     ),
-    new Fetcher<{comptroller: Comptroller, SLToken: SLToken, key: StringV}, NumberV>(`
-        #### SashimiBorrowState(address)
+    new Fetcher<{comptroller: Comptroller, GToken: GToken, key: StringV}, NumberV>(`
+        #### PlatformTokenBorrowState(address)
 
-        * "Comptroller SashimiBorrowState slZRX "index"
+        * "Comptroller PlatformTokenBorrowState gZRX "index"
       `,
-      "SashimiBorrowState",
+      "PlatformTokenBorrowState",
       [
         new Arg("comptroller", getComptroller, {implicit: true}),
-        new Arg("SLToken", getSLTokenV),
+        new Arg("GToken", getGTokenV),
         new Arg("key", getStringV),
       ],
-      async (world, {comptroller, SLToken, key}) => {
-        const result = await comptroller.methods.sashimiBorrowState(SLToken._address).call();
+      async (world, {comptroller, GToken, key}) => {
+        const result = await comptroller.methods.platformTokenBorrowState(GToken._address).call();
         return new NumberV(result[key.val]);
       }
     ),
     new Fetcher<{comptroller: Comptroller, account: AddressV, key: StringV}, NumberV>(`
-        #### SashimiAccrued(address)
+        #### PlatformTokenAccrued(address)
 
-        * "Comptroller SashimiAccrued Coburn
+        * "Comptroller PlatformTokenAccrued Coburn
       `,
-      "SashimiAccrued",
+      "PlatformTokenAccrued",
       [
         new Arg("comptroller", getComptroller, {implicit: true}),
         new Arg("account", getAddressV),
       ],
       async (world, {comptroller,account}) => {
-        const result = await comptroller.methods.sashimiAccrued(account.val).call();
+        const result = await comptroller.methods.platformTokenAccrued(account.val).call();
         return new NumberV(result);
       }
     ),
-    new Fetcher<{comptroller: Comptroller, SLToken: SLToken, account: AddressV}, NumberV>(`
-        #### sashimiSupplierIndex
+    new Fetcher<{comptroller: Comptroller, GToken: GToken, account: AddressV}, NumberV>(`
+        #### platformTokenSupplierIndex
 
-        * "Comptroller SashimiSupplierIndex slZRX Coburn
+        * "Comptroller PlatformTokenSupplierIndex gZRX Coburn
       `,
-      "SashimiSupplierIndex",
+      "PlatformTokenSupplierIndex",
       [
         new Arg("comptroller", getComptroller, {implicit: true}),
-        new Arg("SLToken", getSLTokenV),
+        new Arg("GToken", getGTokenV),
         new Arg("account", getAddressV),
       ],
-      async (world, {comptroller, SLToken, account}) => {
-        return new NumberV(await comptroller.methods.sashimiSupplierIndex(SLToken._address, account.val).call());
+      async (world, {comptroller, GToken, account}) => {
+        return new NumberV(await comptroller.methods.platformTokenSupplierIndex(GToken._address, account.val).call());
       }
     ),
-    new Fetcher<{comptroller: Comptroller, SLToken: SLToken, account: AddressV}, NumberV>(`
-        #### SashimiBorrowerIndex
+    new Fetcher<{comptroller: Comptroller, GToken: GToken, account: AddressV}, NumberV>(`
+        #### PlatformTokenBorrowerIndex
 
-        * "Comptroller SashimiBorrowerIndex slZRX Coburn
+        * "Comptroller PlatformTokenBorrowerIndex gZRX Coburn
       `,
-      "SashimiBorrowerIndex",
+      "PlatformTokenBorrowerIndex",
       [
         new Arg("comptroller", getComptroller, {implicit: true}),
-        new Arg("SLToken", getSLTokenV),
+        new Arg("GToken", getGTokenV),
         new Arg("account", getAddressV),
       ],
-      async (world, {comptroller, SLToken, account}) => {
-        return new NumberV(await comptroller.methods.sashimiBorrowerIndex(SLToken._address, account.val).call());
+      async (world, {comptroller, GToken, account}) => {
+        return new NumberV(await comptroller.methods.platformTokenBorrowerIndex(GToken._address, account.val).call());
       }
     ),
-    new Fetcher<{comptroller: Comptroller, SLToken: SLToken}, NumberV>(`
-        #### SashimiSpeed
+    new Fetcher<{comptroller: Comptroller, GToken: GToken}, NumberV>(`
+        #### PlatformTokenSpeed
 
-        * "Comptroller SashimiSpeed slZRX
+        * "Comptroller PlatformTokenSpeed gZRX
       `,
-      "SashimiSpeed",
+      "PlatformTokenSpeed",
       [
         new Arg("comptroller", getComptroller, {implicit: true}),
-        new Arg("SLToken", getSLTokenV),
+        new Arg("GToken", getGTokenV),
       ],
-      async (world, {comptroller, SLToken}) => {
-        return new NumberV(await comptroller.methods.sashimiSpeeds(SLToken._address).call());
+      async (world, {comptroller, GToken}) => {
+        return new NumberV(await comptroller.methods.platformTokenSpeeds(GToken._address).call());
       }
     ),
     new Fetcher<{comptroller: Comptroller}, AddressV>(`
@@ -560,18 +560,18 @@ export function comptrollerFetchers() {
         ],
         async (world, {comptroller}) => new AddressV(await comptroller.methods.borrowCapGuardian().call())
     ),
-    new Fetcher<{comptroller: Comptroller, SLToken: SLToken}, NumberV>(`
+    new Fetcher<{comptroller: Comptroller, GToken: GToken}, NumberV>(`
         #### BorrowCaps
 
-        * "Comptroller BorrowCaps slZRX
+        * "Comptroller BorrowCaps gZRX
       `,
       "BorrowCaps",
       [
         new Arg("comptroller", getComptroller, {implicit: true}),
-        new Arg("SLToken", getSLTokenV),
+        new Arg("GToken", getGTokenV),
       ],
-      async (world, {comptroller, SLToken}) => {
-        return new NumberV(await comptroller.methods.borrowCaps(SLToken._address).call());
+      async (world, {comptroller, GToken}) => {
+        return new NumberV(await comptroller.methods.borrowCaps(GToken._address).call());
       }
     )
   ];

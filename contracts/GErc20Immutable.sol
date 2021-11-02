@@ -1,13 +1,13 @@
 pragma solidity ^0.5.16;
 
-import "./SLErc20.sol";
+import "./GErc20.sol";
 
 /**
- * @title SashimiLending's SLErc20Immutable Contract
- * @notice SLTokens which wrap an EIP-20 underlying and are immutable
- * @author SashimiLending
+ * @title GandalfLending's GErc20Immutable Contract
+ * @notice GTokens which wrap an EIP-20 underlying and are immutable
+ * @author GandalfLending
  */
-contract SLErc20Immutable is SLErc20 {
+contract GErc20Immutable is GErc20 {
     /**
      * @notice Construct a new money market
      * @param underlying_ The address of the underlying asset

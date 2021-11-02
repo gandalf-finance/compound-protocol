@@ -13,8 +13,8 @@ interface ComptrollerImplMethods {
 
   _become(
     comptroller: string,
-    sashimiRate: encodedNumber,
-    sashimiMarkets: string[],
+    platformTokenRate: encodedNumber,
+    platformTokenMarkets: string[],
     otherMarkets: string[]
   ): Sendable<string>;
 }

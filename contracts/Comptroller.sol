@@ -1,6 +1,6 @@
 pragma solidity ^0.5.16;
 
-import "./SLToken.sol";
+import "./GToken.sol";
 import "./ErrorReporter.sol";
 import "./Exponential.sol";
 import "./PriceOracle.sol";
@@ -10,23 +10,23 @@ import "./Unitroller.sol";
 import "./EIP20Interface.sol";
 
 /**
- * @title SashimiLending's Comptroller Contract
+ * @title GandalfLending's Comptroller Contract
  */
 contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerErrorReporter, Exponential {
     /// @notice Emitted when an admin supports a market
-    event MarketListed(SLToken slToken);
+    event MarketListed(GToken gToken);
 
     /// @notice Emitted when an account enters a market
-    event MarketEntered(SLToken slToken, address account);
+    event MarketEntered(GToken gToken, address account);
 
     /// @notice Emitted when an account exits a market
-    event MarketExited(SLToken slToken, address account);
+    event MarketExited(GToken gToken, address account);
 
     /// @notice Emitted when close factor is changed by admin
     event NewCloseFactor(uint oldCloseFactorMantissa, uint newCloseFactorMantissa);
 
     /// @notice Emitted when a collateral factor is changed by admin
-    event NewCollateralFactor(SLToken slToken, uint oldCollateralFactorMantissa, uint newCollateralFactorMantissa);
+    event NewCollateralFactor(GToken gToken, uint oldCollateralFactorMantissa, uint newCollateralFactorMantissa);
 
     /// @notice Emitted when liquidation incentive is changed by admin
     event NewLiquidationIncentive(uint oldLiquidationIncentiveMantissa, uint newLiquidationIncentiveMantissa);
@@ -44,34 +44,34 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
     event ActionPaused(string action, bool pauseState);
 
     /// @notice Emitted when an action is paused on a market
-    event ActionPaused(SLToken slToken, string action, bool pauseState);
+    event ActionPaused(GToken gToken, string action, bool pauseState);
 
-    /// @notice Emitted when market sashimied status is changed
-    event MarketSashimied(SLToken slToken, bool isSashimied);
+    /// @notice Emitted when market platformTokened status is changed
+    event MarketPlatformTokened(GToken gToken, bool isPlatformTokened);
 
-    /// @notice Emitted when SASHIMI rate is changed
-    event NewSashimiRate(uint oldSashimiRate, uint newSashimiRate);
+    /// @notice Emitted when PLATFORMTOKEN rate is changed
+    event NewPlatformTokenRate(uint oldPlatformTokenRate, uint newPlatformTokenRate);
 
-    /// @notice Emitted when a new SASHIMI speed is calculated for a market
-    event SashimiSpeedUpdated(SLToken indexed slToken, uint newSpeed);
+    /// @notice Emitted when a new PLATFORMTOKEN speed is calculated for a market
+    event PlatformTokenSpeedUpdated(GToken indexed gToken, uint newSpeed);
 
-    /// @notice Emitted when SASHIMI is distributed to a supplier
-    event DistributedSupplierSashimi(SLToken indexed slToken, address indexed supplier, uint sashimiDelta, uint sashimiSupplyIndex);
+    /// @notice Emitted when PLATFORMTOKEN is distributed to a supplier
+    event DistributedSupplierPlatformToken(GToken indexed gToken, address indexed supplier, uint platformTokenDelta, uint platformTokenSupplyIndex);
 
-    /// @notice Emitted when SASHIMI is distributed to a borrower
-    event DistributedBorrowerSashimi(SLToken indexed slToken, address indexed borrower, uint sashimiDelta, uint sashimiBorrowIndex);
+    /// @notice Emitted when PLATFORMTOKEN is distributed to a borrower
+    event DistributedBorrowerPlatformToken(GToken indexed gToken, address indexed borrower, uint platformTokenDelta, uint platformTokenBorrowIndex);
 
-    /// @notice Emitted when borrow cap for a slToken is changed
-    event NewBorrowCap(SLToken indexed slToken, uint newBorrowCap);
+    /// @notice Emitted when borrow cap for a gToken is changed
+    event NewBorrowCap(GToken indexed gToken, uint newBorrowCap);
 
     /// @notice Emitted when borrow cap guardian is changed
     event NewBorrowCapGuardian(address oldBorrowCapGuardian, address newBorrowCapGuardian);
 
-    /// @notice The threshold above which the flywheel transfers SASHIMI, in wei
-    uint public constant sashimiClaimThreshold = 0.001e18;
+    /// @notice The threshold above which the flywheel transfers PLATFORMTOKEN, in wei
+    uint public constant platformTokenClaimThreshold = 0.001e18;
 
-    /// @notice The initial SASHIMI index for a market
-    uint224 public constant sashimiInitialIndex = 1e36;
+    /// @notice The initial PLATFORMTOKEN index for a market
+    uint224 public constant platformTokenInitialIndex = 1e36;
 
     // closeFactorMantissa must be strictly greater than this value
     uint internal constant closeFactorMinMantissa = 0.05e18; // 0.05
@@ -99,8 +99,8 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
      * @param account The address of the account to pull assets for
      * @return A dynamic list with the assets the account has entered
      */
-    function getAssetsIn(address account) external view returns (SLToken[] memory) {
-        SLToken[] memory assetsIn = accountAssets[account];
+    function getAssetsIn(address account) external view returns (GToken[] memory) {
+        GToken[] memory assetsIn = accountAssets[account];
 
         return assetsIn;
     }
@@ -108,26 +108,26 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
     /**
      * @notice Returns whether the given account is entered in the given asset
      * @param account The address of the account to check
-     * @param slToken The slToken to check
+     * @param gToken The gToken to check
      * @return True if the account is in the asset, otherwise false.
      */
-    function checkMembership(address account, SLToken slToken) external view returns (bool) {
-        return markets[address(slToken)].accountMembership[account];
+    function checkMembership(address account, GToken gToken) external view returns (bool) {
+        return markets[address(gToken)].accountMembership[account];
     }
 
     /**
      * @notice Add assets to be included in account liquidity calculation
-     * @param slTokens The list of addresses of the slToken markets to be enabled
+     * @param gTokens The list of addresses of the gToken markets to be enabled
      * @return Success indicator for whether each corresponding market was entered
      */
-    function enterMarkets(address[] memory slTokens) public returns (uint[] memory) {
-        uint len = slTokens.length;
+    function enterMarkets(address[] memory gTokens) public returns (uint[] memory) {
+        uint len = gTokens.length;
 
         uint[] memory results = new uint[](len);
         for (uint i = 0; i < len; i++) {
-            SLToken slToken = SLToken(slTokens[i]);
+            GToken gToken = GToken(gTokens[i]);
 
-            results[i] = uint(addToMarketInternal(slToken, msg.sender));
+            results[i] = uint(addToMarketInternal(gToken, msg.sender));
         }
 
         return results;
@@ -135,12 +135,12 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
 
     /**
      * @notice Add the market to the borrower's "assets in" for liquidity calculations
-     * @param slToken The market to enter
+     * @param gToken The market to enter
      * @param borrower The address of the account to modify
      * @return Success indicator for whether the market was entered
      */
-    function addToMarketInternal(SLToken slToken, address borrower) internal returns (Error) {
-        Market storage marketToJoin = markets[address(slToken)];
+    function addToMarketInternal(GToken gToken, address borrower) internal returns (Error) {
+        Market storage marketToJoin = markets[address(gToken)];
 
         if (!marketToJoin.isListed) {
             // market is not listed, cannot join
@@ -163,9 +163,9 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
         //  that is, only when we need to perform liquidity checks
         //  and not whenever we want to check if an account is in a particular market
         marketToJoin.accountMembership[borrower] = true;
-        accountAssets[borrower].push(slToken);
+        accountAssets[borrower].push(gToken);
 
-        emit MarketEntered(slToken, borrower);
+        emit MarketEntered(gToken, borrower);
 
         return Error.NO_ERROR;
     }
@@ -174,13 +174,13 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
      * @notice Removes asset from sender's account liquidity calculation
      * @dev Sender must not have an outstanding borrow balance in the asset,
      *  or be providing necessary collateral for an outstanding borrow.
-     * @param slTokenAddress The address of the asset to be removed
+     * @param gTokenAddress The address of the asset to be removed
      * @return Whether or not the account successfully exited the market
      */
-    function exitMarket(address slTokenAddress) external returns (uint) {
-        SLToken slToken = SLToken(slTokenAddress);
-        /* Get sender tokensHeld and amountOwed underlying from the slToken */
-        (uint oErr, uint tokensHeld, uint amountOwed, ) = slToken.getAccountSnapshot(msg.sender);
+    function exitMarket(address gTokenAddress) external returns (uint) {
+        GToken gToken = GToken(gTokenAddress);
+        /* Get sender tokensHeld and amountOwed underlying from the gToken */
+        (uint oErr, uint tokensHeld, uint amountOwed, ) = gToken.getAccountSnapshot(msg.sender);
         require(oErr == 0, "exitMarket: getAccountSnapshot failed"); // semi-opaque error code
 
         /* Fail if the sender has a borrow balance */
@@ -189,28 +189,28 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
         }
 
         /* Fail if the sender is not permitted to redeem all of their tokens */
-        uint allowed = redeemAllowedInternal(slTokenAddress, msg.sender, tokensHeld);
+        uint allowed = redeemAllowedInternal(gTokenAddress, msg.sender, tokensHeld);
         if (allowed != 0) {
             return failOpaque(Error.REJECTION, FailureInfo.EXIT_MARKET_REJECTION, allowed);
         }
 
-        Market storage marketToExit = markets[address(slToken)];
+        Market storage marketToExit = markets[address(gToken)];
 
         /* Return true if the sender is not already ‘in’ the market */
         if (!marketToExit.accountMembership[msg.sender]) {
             return uint(Error.NO_ERROR);
         }
 
-        /* Set slToken account membership to false */
+        /* Set gToken account membership to false */
         delete marketToExit.accountMembership[msg.sender];
 
-        /* Delete slToken from the account’s list of assets */
+        /* Delete gToken from the account’s list of assets */
         // load into memory for faster iteration
-        SLToken[] memory userAssetList = accountAssets[msg.sender];
+        GToken[] memory userAssetList = accountAssets[msg.sender];
         uint len = userAssetList.length;
         uint assetIndex = len;
         for (uint i = 0; i < len; i++) {
-            if (userAssetList[i] == slToken) {
+            if (userAssetList[i] == gToken) {
                 assetIndex = i;
                 break;
             }
@@ -220,11 +220,11 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
         assert(assetIndex < len);
 
         // copy last item in list to location of item to be removed, reduce length by 1
-        SLToken[] storage storedList = accountAssets[msg.sender];
+        GToken[] storage storedList = accountAssets[msg.sender];
         storedList[assetIndex] = storedList[storedList.length - 1];
         storedList.length--;
 
-        emit MarketExited(slToken, msg.sender);
+        emit MarketExited(gToken, msg.sender);
 
         return uint(Error.NO_ERROR);
     }
@@ -233,40 +233,40 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
 
     /**
      * @notice Checks if the account should be allowed to mint tokens in the given market
-     * @param slToken The market to verify the mint against
+     * @param gToken The market to verify the mint against
      * @param minter The account which would get the minted tokens
      * @param mintAmount The amount of underlying being supplied to the market in exchange for tokens
      * @return 0 if the mint is allowed, otherwise a semi-opaque error code (See ErrorReporter.sol)
      */
-    function mintAllowed(address slToken, address minter, uint mintAmount) external returns (uint) {
+    function mintAllowed(address gToken, address minter, uint mintAmount) external returns (uint) {
         // Pausing is a very serious situation - we revert to sound the alarms
-        require(!mintGuardianPaused[slToken], "mint is paused");
+        require(!mintGuardianPaused[gToken], "mint is paused");
 
         // Shh - currently unused
         minter;
         mintAmount;
 
-        if (!markets[slToken].isListed) {
+        if (!markets[gToken].isListed) {
             return uint(Error.MARKET_NOT_LISTED);
         }
 
         // Keep the flywheel moving
-        updateSashimiSupplyIndex(slToken);
-        distributeSupplierSashimi(slToken, minter, false);
+        updatePlatformTokenSupplyIndex(gToken);
+        distributeSupplierPlatformToken(gToken, minter, false);
 
         return uint(Error.NO_ERROR);
     }
 
     /**
      * @notice Validates mint and reverts on rejection. May emit logs.
-     * @param slToken Asset being minted
+     * @param gToken Asset being minted
      * @param minter The address minting the tokens
      * @param actualMintAmount The amount of the underlying asset being minted
      * @param mintTokens The number of tokens being minted
      */
-    function mintVerify(address slToken, address minter, uint actualMintAmount, uint mintTokens) external {
+    function mintVerify(address gToken, address minter, uint actualMintAmount, uint mintTokens) external {
         // Shh - currently unused
-        slToken;
+        gToken;
         minter;
         actualMintAmount;
         mintTokens;
@@ -279,36 +279,36 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
 
     /**
      * @notice Checks if the account should be allowed to redeem tokens in the given market
-     * @param slToken The market to verify the redeem against
+     * @param gToken The market to verify the redeem against
      * @param redeemer The account which would redeem the tokens
-     * @param redeemTokens The number of slTokens to exchange for the underlying asset in the market
+     * @param redeemTokens The number of gTokens to exchange for the underlying asset in the market
      * @return 0 if the redeem is allowed, otherwise a semi-opaque error code (See ErrorReporter.sol)
      */
-    function redeemAllowed(address slToken, address redeemer, uint redeemTokens) external returns (uint) {
-        uint allowed = redeemAllowedInternal(slToken, redeemer, redeemTokens);
+    function redeemAllowed(address gToken, address redeemer, uint redeemTokens) external returns (uint) {
+        uint allowed = redeemAllowedInternal(gToken, redeemer, redeemTokens);
         if (allowed != uint(Error.NO_ERROR)) {
             return allowed;
         }
 
         // Keep the flywheel moving
-        updateSashimiSupplyIndex(slToken);
-        distributeSupplierSashimi(slToken, redeemer, false);
+        updatePlatformTokenSupplyIndex(gToken);
+        distributeSupplierPlatformToken(gToken, redeemer, false);
 
         return uint(Error.NO_ERROR);
     }
 
-    function redeemAllowedInternal(address slToken, address redeemer, uint redeemTokens) internal view returns (uint) {
-        if (!markets[slToken].isListed) {
+    function redeemAllowedInternal(address gToken, address redeemer, uint redeemTokens) internal view returns (uint) {
+        if (!markets[gToken].isListed) {
             return uint(Error.MARKET_NOT_LISTED);
         }
 
         /* If the redeemer is not 'in' the market, then we can bypass the liquidity check */
-        if (!markets[slToken].accountMembership[redeemer]) {
+        if (!markets[gToken].accountMembership[redeemer]) {
             return uint(Error.NO_ERROR);
         }
 
         /* Otherwise, perform a hypothetical liquidity check to guard against shortfall */
-        (Error err, , uint shortfall) = getHypotheticalAccountLiquidityInternal(redeemer, SLToken(slToken), redeemTokens, 0);
+        (Error err, , uint shortfall) = getHypotheticalAccountLiquidityInternal(redeemer, GToken(gToken), redeemTokens, 0);
         if (err != Error.NO_ERROR) {
             return uint(err);
         }
@@ -321,14 +321,14 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
 
     /**
      * @notice Validates redeem and reverts on rejection. May emit logs.
-     * @param slToken Asset being redeemed
+     * @param gToken Asset being redeemed
      * @param redeemer The address redeeming the tokens
      * @param redeemAmount The amount of the underlying asset being redeemed
      * @param redeemTokens The number of tokens being redeemed
      */
-    function redeemVerify(address slToken, address redeemer, uint redeemAmount, uint redeemTokens) external {
+    function redeemVerify(address gToken, address redeemer, uint redeemAmount, uint redeemTokens) external {
         // Shh - currently unused
-        slToken;
+        gToken;
         redeemer;
 
         // Require tokens is zero or amount is also zero
@@ -339,48 +339,48 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
 
     /**
      * @notice Checks if the account should be allowed to borrow the underlying asset of the given market
-     * @param slToken The market to verify the borrow against
+     * @param gToken The market to verify the borrow against
      * @param borrower The account which would borrow the asset
      * @param borrowAmount The amount of underlying the account would borrow
      * @return 0 if the borrow is allowed, otherwise a semi-opaque error code (See ErrorReporter.sol)
      */
-    function borrowAllowed(address slToken, address borrower, uint borrowAmount) external returns (uint) {
+    function borrowAllowed(address gToken, address borrower, uint borrowAmount) external returns (uint) {
         // Pausing is a very serious situation - we revert to sound the alarms
-        require(!borrowGuardianPaused[slToken], "borrow is paused");
+        require(!borrowGuardianPaused[gToken], "borrow is paused");
 
-        if (!markets[slToken].isListed) {
+        if (!markets[gToken].isListed) {
             return uint(Error.MARKET_NOT_LISTED);
         }
 
-        if (!markets[slToken].accountMembership[borrower]) {
-            // only slTokens may call borrowAllowed if borrower not in market
-            require(msg.sender == slToken, "sender must be slToken");
+        if (!markets[gToken].accountMembership[borrower]) {
+            // only gTokens may call borrowAllowed if borrower not in market
+            require(msg.sender == gToken, "sender must be gToken");
 
             // attempt to add borrower to the market
-            Error err = addToMarketInternal(SLToken(msg.sender), borrower);
+            Error err = addToMarketInternal(GToken(msg.sender), borrower);
             if (err != Error.NO_ERROR) {
                 return uint(err);
             }
 
             // it should be impossible to break the important invariant
-            assert(markets[slToken].accountMembership[borrower]);
+            assert(markets[gToken].accountMembership[borrower]);
         }
 
-        if (oracle.getUnderlyingPrice(SLToken(slToken)) == 0) {
+        if (oracle.getUnderlyingPrice(GToken(gToken)) == 0) {
             return uint(Error.PRICE_ERROR);
         }
 
 
-        uint borrowCap = borrowCaps[slToken];
+        uint borrowCap = borrowCaps[gToken];
         // Borrow cap of 0 corresponds to unlimited borrowing
         if (borrowCap != 0) {
-            uint totalBorrows = SLToken(slToken).totalBorrows();
+            uint totalBorrows = GToken(gToken).totalBorrows();
             (MathError mathErr, uint nextTotalBorrows) = addUInt(totalBorrows, borrowAmount);
             require(mathErr == MathError.NO_ERROR, "total borrows overflow");
             require(nextTotalBorrows < borrowCap, "market borrow cap reached");
         }
 
-        (Error err, , uint shortfall) = getHypotheticalAccountLiquidityInternal(borrower, SLToken(slToken), 0, borrowAmount);
+        (Error err, , uint shortfall) = getHypotheticalAccountLiquidityInternal(borrower, GToken(gToken), 0, borrowAmount);
         if (err != Error.NO_ERROR) {
             return uint(err);
         }
@@ -389,22 +389,22 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
         }
 
         // Keep the flywheel moving
-        Exp memory borrowIndex = Exp({mantissa: SLToken(slToken).borrowIndex()});
-        updateSashimiBorrowIndex(slToken, borrowIndex);
-        distributeBorrowerSashimi(slToken, borrower, borrowIndex, false);
+        Exp memory borrowIndex = Exp({mantissa: GToken(gToken).borrowIndex()});
+        updatePlatformTokenBorrowIndex(gToken, borrowIndex);
+        distributeBorrowerPlatformToken(gToken, borrower, borrowIndex, false);
 
         return uint(Error.NO_ERROR);
     }
 
     /**
      * @notice Validates borrow and reverts on rejection. May emit logs.
-     * @param slToken Asset whose underlying is being borrowed
+     * @param gToken Asset whose underlying is being borrowed
      * @param borrower The address borrowing the underlying
      * @param borrowAmount The amount of the underlying asset requested to borrow
      */
-    function borrowVerify(address slToken, address borrower, uint borrowAmount) external {
+    function borrowVerify(address gToken, address borrower, uint borrowAmount) external {
         // Shh - currently unused
-        slToken;
+        gToken;
         borrower;
         borrowAmount;
 
@@ -416,14 +416,14 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
 
     /**
      * @notice Checks if the account should be allowed to repay a borrow in the given market
-     * @param slToken The market to verify the repay against
+     * @param gToken The market to verify the repay against
      * @param payer The account which would repay the asset
      * @param borrower The account which would borrowed the asset
      * @param repayAmount The amount of the underlying asset the account would repay
      * @return 0 if the repay is allowed, otherwise a semi-opaque error code (See ErrorReporter.sol)
      */
     function repayBorrowAllowed(
-        address slToken,
+        address gToken,
         address payer,
         address borrower,
         uint repayAmount) external returns (uint) {
@@ -432,33 +432,33 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
         borrower;
         repayAmount;
 
-        if (!markets[slToken].isListed) {
+        if (!markets[gToken].isListed) {
             return uint(Error.MARKET_NOT_LISTED);
         }
 
         // Keep the flywheel moving
-        Exp memory borrowIndex = Exp({mantissa: SLToken(slToken).borrowIndex()});
-        updateSashimiBorrowIndex(slToken, borrowIndex);
-        distributeBorrowerSashimi(slToken, borrower, borrowIndex, false);
+        Exp memory borrowIndex = Exp({mantissa: GToken(gToken).borrowIndex()});
+        updatePlatformTokenBorrowIndex(gToken, borrowIndex);
+        distributeBorrowerPlatformToken(gToken, borrower, borrowIndex, false);
 
         return uint(Error.NO_ERROR);
     }
 
     /**
      * @notice Validates repayBorrow and reverts on rejection. May emit logs.
-     * @param slToken Asset being repaid
+     * @param gToken Asset being repaid
      * @param payer The address repaying the borrow
      * @param borrower The address of the borrower
      * @param actualRepayAmount The amount of underlying being repaid
      */
     function repayBorrowVerify(
-        address slToken,
+        address gToken,
         address payer,
         address borrower,
         uint actualRepayAmount,
         uint borrowerIndex) external {
         // Shh - currently unused
-        slToken;
+        gToken;
         payer;
         borrower;
         actualRepayAmount;
@@ -472,22 +472,22 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
 
     /**
      * @notice Checks if the liquidation should be allowed to occur
-     * @param slTokenBorrowed Asset which was borrowed by the borrower
-     * @param slTokenCollateral Asset which was used as collateral and will be seized
+     * @param gTokenBorrowed Asset which was borrowed by the borrower
+     * @param gTokenCollateral Asset which was used as collateral and will be seized
      * @param liquidator The address repaying the borrow and seizing the collateral
      * @param borrower The address of the borrower
      * @param repayAmount The amount of underlying being repaid
      */
     function liquidateBorrowAllowed(
-        address slTokenBorrowed,
-        address slTokenCollateral,
+        address gTokenBorrowed,
+        address gTokenCollateral,
         address liquidator,
         address borrower,
         uint repayAmount) external returns (uint) {
         // Shh - currently unused
         liquidator;
 
-        if (!markets[slTokenBorrowed].isListed || !markets[slTokenCollateral].isListed) {
+        if (!markets[gTokenBorrowed].isListed || !markets[gTokenCollateral].isListed) {
             return uint(Error.MARKET_NOT_LISTED);
         }
 
@@ -501,7 +501,7 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
         }
 
         /* The liquidator may not repay more than what is allowed by the closeFactor */
-        uint borrowBalance = SLToken(slTokenBorrowed).borrowBalanceStored(borrower);
+        uint borrowBalance = GToken(gTokenBorrowed).borrowBalanceStored(borrower);
         (MathError mathErr, uint maxClose) = mulScalarTruncate(Exp({mantissa: closeFactorMantissa}), borrowBalance);
         if (mathErr != MathError.NO_ERROR) {
             return uint(Error.MATH_ERROR);
@@ -515,22 +515,22 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
 
     /**
      * @notice Validates liquidateBorrow and reverts on rejection. May emit logs.
-     * @param slTokenBorrowed Asset which was borrowed by the borrower
-     * @param slTokenCollateral Asset which was used as collateral and will be seized
+     * @param gTokenBorrowed Asset which was borrowed by the borrower
+     * @param gTokenCollateral Asset which was used as collateral and will be seized
      * @param liquidator The address repaying the borrow and seizing the collateral
      * @param borrower The address of the borrower
      * @param actualRepayAmount The amount of underlying being repaid
      */
     function liquidateBorrowVerify(
-        address slTokenBorrowed,
-        address slTokenCollateral,
+        address gTokenBorrowed,
+        address gTokenCollateral,
         address liquidator,
         address borrower,
         uint actualRepayAmount,
         uint seizeTokens) external {
         // Shh - currently unused
-        slTokenBorrowed;
-        slTokenCollateral;
+        gTokenBorrowed;
+        gTokenCollateral;
         liquidator;
         borrower;
         actualRepayAmount;
@@ -544,15 +544,15 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
 
     /**
      * @notice Checks if the seizing of assets should be allowed to occur
-     * @param slTokenCollateral Asset which was used as collateral and will be seized
-     * @param slTokenBorrowed Asset which was borrowed by the borrower
+     * @param gTokenCollateral Asset which was used as collateral and will be seized
+     * @param gTokenBorrowed Asset which was borrowed by the borrower
      * @param liquidator The address repaying the borrow and seizing the collateral
      * @param borrower The address of the borrower
      * @param seizeTokens The number of collateral tokens to seize
      */
     function seizeAllowed(
-        address slTokenCollateral,
-        address slTokenBorrowed,
+        address gTokenCollateral,
+        address gTokenBorrowed,
         address liquidator,
         address borrower,
         uint seizeTokens) external returns (uint) {
@@ -562,39 +562,39 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
         // Shh - currently unused
         seizeTokens;
 
-        if (!markets[slTokenCollateral].isListed || !markets[slTokenBorrowed].isListed) {
+        if (!markets[gTokenCollateral].isListed || !markets[gTokenBorrowed].isListed) {
             return uint(Error.MARKET_NOT_LISTED);
         }
 
-        if (SLToken(slTokenCollateral).comptroller() != SLToken(slTokenBorrowed).comptroller()) {
+        if (GToken(gTokenCollateral).comptroller() != GToken(gTokenBorrowed).comptroller()) {
             return uint(Error.COMPTROLLER_MISMATCH);
         }
 
         // Keep the flywheel moving
-        updateSashimiSupplyIndex(slTokenCollateral);
-        distributeSupplierSashimi(slTokenCollateral, borrower, false);
-        distributeSupplierSashimi(slTokenCollateral, liquidator, false);
+        updatePlatformTokenSupplyIndex(gTokenCollateral);
+        distributeSupplierPlatformToken(gTokenCollateral, borrower, false);
+        distributeSupplierPlatformToken(gTokenCollateral, liquidator, false);
 
         return uint(Error.NO_ERROR);
     }
 
     /**
      * @notice Validates seize and reverts on rejection. May emit logs.
-     * @param slTokenCollateral Asset which was used as collateral and will be seized
-     * @param slTokenBorrowed Asset which was borrowed by the borrower
+     * @param gTokenCollateral Asset which was used as collateral and will be seized
+     * @param gTokenBorrowed Asset which was borrowed by the borrower
      * @param liquidator The address repaying the borrow and seizing the collateral
      * @param borrower The address of the borrower
      * @param seizeTokens The number of collateral tokens to seize
      */
     function seizeVerify(
-        address slTokenCollateral,
-        address slTokenBorrowed,
+        address gTokenCollateral,
+        address gTokenBorrowed,
         address liquidator,
         address borrower,
         uint seizeTokens) external {
         // Shh - currently unused
-        slTokenCollateral;
-        slTokenBorrowed;
+        gTokenCollateral;
+        gTokenBorrowed;
         liquidator;
         borrower;
         seizeTokens;
@@ -607,41 +607,41 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
 
     /**
      * @notice Checks if the account should be allowed to transfer tokens in the given market
-     * @param slToken The market to verify the transfer against
+     * @param gToken The market to verify the transfer against
      * @param src The account which sources the tokens
      * @param dst The account which receives the tokens
-     * @param transferTokens The number of slTokens to transfer
+     * @param transferTokens The number of gTokens to transfer
      * @return 0 if the transfer is allowed, otherwise a semi-opaque error code (See ErrorReporter.sol)
      */
-    function transferAllowed(address slToken, address src, address dst, uint transferTokens) external returns (uint) {
+    function transferAllowed(address gToken, address src, address dst, uint transferTokens) external returns (uint) {
         // Pausing is a very serious situation - we revert to sound the alarms
         require(!transferGuardianPaused, "transfer is paused");
 
         // Currently the only consideration is whether or not
         //  the src is allowed to redeem this many tokens
-        uint allowed = redeemAllowedInternal(slToken, src, transferTokens);
+        uint allowed = redeemAllowedInternal(gToken, src, transferTokens);
         if (allowed != uint(Error.NO_ERROR)) {
             return allowed;
         }
 
         // Keep the flywheel moving
-        updateSashimiSupplyIndex(slToken);
-        distributeSupplierSashimi(slToken, src, false);
-        distributeSupplierSashimi(slToken, dst, false);
+        updatePlatformTokenSupplyIndex(gToken);
+        distributeSupplierPlatformToken(gToken, src, false);
+        distributeSupplierPlatformToken(gToken, dst, false);
 
         return uint(Error.NO_ERROR);
     }
 
     /**
      * @notice Validates transfer and reverts on rejection. May emit logs.
-     * @param slToken Asset being transferred
+     * @param gToken Asset being transferred
      * @param src The account which sources the tokens
      * @param dst The account which receives the tokens
-     * @param transferTokens The number of slTokens to transfer
+     * @param transferTokens The number of gTokens to transfer
      */
-    function transferVerify(address slToken, address src, address dst, uint transferTokens) external {
+    function transferVerify(address gToken, address src, address dst, uint transferTokens) external {
         // Shh - currently unused
-        slToken;
+        gToken;
         src;
         dst;
         transferTokens;
@@ -656,13 +656,13 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
 
     /**
      * @dev Local vars for avoiding stack-depth limits in calculating account liquidity.
-     *  Note that `slTokenBalance` is the number of slTokens the account owns in the market,
+     *  Note that `gTokenBalance` is the number of gTokens the account owns in the market,
      *  whereas `borrowBalance` is the amount of underlying that the account has borrowed.
      */
     struct AccountLiquidityLocalVars {
         uint sumCollateral;
         uint sumBorrowPlusEffects;
-        uint slTokenBalance;
+        uint gTokenBalance;
         uint borrowBalance;
         uint exchangeRateMantissa;
         uint oraclePriceMantissa;
@@ -679,7 +679,7 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
      *          account shortfall below collateral requirements)
      */
     function getAccountLiquidity(address account) public view returns (uint, uint, uint) {
-        (Error err, uint liquidity, uint shortfall) = getHypotheticalAccountLiquidityInternal(account, SLToken(0), 0, 0);
+        (Error err, uint liquidity, uint shortfall) = getHypotheticalAccountLiquidityInternal(account, GToken(0), 0, 0);
 
         return (uint(err), liquidity, shortfall);
     }
@@ -691,12 +691,12 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
      *          account shortfall below collateral requirements)
      */
     function getAccountLiquidityInternal(address account) internal view returns (Error, uint, uint) {
-        return getHypotheticalAccountLiquidityInternal(account, SLToken(0), 0, 0);
+        return getHypotheticalAccountLiquidityInternal(account, GToken(0), 0, 0);
     }
 
     /**
      * @notice Determine what the account liquidity would be if the given amounts were redeemed/borrowed
-     * @param slTokenModify The market to hypothetically redeem/borrow in
+     * @param gTokenModify The market to hypothetically redeem/borrow in
      * @param account The account to determine liquidity for
      * @param redeemTokens The number of tokens to hypothetically redeem
      * @param borrowAmount The amount of underlying to hypothetically borrow
@@ -706,20 +706,20 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
      */
     function getHypotheticalAccountLiquidity(
         address account,
-        address slTokenModify,
+        address gTokenModify,
         uint redeemTokens,
         uint borrowAmount) public view returns (uint, uint, uint) {
-        (Error err, uint liquidity, uint shortfall) = getHypotheticalAccountLiquidityInternal(account, SLToken(slTokenModify), redeemTokens, borrowAmount);
+        (Error err, uint liquidity, uint shortfall) = getHypotheticalAccountLiquidityInternal(account, GToken(gTokenModify), redeemTokens, borrowAmount);
         return (uint(err), liquidity, shortfall);
     }
 
     /**
      * @notice Determine what the account liquidity would be if the given amounts were redeemed/borrowed
-     * @param slTokenModify The market to hypothetically redeem/borrow in
+     * @param gTokenModify The market to hypothetically redeem/borrow in
      * @param account The account to determine liquidity for
      * @param redeemTokens The number of tokens to hypothetically redeem
      * @param borrowAmount The amount of underlying to hypothetically borrow
-     * @dev Note that we calculate the exchangeRateStored for each collateral slToken using stored data,
+     * @dev Note that we calculate the exchangeRateStored for each collateral gToken using stored data,
      *  without calculating accumulated interest.
      * @return (possible error code,
                 hypothetical account liquidity in excess of collateral requirements,
@@ -727,7 +727,7 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
      */
     function getHypotheticalAccountLiquidityInternal(
         address account,
-        SLToken slTokenModify,
+        GToken gTokenModify,
         uint redeemTokens,
         uint borrowAmount) internal view returns (Error, uint, uint) {
 
@@ -736,12 +736,12 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
         MathError mErr;
 
         // For each asset the account is in
-        SLToken[] memory assets = accountAssets[account];
+        GToken[] memory assets = accountAssets[account];
         for (uint i = 0; i < assets.length; i++) {
-            SLToken asset = assets[i];
+            GToken asset = assets[i];
 
-            // Read the balances and exchange rate from the slToken
-            (oErr, vars.slTokenBalance, vars.borrowBalance, vars.exchangeRateMantissa) = asset.getAccountSnapshot(account);
+            // Read the balances and exchange rate from the gToken
+            (oErr, vars.gTokenBalance, vars.borrowBalance, vars.exchangeRateMantissa) = asset.getAccountSnapshot(account);
             if (oErr != 0) { // semi-opaque error code, we assume NO_ERROR == 0 is invariant between upgrades
                 return (Error.SNAPSHOT_ERROR, 0, 0);
             }
@@ -761,8 +761,8 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
                 return (Error.MATH_ERROR, 0, 0);
             }
 
-            // sumCollateral += tokensToDenom * slTokenBalance
-            (mErr, vars.sumCollateral) = mulScalarTruncateAddUInt(vars.tokensToDenom, vars.slTokenBalance, vars.sumCollateral);
+            // sumCollateral += tokensToDenom * gTokenBalance
+            (mErr, vars.sumCollateral) = mulScalarTruncateAddUInt(vars.tokensToDenom, vars.gTokenBalance, vars.sumCollateral);
             if (mErr != MathError.NO_ERROR) {
                 return (Error.MATH_ERROR, 0, 0);
             }
@@ -773,8 +773,8 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
                 return (Error.MATH_ERROR, 0, 0);
             }
 
-            // Calculate effects of interacting with slTokenModify
-            if (asset == slTokenModify) {
+            // Calculate effects of interacting with gTokenModify
+            if (asset == gTokenModify) {
                 // redeem effect
                 // sumBorrowPlusEffects += tokensToDenom * redeemTokens
                 (mErr, vars.sumBorrowPlusEffects) = mulScalarTruncateAddUInt(vars.tokensToDenom, redeemTokens, vars.sumBorrowPlusEffects);
@@ -801,16 +801,16 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
 
     /**
      * @notice Calculate number of tokens of collateral asset to seize given an underlying amount
-     * @dev Used in liquidation (called in slToken.liquidateBorrowFresh)
-     * @param slTokenBorrowed The address of the borrowed slToken
-     * @param slTokenCollateral The address of the collateral slToken
-     * @param actualRepayAmount The amount of slTokenBorrowed underlying to convert into slTokenCollateral tokens
-     * @return (errorCode, number of slTokenCollateral tokens to be seized in a liquidation)
+     * @dev Used in liquidation (called in gToken.liquidateBorrowFresh)
+     * @param gTokenBorrowed The address of the borrowed gToken
+     * @param gTokenCollateral The address of the collateral gToken
+     * @param actualRepayAmount The amount of gTokenBorrowed underlying to convert into gTokenCollateral tokens
+     * @return (errorCode, number of gTokenCollateral tokens to be seized in a liquidation)
      */
-    function liquidateCalculateSeizeTokens(address slTokenBorrowed, address slTokenCollateral, uint actualRepayAmount) external view returns (uint, uint) {
+    function liquidateCalculateSeizeTokens(address gTokenBorrowed, address gTokenCollateral, uint actualRepayAmount) external view returns (uint, uint) {
         /* Read oracle prices for borrowed and collateral markets */
-        uint priceBorrowedMantissa = oracle.getUnderlyingPrice(SLToken(slTokenBorrowed));
-        uint priceCollateralMantissa = oracle.getUnderlyingPrice(SLToken(slTokenCollateral));
+        uint priceBorrowedMantissa = oracle.getUnderlyingPrice(GToken(gTokenBorrowed));
+        uint priceCollateralMantissa = oracle.getUnderlyingPrice(GToken(gTokenCollateral));
         if (priceBorrowedMantissa == 0 || priceCollateralMantissa == 0) {
             return (uint(Error.PRICE_ERROR), 0);
         }
@@ -821,7 +821,7 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
          *  seizeTokens = seizeAmount / exchangeRate
          *   = actualRepayAmount * (liquidationIncentive * priceBorrowed) / (priceCollateral * exchangeRate)
          */
-        uint exchangeRateMantissa = SLToken(slTokenCollateral).exchangeRateStored(); // Note: reverts on error
+        uint exchangeRateMantissa = GToken(gTokenCollateral).exchangeRateStored(); // Note: reverts on error
         uint seizeTokens;
         Exp memory numerator;
         Exp memory denominator;
@@ -909,18 +909,18 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
     /**
       * @notice Sets the collateralFactor for a market
       * @dev Admin function to set per-market collateralFactor
-      * @param slToken The market to set the factor on
+      * @param gToken The market to set the factor on
       * @param newCollateralFactorMantissa The new collateral factor, scaled by 1e18
       * @return uint 0=success, otherwise a failure. (See ErrorReporter for details)
       */
-    function _setCollateralFactor(SLToken slToken, uint newCollateralFactorMantissa) external returns (uint) {
+    function _setCollateralFactor(GToken gToken, uint newCollateralFactorMantissa) external returns (uint) {
         // Check caller is admin
         if (msg.sender != admin) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SET_COLLATERAL_FACTOR_OWNER_CHECK);
         }
 
         // Verify market is listed
-        Market storage market = markets[address(slToken)];
+        Market storage market = markets[address(gToken)];
         if (!market.isListed) {
             return fail(Error.MARKET_NOT_LISTED, FailureInfo.SET_COLLATERAL_FACTOR_NO_EXISTS);
         }
@@ -934,7 +934,7 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
         }
 
         // If collateral factor != 0, fail if price == 0
-        if (newCollateralFactorMantissa != 0 && oracle.getUnderlyingPrice(slToken) == 0) {
+        if (newCollateralFactorMantissa != 0 && oracle.getUnderlyingPrice(gToken) == 0) {
             return fail(Error.PRICE_ERROR, FailureInfo.SET_COLLATERAL_FACTOR_WITHOUT_PRICE);
         }
 
@@ -943,7 +943,7 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
         market.collateralFactorMantissa = newCollateralFactorMantissa;
 
         // Emit event with asset, old collateral factor, and new collateral factor
-        emit NewCollateralFactor(slToken, oldCollateralFactorMantissa, newCollateralFactorMantissa);
+        emit NewCollateralFactor(gToken, oldCollateralFactorMantissa, newCollateralFactorMantissa);
 
         return uint(Error.NO_ERROR);
     }
@@ -1006,54 +1006,54 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
     /**
       * @notice Add the market to the markets mapping and set it as listed
       * @dev Admin function to set isListed and add support for the market
-      * @param slToken The address of the market (token) to list
+      * @param gToken The address of the market (token) to list
       * @return uint 0=success, otherwise a failure. (See enum Error for details)
       */
-    function _supportMarket(SLToken slToken) external returns (uint) {
+    function _supportMarket(GToken gToken) external returns (uint) {
         if (msg.sender != admin) {
             return fail(Error.UNAUTHORIZED, FailureInfo.SUPPORT_MARKET_OWNER_CHECK);
         }
 
-        if (markets[address(slToken)].isListed) {
+        if (markets[address(gToken)].isListed) {
             return fail(Error.MARKET_ALREADY_LISTED, FailureInfo.SUPPORT_MARKET_EXISTS);
         }
 
-        slToken.isSLToken(); // Sanity check to make sure its really a SLToken
+        gToken.isGToken(); // Sanity check to make sure its really a GToken
 
-        markets[address(slToken)] = Market({isListed: true, isSashimied: false, collateralFactorMantissa: 0});
+        markets[address(gToken)] = Market({isListed: true, isPlatformTokened: false, collateralFactorMantissa: 0});
 
-        _addMarketInternal(address(slToken));
+        _addMarketInternal(address(gToken));
 
-        emit MarketListed(slToken);
+        emit MarketListed(gToken);
 
         return uint(Error.NO_ERROR);
     }
 
-    function _addMarketInternal(address slToken) internal {
+    function _addMarketInternal(address gToken) internal {
         for (uint i = 0; i < allMarkets.length; i ++) {
-            require(allMarkets[i] != SLToken(slToken), "market already added");
+            require(allMarkets[i] != GToken(gToken), "market already added");
         }
-        allMarkets.push(SLToken(slToken));
+        allMarkets.push(GToken(gToken));
     }
 
 
     /**
-      * @notice Set the given borrow caps for the given slToken markets. Borrowing that brings total borrows to or above borrow cap will revert.
+      * @notice Set the given borrow caps for the given gToken markets. Borrowing that brings total borrows to or above borrow cap will revert.
       * @dev Admin or borrowCapGuardian function to set the borrow caps. A borrow cap of 0 corresponds to unlimited borrowing.
-      * @param slTokens The addresses of the markets (tokens) to change the borrow caps for
+      * @param gTokens The addresses of the markets (tokens) to change the borrow caps for
       * @param newBorrowCaps The new borrow cap values in underlying to be set. A value of 0 corresponds to unlimited borrowing.
       */
-    function _setMarketBorrowCaps(SLToken[] calldata slTokens, uint[] calldata newBorrowCaps) external {
+    function _setMarketBorrowCaps(GToken[] calldata gTokens, uint[] calldata newBorrowCaps) external {
     	require(msg.sender == admin || msg.sender == borrowCapGuardian, "only admin or borrow cap guardian can set borrow caps"); 
 
-        uint numMarkets = slTokens.length;
+        uint numMarkets = gTokens.length;
         uint numBorrowCaps = newBorrowCaps.length;
 
         require(numMarkets != 0 && numMarkets == numBorrowCaps, "invalid input");
 
         for(uint i = 0; i < numMarkets; i++) {
-            borrowCaps[address(slTokens[i])] = newBorrowCaps[i];
-            emit NewBorrowCap(slTokens[i], newBorrowCaps[i]);
+            borrowCaps[address(gTokens[i])] = newBorrowCaps[i];
+            emit NewBorrowCap(gTokens[i], newBorrowCaps[i]);
         }
     }
 
@@ -1096,23 +1096,23 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
         return uint(Error.NO_ERROR);
     }
 
-    function _setMintPaused(SLToken slToken, bool state) public returns (bool) {
-        require(markets[address(slToken)].isListed, "cannot pause a market that is not listed");
+    function _setMintPaused(GToken gToken, bool state) public returns (bool) {
+        require(markets[address(gToken)].isListed, "cannot pause a market that is not listed");
         require(msg.sender == pauseGuardian || msg.sender == admin, "only pause guardian and admin can pause");
         require(msg.sender == admin || state == true, "only admin can unpause");
 
-        mintGuardianPaused[address(slToken)] = state;
-        emit ActionPaused(slToken, "Mint", state);
+        mintGuardianPaused[address(gToken)] = state;
+        emit ActionPaused(gToken, "Mint", state);
         return state;
     }
 
-    function _setBorrowPaused(SLToken slToken, bool state) public returns (bool) {
-        require(markets[address(slToken)].isListed, "cannot pause a market that is not listed");
+    function _setBorrowPaused(GToken gToken, bool state) public returns (bool) {
+        require(markets[address(gToken)].isListed, "cannot pause a market that is not listed");
         require(msg.sender == pauseGuardian || msg.sender == admin, "only pause guardian and admin can pause");
         require(msg.sender == admin || state == true, "only admin can unpause");
 
-        borrowGuardianPaused[address(slToken)] = state;
-        emit ActionPaused(slToken, "Borrow", state);
+        borrowGuardianPaused[address(gToken)] = state;
+        emit ActionPaused(gToken, "Borrow", state);
         return state;
     }
 
@@ -1146,61 +1146,61 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
         return msg.sender == admin || msg.sender == comptrollerImplementation;
     }
 
-    /*** Sashimi Distribution ***/
+    /*** PlatformToken Distribution ***/
 
     /**
-     * @notice Recalculate and update SASHIMI speeds for all SASHIMI markets
+     * @notice Recalculate and update PLATFORMTOKEN speeds for all PLATFORMTOKEN markets
      */
-    function refreshSashimiSpeeds() public {
+    function refreshPlatformTokenSpeeds() public {
         require(msg.sender == tx.origin, "only externally owned accounts may refresh speeds");
-        refreshSashimiSpeedsInternal();
+        refreshPlatformTokenSpeedsInternal();
     }
 
-    function refreshSashimiSpeedsInternal() internal {
-        SLToken[] memory allMarkets_ = allMarkets;
+    function refreshPlatformTokenSpeedsInternal() internal {
+        GToken[] memory allMarkets_ = allMarkets;
 
         for (uint i = 0; i < allMarkets_.length; i++) {
-            SLToken slToken = allMarkets_[i];
-            Exp memory borrowIndex = Exp({mantissa: slToken.borrowIndex()});
-            updateSashimiSupplyIndex(address(slToken));
-            updateSashimiBorrowIndex(address(slToken), borrowIndex);
+            GToken gToken = allMarkets_[i];
+            Exp memory borrowIndex = Exp({mantissa: gToken.borrowIndex()});
+            updatePlatformTokenSupplyIndex(address(gToken));
+            updatePlatformTokenBorrowIndex(address(gToken), borrowIndex);
         }
 
         Exp memory totalUtility = Exp({mantissa: 0});
         Exp[] memory utilities = new Exp[](allMarkets_.length);
         for (uint i = 0; i < allMarkets_.length; i++) {
-            SLToken slToken = allMarkets_[i];
-            if (markets[address(slToken)].isSashimied) {
-                Exp memory assetPrice = Exp({mantissa: oracle.getUnderlyingPrice(slToken)});
-                Exp memory utility = mul_(assetPrice, slToken.totalBorrows());
+            GToken gToken = allMarkets_[i];
+            if (markets[address(gToken)].isPlatformTokened) {
+                Exp memory assetPrice = Exp({mantissa: oracle.getUnderlyingPrice(gToken)});
+                Exp memory utility = mul_(assetPrice, gToken.totalBorrows());
                 utilities[i] = utility;
                 totalUtility = add_(totalUtility, utility);
             }
         }
 
         for (uint i = 0; i < allMarkets_.length; i++) {
-            SLToken slToken = allMarkets[i];
-            uint newSpeed = totalUtility.mantissa > 0 ? mul_(sashimiRate, div_(utilities[i], totalUtility)) : 0;
-            sashimiSpeeds[address(slToken)] = newSpeed;
-            emit SashimiSpeedUpdated(slToken, newSpeed);
+            GToken gToken = allMarkets[i];
+            uint newSpeed = totalUtility.mantissa > 0 ? mul_(platformTokenRate, div_(utilities[i], totalUtility)) : 0;
+            platformTokenSpeeds[address(gToken)] = newSpeed;
+            emit PlatformTokenSpeedUpdated(gToken, newSpeed);
         }
     }
 
     /**
-     * @notice Accrue SASHIMI to the market by updating the supply index
-     * @param slToken The market whose supply index to update
+     * @notice Accrue PLATFORMTOKEN to the market by updating the supply index
+     * @param gToken The market whose supply index to update
      */
-    function updateSashimiSupplyIndex(address slToken) internal {
-        SashimiMarketState storage supplyState = sashimiSupplyState[slToken];
-        uint supplySpeed = sashimiSpeeds[slToken];
+    function updatePlatformTokenSupplyIndex(address gToken) internal {
+        PlatformTokenMarketState storage supplyState = platformTokenSupplyState[gToken];
+        uint supplySpeed = platformTokenSpeeds[gToken];
         uint blockNumber = getBlockNumber();
         uint deltaBlocks = sub_(blockNumber, uint(supplyState.block));
         if (deltaBlocks > 0 && supplySpeed > 0) {
-            uint supplyTokens = SLToken(slToken).totalSupply();
-            uint sashimiAccrued = mul_(deltaBlocks, supplySpeed);
-            Double memory ratio = supplyTokens > 0 ? fraction(sashimiAccrued, supplyTokens) : Double({mantissa: 0});
+            uint supplyTokens = GToken(gToken).totalSupply();
+            uint platformTokenAccrued = mul_(deltaBlocks, supplySpeed);
+            Double memory ratio = supplyTokens > 0 ? fraction(platformTokenAccrued, supplyTokens) : Double({mantissa: 0});
             Double memory index = add_(Double({mantissa: supplyState.index}), ratio);
-            sashimiSupplyState[slToken] = SashimiMarketState({
+            platformTokenSupplyState[gToken] = PlatformTokenMarketState({
                 index: safe224(index.mantissa, "new index exceeds 224 bits"),
                 block: safe32(blockNumber, "block number exceeds 32 bits")
             });
@@ -1210,20 +1210,20 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
     }
 
     /**
-     * @notice Accrue SASHIMI to the market by updating the borrow index
-     * @param slToken The market whose borrow index to update
+     * @notice Accrue PLATFORMTOKEN to the market by updating the borrow index
+     * @param gToken The market whose borrow index to update
      */
-    function updateSashimiBorrowIndex(address slToken, Exp memory marketBorrowIndex) internal {
-        SashimiMarketState storage borrowState = sashimiBorrowState[slToken];
-        uint borrowSpeed = sashimiSpeeds[slToken];
+    function updatePlatformTokenBorrowIndex(address gToken, Exp memory marketBorrowIndex) internal {
+        PlatformTokenMarketState storage borrowState = platformTokenBorrowState[gToken];
+        uint borrowSpeed = platformTokenSpeeds[gToken];
         uint blockNumber = getBlockNumber();
         uint deltaBlocks = sub_(blockNumber, uint(borrowState.block));
         if (deltaBlocks > 0 && borrowSpeed > 0) {
-            uint borrowAmount = div_(SLToken(slToken).totalBorrows(), marketBorrowIndex);
-            uint sashimiAccrued = mul_(deltaBlocks, borrowSpeed);
-            Double memory ratio = borrowAmount > 0 ? fraction(sashimiAccrued, borrowAmount) : Double({mantissa: 0});
+            uint borrowAmount = div_(GToken(gToken).totalBorrows(), marketBorrowIndex);
+            uint platformTokenAccrued = mul_(deltaBlocks, borrowSpeed);
+            Double memory ratio = borrowAmount > 0 ? fraction(platformTokenAccrued, borrowAmount) : Double({mantissa: 0});
             Double memory index = add_(Double({mantissa: borrowState.index}), ratio);
-            sashimiBorrowState[slToken] = SashimiMarketState({
+            platformTokenBorrowState[gToken] = PlatformTokenMarketState({
                 index: safe224(index.mantissa, "new index exceeds 224 bits"),
                 block: safe32(blockNumber, "block number exceeds 32 bits")
             });
@@ -1233,63 +1233,63 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
     }
 
     /**
-     * @notice Calculate SASHIMI accrued by a supplier and possibly transfer it to them
-     * @param slToken The market in which the supplier is interacting
-     * @param supplier The address of the supplier to distribute SASHIMI to
+     * @notice Calculate PLATFORMTOKEN accrued by a supplier and possibly transfer it to them
+     * @param gToken The market in which the supplier is interacting
+     * @param supplier The address of the supplier to distribute PLATFORMTOKEN to
      */
-    function distributeSupplierSashimi(address slToken, address supplier, bool distributeAll) internal {
-        SashimiMarketState storage supplyState = sashimiSupplyState[slToken];
+    function distributeSupplierPlatformToken(address gToken, address supplier, bool distributeAll) internal {
+        PlatformTokenMarketState storage supplyState = platformTokenSupplyState[gToken];
         Double memory supplyIndex = Double({mantissa: supplyState.index});
-        Double memory supplierIndex = Double({mantissa: sashimiSupplierIndex[slToken][supplier]});
-        sashimiSupplierIndex[slToken][supplier] = supplyIndex.mantissa;
+        Double memory supplierIndex = Double({mantissa: platformTokenSupplierIndex[gToken][supplier]});
+        platformTokenSupplierIndex[gToken][supplier] = supplyIndex.mantissa;
 
         if (supplierIndex.mantissa == 0 && supplyIndex.mantissa > 0) {
-            supplierIndex.mantissa = sashimiInitialIndex;
+            supplierIndex.mantissa = platformTokenInitialIndex;
         }
 
         Double memory deltaIndex = sub_(supplyIndex, supplierIndex);
-        uint supplierTokens = SLToken(slToken).balanceOf(supplier);
+        uint supplierTokens = GToken(gToken).balanceOf(supplier);
         uint supplierDelta = mul_(supplierTokens, deltaIndex);
-        uint supplierAccrued = add_(sashimiAccrued[supplier], supplierDelta);
-        sashimiAccrued[supplier] = transferSashimi(supplier, supplierAccrued, distributeAll ? 0 : sashimiClaimThreshold);
-        emit DistributedSupplierSashimi(SLToken(slToken), supplier, supplierDelta, supplyIndex.mantissa);
+        uint supplierAccrued = add_(platformTokenAccrued[supplier], supplierDelta);
+        platformTokenAccrued[supplier] = transferPlatformToken(supplier, supplierAccrued, distributeAll ? 0 : platformTokenClaimThreshold);
+        emit DistributedSupplierPlatformToken(GToken(gToken), supplier, supplierDelta, supplyIndex.mantissa);
     }
 
     /**
-     * @notice Calculate SASHIMI accrued by a borrower and possibly transfer it to them
+     * @notice Calculate PLATFORMTOKEN accrued by a borrower and possibly transfer it to them
      * @dev Borrowers will not begin to accrue until after the first interaction with the protocol.
-     * @param slToken The market in which the borrower is interacting
-     * @param borrower The address of the borrower to distribute SASHIMI to
+     * @param gToken The market in which the borrower is interacting
+     * @param borrower The address of the borrower to distribute PLATFORMTOKEN to
      */
-    function distributeBorrowerSashimi(address slToken, address borrower, Exp memory marketBorrowIndex, bool distributeAll) internal {
-        SashimiMarketState storage borrowState = sashimiBorrowState[slToken];
+    function distributeBorrowerPlatformToken(address gToken, address borrower, Exp memory marketBorrowIndex, bool distributeAll) internal {
+        PlatformTokenMarketState storage borrowState = platformTokenBorrowState[gToken];
         Double memory borrowIndex = Double({mantissa: borrowState.index});
-        Double memory borrowerIndex = Double({mantissa: sashimiBorrowerIndex[slToken][borrower]});
-        sashimiBorrowerIndex[slToken][borrower] = borrowIndex.mantissa;
+        Double memory borrowerIndex = Double({mantissa: platformTokenBorrowerIndex[gToken][borrower]});
+        platformTokenBorrowerIndex[gToken][borrower] = borrowIndex.mantissa;
 
         if (borrowerIndex.mantissa > 0) {
             Double memory deltaIndex = sub_(borrowIndex, borrowerIndex);
-            uint borrowerAmount = div_(SLToken(slToken).borrowBalanceStored(borrower), marketBorrowIndex);
+            uint borrowerAmount = div_(GToken(gToken).borrowBalanceStored(borrower), marketBorrowIndex);
             uint borrowerDelta = mul_(borrowerAmount, deltaIndex);
-            uint borrowerAccrued = add_(sashimiAccrued[borrower], borrowerDelta);
-            sashimiAccrued[borrower] = transferSashimi(borrower, borrowerAccrued, distributeAll ? 0 : sashimiClaimThreshold);
-            emit DistributedBorrowerSashimi(SLToken(slToken), borrower, borrowerDelta, borrowIndex.mantissa);
+            uint borrowerAccrued = add_(platformTokenAccrued[borrower], borrowerDelta);
+            platformTokenAccrued[borrower] = transferPlatformToken(borrower, borrowerAccrued, distributeAll ? 0 : platformTokenClaimThreshold);
+            emit DistributedBorrowerPlatformToken(GToken(gToken), borrower, borrowerDelta, borrowIndex.mantissa);
         }
     }
 
     /**
-     * @notice Transfer SASHIMI to the user, if they are above the threshold
-     * @dev Note: If there is not enough SASHIMI, we do not perform the transfer all.
-     * @param user The address of the user to transfer SASHIMI to
-     * @param userAccrued The amount of SASHIMI to (possibly) transfer
-     * @return The amount of SASHIMI which was NOT transferred to the user
+     * @notice Transfer PLATFORMTOKEN to the user, if they are above the threshold
+     * @dev Note: If there is not enough PLATFORMTOKEN, we do not perform the transfer all.
+     * @param user The address of the user to transfer PLATFORMTOKEN to
+     * @param userAccrued The amount of PLATFORMTOKEN to (possibly) transfer
+     * @return The amount of PLATFORMTOKEN which was NOT transferred to the user
      */
-    function transferSashimi(address user, uint userAccrued, uint threshold) internal returns (uint) {
+    function transferPlatformToken(address user, uint userAccrued, uint threshold) internal returns (uint) {
         if (userAccrued >= threshold && userAccrued > 0) {
-            EIP20Interface sashimi = EIP20Interface(getSashimiAddress());
-            uint sashimiRemaining = sashimi.balanceOf(address(this));
-            if (userAccrued <= sashimiRemaining) {
-                sashimi.transfer(user, userAccrued);
+            EIP20Interface platformToken = EIP20Interface(getPlatformTokenAddress());
+            uint platformTokenRemaining = platformToken.balanceOf(address(this));
+            if (userAccrued <= platformTokenRemaining) {
+                platformToken.transfer(user, userAccrued);
                 return 0;
             }
         }
@@ -1297,118 +1297,118 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
     }
 
     /**
-     * @notice Claim all the sashimi accrued by holder in all markets
-     * @param holder The address to claim SASHIMI for
+     * @notice Claim all the platformToken accrued by holder in all markets
+     * @param holder The address to claim PLATFORMTOKEN for
      */
-    function claimSashimi(address holder) public {
-        return claimSashimi(holder, allMarkets);
+    function claimPlatformToken(address holder) public {
+        return claimPlatformToken(holder, allMarkets);
     }
 
     /**
-     * @notice Claim all the sashimi accrued by holder in the specified markets
-     * @param holder The address to claim SASHIMI for
-     * @param slTokens The list of markets to claim SASHIMI in
+     * @notice Claim all the platformToken accrued by holder in the specified markets
+     * @param holder The address to claim PLATFORMTOKEN for
+     * @param gTokens The list of markets to claim PLATFORMTOKEN in
      */
-    function claimSashimi(address holder, SLToken[] memory slTokens) public {
+    function claimPlatformToken(address holder, GToken[] memory gTokens) public {
         address[] memory holders = new address[](1);
         holders[0] = holder;
-        claimSashimi(holders, slTokens, true, true);
+        claimPlatformToken(holders, gTokens, true, true);
     }
 
     /**
-     * @notice Claim all sashimi accrued by the holders
-     * @param holders The addresses to claim SASHIMI for
-     * @param slTokens The list of markets to claim SASHIMI in
-     * @param borrowers Whether or not to claim SASHIMI earned by borrowing
-     * @param suppliers Whether or not to claim SASHIMI earned by supplying
+     * @notice Claim all platformToken accrued by the holders
+     * @param holders The addresses to claim PLATFORMTOKEN for
+     * @param gTokens The list of markets to claim PLATFORMTOKEN in
+     * @param borrowers Whether or not to claim PLATFORMTOKEN earned by borrowing
+     * @param suppliers Whether or not to claim PLATFORMTOKEN earned by supplying
      */
-    function claimSashimi(address[] memory holders, SLToken[] memory slTokens, bool borrowers, bool suppliers) public {
-        for (uint i = 0; i < slTokens.length; i++) {
-            SLToken slToken = slTokens[i];
-            require(markets[address(slToken)].isListed, "market must be listed");
+    function claimPlatformToken(address[] memory holders, GToken[] memory gTokens, bool borrowers, bool suppliers) public {
+        for (uint i = 0; i < gTokens.length; i++) {
+            GToken gToken = gTokens[i];
+            require(markets[address(gToken)].isListed, "market must be listed");
             if (borrowers == true) {
-                Exp memory borrowIndex = Exp({mantissa: slToken.borrowIndex()});
-                updateSashimiBorrowIndex(address(slToken), borrowIndex);
+                Exp memory borrowIndex = Exp({mantissa: gToken.borrowIndex()});
+                updatePlatformTokenBorrowIndex(address(gToken), borrowIndex);
                 for (uint j = 0; j < holders.length; j++) {
-                    distributeBorrowerSashimi(address(slToken), holders[j], borrowIndex, true);
+                    distributeBorrowerPlatformToken(address(gToken), holders[j], borrowIndex, true);
                 }
             }
             if (suppliers == true) {
-                updateSashimiSupplyIndex(address(slToken));
+                updatePlatformTokenSupplyIndex(address(gToken));
                 for (uint j = 0; j < holders.length; j++) {
-                    distributeSupplierSashimi(address(slToken), holders[j], true);
+                    distributeSupplierPlatformToken(address(gToken), holders[j], true);
                 }
             }
         }
     }
 
-    /*** Sashimi Distribution Admin ***/
+    /*** PlatformToken Distribution Admin ***/
 
     /**
-     * @notice Set the amount of SASHIMI distributed per block
-     * @param sashimiRate_ The amount of SASHIMI wei per block to distribute
+     * @notice Set the amount of PLATFORMTOKEN distributed per block
+     * @param platformTokenRate_ The amount of PLATFORMTOKEN wei per block to distribute
      */
-    function _setSashimiRate(uint sashimiRate_) public {
-        require(adminOrInitializing(), "only admin can change sashimi rate");
+    function _setPlatformTokenRate(uint platformTokenRate_) public {
+        require(adminOrInitializing(), "only admin can change platformToken rate");
 
-        uint oldRate = sashimiRate;
-        sashimiRate = sashimiRate_;
-        emit NewSashimiRate(oldRate, sashimiRate_);
+        uint oldRate = platformTokenRate;
+        platformTokenRate = platformTokenRate_;
+        emit NewPlatformTokenRate(oldRate, platformTokenRate_);
 
-        refreshSashimiSpeedsInternal();
+        refreshPlatformTokenSpeedsInternal();
     }
 
     /**
-     * @notice Add markets to sashimiMarkets, allowing them to earn SASHIMI in the flywheel
-     * @param slTokens The addresses of the markets to add
+     * @notice Add markets to platformTokenMarkets, allowing them to earn PLATFORMTOKEN in the flywheel
+     * @param gTokens The addresses of the markets to add
      */
-    function _addSashimiMarkets(address[] memory slTokens) public {
-        require(adminOrInitializing(), "only admin can add sashimi market");
+    function _addPlatformTokenMarkets(address[] memory gTokens) public {
+        require(adminOrInitializing(), "only admin can add platformToken market");
 
-        for (uint i = 0; i < slTokens.length; i++) {
-            _addSashimiMarketInternal(slTokens[i]);
+        for (uint i = 0; i < gTokens.length; i++) {
+            _addPlatformTokenMarketInternal(gTokens[i]);
         }
 
-        refreshSashimiSpeedsInternal();
+        refreshPlatformTokenSpeedsInternal();
     }
 
-    function _addSashimiMarketInternal(address slToken) internal {
-        Market storage market = markets[slToken];
-        require(market.isListed == true, "sashimi market is not listed");
-        require(market.isSashimied == false, "sashimi market already added");
+    function _addPlatformTokenMarketInternal(address gToken) internal {
+        Market storage market = markets[gToken];
+        require(market.isListed == true, "platformToken market is not listed");
+        require(market.isPlatformTokened == false, "platformToken market already added");
 
-        market.isSashimied = true;
-        emit MarketSashimied(SLToken(slToken), true);
+        market.isPlatformTokened = true;
+        emit MarketPlatformTokened(GToken(gToken), true);
 
-        if (sashimiSupplyState[slToken].index == 0 && sashimiSupplyState[slToken].block == 0) {
-            sashimiSupplyState[slToken] = SashimiMarketState({
-                index: sashimiInitialIndex,
+        if (platformTokenSupplyState[gToken].index == 0 && platformTokenSupplyState[gToken].block == 0) {
+            platformTokenSupplyState[gToken] = PlatformTokenMarketState({
+                index: platformTokenInitialIndex,
                 block: safe32(getBlockNumber(), "block number exceeds 32 bits")
             });
         }
 
-        if (sashimiBorrowState[slToken].index == 0 && sashimiBorrowState[slToken].block == 0) {
-            sashimiBorrowState[slToken] = SashimiMarketState({
-                index: sashimiInitialIndex,
+        if (platformTokenBorrowState[gToken].index == 0 && platformTokenBorrowState[gToken].block == 0) {
+            platformTokenBorrowState[gToken] = PlatformTokenMarketState({
+                index: platformTokenInitialIndex,
                 block: safe32(getBlockNumber(), "block number exceeds 32 bits")
             });
         }
     }
 
     /**
-     * @notice Remove a market from sashimiMarkets, preventing it from earning SASHIMI in the flywheel
-     * @param slToken The address of the market to drop
+     * @notice Remove a market from platformTokenMarkets, preventing it from earning PLATFORMTOKEN in the flywheel
+     * @param gToken The address of the market to drop
      */
-    function _dropSashimiMarket(address slToken) public {
-        require(msg.sender == admin, "only admin can drop sashimi market");
+    function _dropPlatformTokenMarket(address gToken) public {
+        require(msg.sender == admin, "only admin can drop platformToken market");
 
-        Market storage market = markets[slToken];
-        require(market.isSashimied == true, "market is not a sashimi market");
+        Market storage market = markets[gToken];
+        require(market.isPlatformTokened == true, "market is not a platformToken market");
 
-        market.isSashimied = false;
-        emit MarketSashimied(SLToken(slToken), false);
+        market.isPlatformTokened = false;
+        emit MarketPlatformTokened(GToken(gToken), false);
 
-        refreshSashimiSpeedsInternal();
+        refreshPlatformTokenSpeedsInternal();
     }
 
     /**
@@ -1416,7 +1416,7 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
      * @dev The automatic getter may be used to access an individual market.
      * @return The list of market addresses
      */
-    function getAllMarkets() public view returns (SLToken[] memory) {
+    function getAllMarkets() public view returns (GToken[] memory) {
         return allMarkets;
     }
 
@@ -1425,10 +1425,10 @@ contract Comptroller is ComptrollerV4Storage, ComptrollerInterface, ComptrollerE
     }
 
     /**
-     * @notice Return the address of the SASHIMI token
-     * @return The address of SASHIMI
+     * @notice Return the address of the PLATFORMTOKEN token
+     * @return The address of PLATFORMTOKEN
      */
-    function getSashimiAddress() public view returns (address) {
+    function getPlatformTokenAddress() public view returns (address) {
         return 0xC28E27870558cF22ADD83540d2126da2e4b464c2;
     }
 }

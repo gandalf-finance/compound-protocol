@@ -1,10 +1,10 @@
 #!/usr/bin/env yarn repl -s
 
 PrintTransactionLogs
-Alias SashimiHolder "0x19bc62ff7cd9ffd6bdced9802ff718f09f7259f1"
+Alias PlatformTokenHolder "0x19bc62ff7cd9ffd6bdced9802ff718f09f7259f1"
 Alias USDCWhale "0x3dfd23a6c5e8bbcfc9581d2e864a68feb6a076d3"
 Alias Arr00 "0x2b384212edc04ae8bb41738d05ba20e33277bf33"
-Web3Fork "https://mainnet-eth.compound.finance/@10706095" (SashimiHolder USDCWhale)
+Web3Fork "https://mainnet-eth.compound.finance/@10706095" (PlatformTokenHolder USDCWhale)
 UseConfigs mainnet
 
 -- Deploy the flywheel impl
@@ -13,13 +13,13 @@ ComptrollerImpl Deploy Standard ComptrollerG5
 
 -- Propose to apply the patch
 
-From SashimiHolder (Sashimi Delegate SashimiHolder)
-From SashimiHolder (Governor GovernorAlpha Propose "Borrow Cap Comptroller Patch" [(Address Unitroller) (Address ComptrollerG5) (Address Unitroller) (Address slSAI) (Address SAI)] [0 0 0 0 0] ["_setPendingImplementation(address)" "_become(address)" "_setBorrowCapGuardian(address)" "_reduceReserves(uint256)" "transfer(address,uint256)"] [[(Address ComptrollerG5)] [(Address Unitroller)] [(Address SashimiHolder)] [2360000000000000000000] [(Address Arr00) 2360000000000000000000]])
+From PlatformTokenHolder (PlatformToken Delegate PlatformTokenHolder)
+From PlatformTokenHolder (Governor GovernorAlpha Propose "Borrow Cap Comptroller Patch" [(Address Unitroller) (Address ComptrollerG5) (Address Unitroller) (Address gSAI) (Address SAI)] [0 0 0 0 0] ["_setPendingImplementation(address)" "_become(address)" "_setBorrowCapGuardian(address)" "_reduceReserves(uint256)" "transfer(address,uint256)"] [[(Address ComptrollerG5)] [(Address Unitroller)] [(Address PlatformTokenHolder)] [2360000000000000000000] [(Address Arr00) 2360000000000000000000]])
 
 -- Vote for, queue, and execute the proposal
 
 MineBlock
-From SashimiHolder (Governor GovernorAlpha Proposal LastProposal Vote For)
+From PlatformTokenHolder (Governor GovernorAlpha Proposal LastProposal Vote For)
 AdvanceBlocks 20000
 Governor GovernorAlpha Proposal LastProposal Queue
 IncreaseTime 604910
@@ -29,19 +29,19 @@ ComptrollerImpl ComptrollerG5 MergeABI
 Assert Equal (Address (Unitroller Implementation)) (Address ComptrollerG5)
 Assert Equal (Erc20 SAI TokenBalance (Address Arr00)) (2360000000000000000000)
 
-From USDCWhale (Trx GasPrice 0 (Erc20 USDC Approve slUSDC UInt256Max))
-From USDCWhale (Trx GasPrice 0 (SLToken slUSDC Mint 214000000e6))
-From USDCWhale (Trx GasPrice 0 (SLToken slUSDC Borrow 1000000e6))
+From USDCWhale (Trx GasPrice 0 (Erc20 USDC Approve gUSDC UInt256Max))
+From USDCWhale (Trx GasPrice 0 (GToken gUSDC Mint 214000000e6))
+From USDCWhale (Trx GasPrice 0 (GToken gUSDC Borrow 1000000e6))
 
-From SashimiHolder (Comptroller SetMarketBorrowCaps (slUSDC) (83000000e6))
+From PlatformTokenHolder (Comptroller SetMarketBorrowCaps (gUSDC) (83000000e6))
 
 AllowFailures
-From USDCWhale (Trx GasPrice 0 (SLToken slUSDC Borrow 1000000e6))
+From USDCWhale (Trx GasPrice 0 (GToken gUSDC Borrow 1000000e6))
 Assert Revert
 
 Successfully
-From USDCWhale (Trx GasPrice 0 (SLToken slUSDC RepayBorrow 1000000e6))
-From USDCWhale (Trx GasPrice 0 (SLToken slUSDC Borrow 10e6))
+From USDCWhale (Trx GasPrice 0 (GToken gUSDC RepayBorrow 1000000e6))
+From USDCWhale (Trx GasPrice 0 (GToken gUSDC Borrow 10e6))
 
 
 

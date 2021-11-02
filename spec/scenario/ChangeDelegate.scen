@@ -2,10 +2,10 @@
 
 Test "Change the delegate"
     NewComptroller
-    NewSLToken DEL slDEL
-    Support slDEL collateralFactor:0.5
-    Prep Jared Some DEL slDEL
-    Mint Jared 100e18 slDEL
-    SLTokenDelegate Deploy SLErc20Delegate slErc20Delegate2
-    SLToken slDEL SetImplementation (SLTokenDelegate slErc20Delegate2 Address) True "0x0"
-    Redeem Jared 50e9 slDEL
+    NewGToken DEL gDEL
+    Support gDEL collateralFactor:0.5
+    Prep Jared Some DEL gDEL
+    Mint Jared 100e18 gDEL
+    GTokenDelegate Deploy GErc20Delegate gErc20Delegate2
+    GToken gDEL SetImplementation (GTokenDelegate gErc20Delegate2 Address) True "0x0"
+    Redeem Jared 50e9 gDEL

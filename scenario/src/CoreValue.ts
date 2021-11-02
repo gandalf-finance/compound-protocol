@@ -21,8 +21,8 @@ import { getUserValue, userFetchers } from './Value/UserValue';
 import { comptrollerFetchers, getComptrollerValue } from './Value/ComptrollerValue';
 import { comptrollerImplFetchers, getComptrollerImplValue } from './Value/ComptrollerImplValue';
 import { getUnitrollerValue, unitrollerFetchers } from './Value/UnitrollerValue';
-import { slTokenFetchers, getSLTokenValue } from './Value/SLTokenValue';
-import { slTokenDelegateFetchers, getSLTokenDelegateValue } from './Value/SLTokenDelegateValue';
+import { gTokenFetchers, getGTokenValue } from './Value/GTokenValue';
+import { gTokenDelegateFetchers, getGTokenDelegateValue } from './Value/GTokenDelegateValue';
 import { erc20Fetchers, getErc20Value } from './Value/Erc20Value';
 import { mcdFetchers, getMCDValue } from './Value/MCDValue';
 import { getInterestRateModelValue, interestRateModelFetchers } from './Value/InterestRateModelValue';
@@ -776,8 +776,8 @@ const fetchers = [
 
       * "Equal given:<Value> expected:<Value>" - Returns true if given values are equal
         * E.g. "Equal (Exactly 0) Zero"
-        * E.g. "Equal (SLToken slZRX TotalSupply) (Exactly 55)"
-        * E.g. "Equal (SLToken slZRX Comptroller) (Comptroller Address)"
+        * E.g. "Equal (GToken gZRX TotalSupply) (Exactly 55)"
+        * E.g. "Equal (GToken gZRX Comptroller) (Comptroller Address)"
     `,
     'Equal',
     [new Arg('given', getCoreValue), new Arg('expected', getCoreValue)],
@@ -845,25 +845,25 @@ const fetchers = [
   ),
   new Fetcher<{ res: Value }, Value>(
     `
-      #### SLToken
+      #### GToken
 
-      * "SLToken ...slTokenArgs" - Returns slToken value
+      * "GToken ...gTokenArgs" - Returns gToken value
     `,
-    'SLToken',
-    [new Arg('res', getSLTokenValue, { variadic: true })],
+    'GToken',
+    [new Arg('res', getGTokenValue, { variadic: true })],
     async (world, { res }) => res,
-    { subExpressions: slTokenFetchers() }
+    { subExpressions: gTokenFetchers() }
   ),
   new Fetcher<{ res: Value }, Value>(
     `
-      #### SLTokenDelegate
+      #### GTokenDelegate
 
-      * "SLTokenDelegate ...slTokenDelegateArgs" - Returns slToken delegate value
+      * "GTokenDelegate ...gTokenDelegateArgs" - Returns gToken delegate value
     `,
-    'SLTokenDelegate',
-    [new Arg('res', getSLTokenDelegateValue, { variadic: true })],
+    'GTokenDelegate',
+    [new Arg('res', getGTokenDelegateValue, { variadic: true })],
     async (world, { res }) => res,
-    { subExpressions: slTokenDelegateFetchers() }
+    { subExpressions: gTokenDelegateFetchers() }
   ),
   new Fetcher<{ res: Value }, Value>(
     `
@@ -957,7 +957,7 @@ const fetchers = [
 
 let contractFetchers = [
   { contract: "Counter", implicit: false },
-  { contract: "SashimiLendingLens", implicit: false },
+  { contract: "GandalfLendingLens", implicit: false },
   { contract: "Reservoir", implicit: true }
 ];
 

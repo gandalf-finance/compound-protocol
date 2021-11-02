@@ -1,7 +1,7 @@
 import { Event } from '../Event';
 import { World } from '../World';
-import { SLErc20Delegator, SLErc20DelegatorScenario } from '../Contract/SLErc20Delegator';
-import { SLToken } from '../Contract/SLToken';
+import { GErc20Delegator, GErc20DelegatorScenario } from '../Contract/GErc20Delegator';
+import { GToken } from '../Contract/GToken';
 import { Invokation, invoke } from '../Invokation';
 import { getAddressV, getExpNumberV, getNumberV, getStringV } from '../CoreValue';
 import { AddressV, NumberV, StringV } from '../Value';
@@ -9,16 +9,16 @@ import { Arg, Fetcher, getFetcherValue } from '../Command';
 import { storeAndSaveContract } from '../Networks';
 import { getContract, getTestContract } from '../Contract';
 
-const SLErc20Contract = getContract('SLErc20Immutable');
-const SLErc20Delegator = getContract('SLErc20Delegator');
-const SLErc20DelegatorScenario = getTestContract('SLErc20DelegatorScenario');
-const SLEtherContract = getContract('SLEther');
-const SLErc20ScenarioContract = getTestContract('SLErc20Scenario');
-const SLEtherScenarioContract = getTestContract('SLEtherScenario');
-const CEvilContract = getTestContract('SLEvil');
+const GErc20Contract = getContract('GErc20Immutable');
+const GErc20Delegator = getContract('GErc20Delegator');
+const GErc20DelegatorScenario = getTestContract('GErc20DelegatorScenario');
+const GEtherContract = getContract('GEther');
+const GErc20ScenarioContract = getTestContract('GErc20Scenario');
+const GEtherScenarioContract = getTestContract('GEtherScenario');
+const CEvilContract = getTestContract('GEvil');
 
 export interface TokenData {
-  invokation: Invokation<SLToken>;
+  invokation: Invokation<GToken>;
   name: string;
   symbol: string;
   decimals?: number;
@@ -29,11 +29,11 @@ export interface TokenData {
   admin?: string;
 }
 
-export async function buildSLToken(
+export async function buildGToken(
   world: World,
   from: string,
   params: Event
-): Promise<{ world: World; slToken: SLToken; tokenData: TokenData }> {
+): Promise<{ world: World; gToken: GToken; tokenData: TokenData }> {
   const fetchers = [
     new Fetcher<
       {
@@ -51,12 +51,12 @@ export async function buildSLToken(
       TokenData
     >(
     `
-      #### SLErc20Delegator
+      #### GErc20Delegator
 
-      * "SLErc20Delegator symbol:<String> name:<String> underlying:<Address> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address> implementation:<Address> becomeImplementationData:<String>" - The real deal SLToken
-        * E.g. "SLToken Deploy SLErc20Delegator slDAI \"Compound DAI\" (Erc20 DAI Address) (Comptroller Address) (InterestRateModel Address) 1.0 8 Geoff (SLToken CDaiDelegate Address) "0x0123434anyByTes314535q" "
+      * "GErc20Delegator symbol:<String> name:<String> underlying:<Address> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address> implementation:<Address> becomeImplementationData:<String>" - The real deal GToken
+        * E.g. "GToken Deploy GErc20Delegator gDAI \"Compound DAI\" (Erc20 DAI Address) (Comptroller Address) (InterestRateModel Address) 1.0 8 Geoff (GToken CDaiDelegate Address) "0x0123434anyByTes314535q" "
     `,
-      'SLErc20Delegator',
+      'GErc20Delegator',
       [
         new Arg('symbol', getStringV),
         new Arg('name', getStringV),
@@ -85,7 +85,7 @@ export async function buildSLToken(
         }
       ) => {
         return {
-          invokation: await SLErc20Delegator.deploy<SLErc20Delegator>(world, from, [
+          invokation: await GErc20Delegator.deploy<GErc20Delegator>(world, from, [
             underlying.val,
             comptroller.val,
             interestRateModel.val,
@@ -101,7 +101,7 @@ export async function buildSLToken(
           symbol: symbol.val,
           decimals: decimals.toNumber(),
           underlying: underlying.val,
-          contract: 'SLErc20Delegator',
+          contract: 'GErc20Delegator',
           initial_exchange_rate_mantissa: initialExchangeRate.encode().toString(),
           admin: admin.val
         };
@@ -124,12 +124,12 @@ export async function buildSLToken(
       TokenData
     >(
     `
-      #### SLErc20DelegatorScenario
+      #### GErc20DelegatorScenario
 
-      * "SLErc20DelegatorScenario symbol:<String> name:<String> underlying:<Address> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address> implementation:<Address> becomeImplementationData:<String>" - A SLToken Scenario for local testing
-        * E.g. "SLToken Deploy SLErc20DelegatorScenario slDAI \"Compound DAI\" (Erc20 DAI Address) (Comptroller Address) (InterestRateModel Address) 1.0 8 Geoff (SLToken CDaiDelegate Address) "0x0123434anyByTes314535q" "
+      * "GErc20DelegatorScenario symbol:<String> name:<String> underlying:<Address> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address> implementation:<Address> becomeImplementationData:<String>" - A GToken Scenario for local testing
+        * E.g. "GToken Deploy GErc20DelegatorScenario gDAI \"Compound DAI\" (Erc20 DAI Address) (Comptroller Address) (InterestRateModel Address) 1.0 8 Geoff (GToken CDaiDelegate Address) "0x0123434anyByTes314535q" "
     `,
-      'SLErc20DelegatorScenario',
+      'GErc20DelegatorScenario',
       [
         new Arg('symbol', getStringV),
         new Arg('name', getStringV),
@@ -158,7 +158,7 @@ export async function buildSLToken(
         }
       ) => {
         return {
-          invokation: await SLErc20DelegatorScenario.deploy<SLErc20DelegatorScenario>(world, from, [
+          invokation: await GErc20DelegatorScenario.deploy<GErc20DelegatorScenario>(world, from, [
             underlying.val,
             comptroller.val,
             interestRateModel.val,
@@ -174,7 +174,7 @@ export async function buildSLToken(
           symbol: symbol.val,
           decimals: decimals.toNumber(),
           underlying: underlying.val,
-          contract: 'SLErc20DelegatorScenario',
+          contract: 'GErc20DelegatorScenario',
           initial_exchange_rate_mantissa: initialExchangeRate.encode().toString(),
           admin: admin.val
         };
@@ -184,8 +184,8 @@ export async function buildSLToken(
     new Fetcher<{symbol: StringV, name: StringV, decimals: NumberV, underlying: AddressV, comptroller: AddressV, interestRateModel: AddressV, initialExchangeRate: NumberV, admin: AddressV}, TokenData>(`
         #### Scenario
 
-        * "Scenario symbol:<String> name:<String> underlying:<Address> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A SLToken Scenario for local testing
-          * E.g. "SLToken Deploy Scenario slZRX \"Compound ZRX\" (Erc20 ZRX Address) (Comptroller Address) (InterestRateModel Address) 1.0 8"
+        * "Scenario symbol:<String> name:<String> underlying:<Address> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A GToken Scenario for local testing
+          * E.g. "GToken Deploy Scenario gZRX \"Compound ZRX\" (Erc20 ZRX Address) (Comptroller Address) (InterestRateModel Address) 1.0 8"
       `,
       "Scenario",
       [
@@ -200,12 +200,12 @@ export async function buildSLToken(
       ],
       async (world, {symbol, name, underlying, comptroller, interestRateModel, initialExchangeRate, decimals, admin}) => {
         return {
-          invokation: await SLErc20ScenarioContract.deploy<SLToken>(world, from, [underlying.val, comptroller.val, interestRateModel.val, initialExchangeRate.val, name.val, symbol.val, decimals.val, admin.val]),
+          invokation: await GErc20ScenarioContract.deploy<GToken>(world, from, [underlying.val, comptroller.val, interestRateModel.val, initialExchangeRate.val, name.val, symbol.val, decimals.val, admin.val]),
           name: name.val,
           symbol: symbol.val,
           decimals: decimals.toNumber(),
           underlying: underlying.val,
-          contract: 'SLErc20Scenario',
+          contract: 'GErc20Scenario',
           initial_exchange_rate_mantissa: initialExchangeRate.encode().toString(),
           admin: admin.val
         };
@@ -213,12 +213,12 @@ export async function buildSLToken(
     ),
 
     new Fetcher<{symbol: StringV, name: StringV, decimals: NumberV, admin: AddressV, comptroller: AddressV, interestRateModel: AddressV, initialExchangeRate: NumberV}, TokenData>(`
-        #### SLEtherScenario
+        #### GEtherScenario
 
-        * "SLEtherScenario symbol:<String> name:<String> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A SLToken Scenario for local testing
-          * E.g. "SLToken Deploy SLEtherScenario slETH \"Compound Ether\" (Comptroller Address) (InterestRateModel Address) 1.0 8"
+        * "GEtherScenario symbol:<String> name:<String> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A GToken Scenario for local testing
+          * E.g. "GToken Deploy GEtherScenario gETH \"Compound Ether\" (Comptroller Address) (InterestRateModel Address) 1.0 8"
       `,
-      "SLEtherScenario",
+      "GEtherScenario",
       [
         new Arg("symbol", getStringV),
         new Arg("name", getStringV),
@@ -230,12 +230,12 @@ export async function buildSLToken(
       ],
       async (world, {symbol, name, comptroller, interestRateModel, initialExchangeRate, decimals, admin}) => {
         return {
-          invokation: await SLEtherScenarioContract.deploy<SLToken>(world, from, [name.val, symbol.val, decimals.val, admin.val, comptroller.val, interestRateModel.val, initialExchangeRate.val]),
+          invokation: await GEtherScenarioContract.deploy<GToken>(world, from, [name.val, symbol.val, decimals.val, admin.val, comptroller.val, interestRateModel.val, initialExchangeRate.val]),
           name: name.val,
           symbol: symbol.val,
           decimals: decimals.toNumber(),
           underlying: "",
-          contract: 'SLEtherScenario',
+          contract: 'GEtherScenario',
           initial_exchange_rate_mantissa: initialExchangeRate.encode().toString(),
           admin: admin.val
         };
@@ -243,12 +243,12 @@ export async function buildSLToken(
     ),
 
     new Fetcher<{symbol: StringV, name: StringV, decimals: NumberV, admin: AddressV, comptroller: AddressV, interestRateModel: AddressV, initialExchangeRate: NumberV}, TokenData>(`
-        #### SLEther
+        #### GEther
 
-        * "SLEther symbol:<String> name:<String> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A SLToken Scenario for local testing
-          * E.g. "SLToken Deploy SLEther slETH \"Compound Ether\" (Comptroller Address) (InterestRateModel Address) 1.0 8"
+        * "GEther symbol:<String> name:<String> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A GToken Scenario for local testing
+          * E.g. "GToken Deploy GEther gETH \"Compound Ether\" (Comptroller Address) (InterestRateModel Address) 1.0 8"
       `,
-      "SLEther",
+      "GEther",
       [
         new Arg("symbol", getStringV),
         new Arg("name", getStringV),
@@ -260,12 +260,12 @@ export async function buildSLToken(
       ],
       async (world, {symbol, name, comptroller, interestRateModel, initialExchangeRate, decimals, admin}) => {
         return {
-          invokation: await SLEtherContract.deploy<SLToken>(world, from, [comptroller.val, interestRateModel.val, initialExchangeRate.val, name.val, symbol.val, decimals.val, admin.val]),
+          invokation: await GEtherContract.deploy<GToken>(world, from, [comptroller.val, interestRateModel.val, initialExchangeRate.val, name.val, symbol.val, decimals.val, admin.val]),
           name: name.val,
           symbol: symbol.val,
           decimals: decimals.toNumber(),
           underlying: "",
-          contract: 'SLEther',
+          contract: 'GEther',
           initial_exchange_rate_mantissa: initialExchangeRate.encode().toString(),
           admin: admin.val
         };
@@ -273,12 +273,12 @@ export async function buildSLToken(
     ),
 
     new Fetcher<{symbol: StringV, name: StringV, decimals: NumberV, admin: AddressV, underlying: AddressV, comptroller: AddressV, interestRateModel: AddressV, initialExchangeRate: NumberV}, TokenData>(`
-        #### SLErc20
+        #### GErc20
 
-        * "SLErc20 symbol:<String> name:<String> underlying:<Address> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A official SLToken contract
-          * E.g. "SLToken Deploy SLErc20 slZRX \"Compound ZRX\" (Erc20 ZRX Address) (Comptroller Address) (InterestRateModel Address) 1.0 8"
+        * "GErc20 symbol:<String> name:<String> underlying:<Address> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A official GToken contract
+          * E.g. "GToken Deploy GErc20 gZRX \"Compound ZRX\" (Erc20 ZRX Address) (Comptroller Address) (InterestRateModel Address) 1.0 8"
       `,
-      "SLErc20",
+      "GErc20",
       [
         new Arg("symbol", getStringV),
         new Arg("name", getStringV),
@@ -292,12 +292,12 @@ export async function buildSLToken(
       async (world, {symbol, name, underlying, comptroller, interestRateModel, initialExchangeRate, decimals, admin}) => {
 
         return {
-          invokation: await SLErc20Contract.deploy<SLToken>(world, from, [underlying.val, comptroller.val, interestRateModel.val, initialExchangeRate.val, name.val, symbol.val, decimals.val, admin.val]),
+          invokation: await GErc20Contract.deploy<GToken>(world, from, [underlying.val, comptroller.val, interestRateModel.val, initialExchangeRate.val, name.val, symbol.val, decimals.val, admin.val]),
           name: name.val,
           symbol: symbol.val,
           decimals: decimals.toNumber(),
           underlying: underlying.val,
-          contract: 'SLErc20',
+          contract: 'GErc20',
           initial_exchange_rate_mantissa: initialExchangeRate.encode().toString(),
           admin: admin.val
         };
@@ -305,12 +305,12 @@ export async function buildSLToken(
     ),
 
     new Fetcher<{symbol: StringV, name: StringV, decimals: NumberV, admin: AddressV, underlying: AddressV, comptroller: AddressV, interestRateModel: AddressV, initialExchangeRate: NumberV}, TokenData>(`
-        #### SLEvil
+        #### GEvil
 
-        * "SLEvil symbol:<String> name:<String> underlying:<Address> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A malicious SLToken contract
-          * E.g. "SLToken Deploy SLEvil cEVL \"Compound EVL\" (Erc20 ZRX Address) (Comptroller Address) (InterestRateModel Address) 1.0 8"
+        * "GEvil symbol:<String> name:<String> underlying:<Address> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A malicious GToken contract
+          * E.g. "GToken Deploy GEvil gEVL \"Compound EVL\" (Erc20 ZRX Address) (Comptroller Address) (InterestRateModel Address) 1.0 8"
       `,
-      "SLEvil",
+      "GEvil",
       [
         new Arg("symbol", getStringV),
         new Arg("name", getStringV),
@@ -323,12 +323,12 @@ export async function buildSLToken(
       ],
       async (world, {symbol, name, underlying, comptroller, interestRateModel, initialExchangeRate, decimals, admin}) => {
         return {
-          invokation: await CEvilContract.deploy<SLToken>(world, from, [underlying.val, comptroller.val, interestRateModel.val, initialExchangeRate.val, name.val, symbol.val, decimals.val, admin.val]),
+          invokation: await CEvilContract.deploy<GToken>(world, from, [underlying.val, comptroller.val, interestRateModel.val, initialExchangeRate.val, name.val, symbol.val, decimals.val, admin.val]),
           name: name.val,
           symbol: symbol.val,
           decimals: decimals.toNumber(),
           underlying: underlying.val,
-          contract: 'SLEvil',
+          contract: 'GEvil',
           initial_exchange_rate_mantissa: initialExchangeRate.encode().toString(),
           admin: admin.val
         };
@@ -338,8 +338,8 @@ export async function buildSLToken(
     new Fetcher<{symbol: StringV, name: StringV, decimals: NumberV, admin: AddressV, underlying: AddressV, comptroller: AddressV, interestRateModel: AddressV, initialExchangeRate: NumberV}, TokenData>(`
         #### Standard
 
-        * "symbol:<String> name:<String> underlying:<Address> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A official SLToken contract
-          * E.g. "SLToken Deploy Standard slZRX \"Compound ZRX\" (Erc20 ZRX Address) (Comptroller Address) (InterestRateModel Address) 1.0 8"
+        * "symbol:<String> name:<String> underlying:<Address> comptroller:<Address> interestRateModel:<Address> initialExchangeRate:<Number> decimals:<Number> admin: <Address>" - A official GToken contract
+          * E.g. "GToken Deploy Standard gZRX \"Compound ZRX\" (Erc20 ZRX Address) (Comptroller Address) (InterestRateModel Address) 1.0 8"
       `,
       "Standard",
       [
@@ -356,23 +356,23 @@ export async function buildSLToken(
         // Note: we're going to use the scenario contract as the standard deployment on local networks
         if (world.isLocalNetwork()) {
           return {
-            invokation: await SLErc20ScenarioContract.deploy<SLToken>(world, from, [underlying.val, comptroller.val, interestRateModel.val, initialExchangeRate.val, name.val, symbol.val, decimals.val, admin.val]),
+            invokation: await GErc20ScenarioContract.deploy<GToken>(world, from, [underlying.val, comptroller.val, interestRateModel.val, initialExchangeRate.val, name.val, symbol.val, decimals.val, admin.val]),
             name: name.val,
             symbol: symbol.val,
             decimals: decimals.toNumber(),
             underlying: underlying.val,
-            contract: 'SLErc20Scenario',
+            contract: 'GErc20Scenario',
             initial_exchange_rate_mantissa: initialExchangeRate.encode().toString(),
             admin: admin.val
           };
         } else {
           return {
-            invokation: await SLErc20Contract.deploy<SLToken>(world, from, [underlying.val, comptroller.val, interestRateModel.val, initialExchangeRate.val, name.val, symbol.val, decimals.val, admin.val]),
+            invokation: await GErc20Contract.deploy<GToken>(world, from, [underlying.val, comptroller.val, interestRateModel.val, initialExchangeRate.val, name.val, symbol.val, decimals.val, admin.val]),
             name: name.val,
             symbol: symbol.val,
             decimals: decimals.toNumber(),
             underlying: underlying.val,
-            contract: 'SLErc20Immutable',
+            contract: 'GErc20Immutable',
             initial_exchange_rate_mantissa: initialExchangeRate.encode().toString(),
             admin: admin.val
           };
@@ -382,7 +382,7 @@ export async function buildSLToken(
     )
   ];
 
-  let tokenData = await getFetcherValue<any, TokenData>("DeploySLToken", fetchers, world, params);
+  let tokenData = await getFetcherValue<any, TokenData>("DeployGToken", fetchers, world, params);
   let invokation = tokenData.invokation;
   delete tokenData.invokation;
 
@@ -390,19 +390,19 @@ export async function buildSLToken(
     throw invokation.error;
   }
 
-  const slToken = invokation.value!;
-  tokenData.address = slToken._address;
+  const gToken = invokation.value!;
+  tokenData.address = gToken._address;
 
   world = await storeAndSaveContract(
     world,
-    slToken,
+    gToken,
     tokenData.symbol,
     invokation,
     [
-      { index: ['slTokens', tokenData.symbol], data: tokenData },
+      { index: ['gTokens', tokenData.symbol], data: tokenData },
       { index: ['Tokens', tokenData.symbol], data: tokenData }
     ]
   );
 
-  return {world, slToken, tokenData};
+  return {world, gToken, tokenData};
 }

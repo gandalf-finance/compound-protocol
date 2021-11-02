@@ -6,34 +6,34 @@ const {
 } = require('./Utils/Ethereum');
 
 const {
-  makeSLToken,
+  makeGToken,
   makePriceOracle,
-} = require('./Utils/SashimiLending');
+} = require('./Utils/GandalfLending');
 
 describe('PriceOracleProxy', () => {
   let root, accounts;
-  let oracle, backingOracle, slEth, slUsdc, slSai, slDai, slUsdt, cOther;
+  let oracle, backingOracle, gEth, gUsdc, gSai, gDai, gUsdt, cOther;
   let daiOracleKey = address(2);
 
   beforeEach(async () => {
     [root, ...accounts] = saddle.accounts;
-    slEth = await makeSLToken({kind: "slether", comptrollerOpts: {kind: "v1-no-proxy"}, supportMarket: true});
-    slUsdc = await makeSLToken({comptroller: slEth.comptroller, supportMarket: true});
-    slSai = await makeSLToken({comptroller: slEth.comptroller, supportMarket: true});
-    slDai = await makeSLToken({comptroller: slEth.comptroller, supportMarket: true});
-    slUsdt = await makeSLToken({comptroller: slEth.comptroller, supportMarket: true});
-    cOther = await makeSLToken({comptroller: slEth.comptroller, supportMarket: true});
+    gEth = await makeGToken({kind: "gether", comptrollerOpts: {kind: "v1-no-proxy"}, supportMarket: true});
+    gUsdc = await makeGToken({comptroller: gEth.comptroller, supportMarket: true});
+    gSai = await makeGToken({comptroller: gEth.comptroller, supportMarket: true});
+    gDai = await makeGToken({comptroller: gEth.comptroller, supportMarket: true});
+    gUsdt = await makeGToken({comptroller: gEth.comptroller, supportMarket: true});
+    cOther = await makeGToken({comptroller: gEth.comptroller, supportMarket: true});
 
     backingOracle = await makePriceOracle();
     oracle = await deploy('PriceOracleProxy',
       [
         root,
         backingOracle._address,
-        slEth._address,
-        slUsdc._address,
-        slSai._address,
-        slDai._address,
-        slUsdt._address
+        gEth._address,
+        gUsdc._address,
+        gSai._address,
+        gDai._address,
+        gUsdt._address
       ]
      );
   });
@@ -49,43 +49,43 @@ describe('PriceOracleProxy', () => {
       expect(configuredOracle).toEqual(backingOracle._address);
     });
 
-    it("sets address of slEth", async () => {
-      let configuredSLEther = await call(oracle, "slEthAddress");
-      expect(configuredSLEther).toEqual(slEth._address);
+    it("sets address of gEth", async () => {
+      let configuredGEther = await call(oracle, "gEthAddress");
+      expect(configuredGEther).toEqual(gEth._address);
     });
 
-    it("sets address of slUSDC", async () => {
-      let configuredSLUSD = await call(oracle, "slUsdcAddress");
-      expect(configuredSLUSD).toEqual(slUsdc._address);
+    it("sets address of gUSDC", async () => {
+      let configuredGUSD = await call(oracle, "gUsdcAddress");
+      expect(configuredGUSD).toEqual(gUsdc._address);
     });
 
-    it("sets address of slSAI", async () => {
-      let configuredSLSAI = await call(oracle, "slSaiAddress");
-      expect(configuredSLSAI).toEqual(slSai._address);
+    it("sets address of gSAI", async () => {
+      let configuredGSAI = await call(oracle, "gSaiAddress");
+      expect(configuredGSAI).toEqual(gSai._address);
     });
 
-    it("sets address of slDAI", async () => {
-      let configuredSLDAI = await call(oracle, "slDaiAddress");
-      expect(configuredSLDAI).toEqual(slDai._address);
+    it("sets address of gDAI", async () => {
+      let configuredGDAI = await call(oracle, "gDaiAddress");
+      expect(configuredGDAI).toEqual(gDai._address);
     });
 
-    it("sets address of slUSDT", async () => {
-      let configuredSLUSDT = await call(oracle, "slUsdtAddress");
-      expect(configuredSLUSDT).toEqual(slUsdt._address);
+    it("sets address of gUSDT", async () => {
+      let configuredGUSDT = await call(oracle, "gUsdtAddress");
+      expect(configuredGUSDT).toEqual(gUsdt._address);
     });
   });
 
   describe("getUnderlyingPrice", () => {
-    let setAndVerifyBackingPrice = async (slToken, price) => {
+    let setAndVerifyBackingPrice = async (gToken, price) => {
       await send(
         backingOracle,
         "setUnderlyingPrice",
-        [slToken._address, etherMantissa(price)]);
+        [gToken._address, etherMantissa(price)]);
 
       let backingOraclePrice = await call(
         backingOracle,
         "assetPrices",
-        [slToken.underlying._address]);
+        [gToken.underlying._address]);
 
       expect(Number(backingOraclePrice)).toEqual(price * 1e18);
     };
@@ -95,16 +95,16 @@ describe('PriceOracleProxy', () => {
       expect(Number(proxyPrice)).toEqual(price * 1e18);;
     };
 
-    it("always returns 1e18 for slEth", async () => {
-      await readAndVerifyProxyPrice(slEth, 1);
+    it("always returns 1e18 for gEth", async () => {
+      await readAndVerifyProxyPrice(gEth, 1);
     });
 
     it("uses address(1) for USDC and address(2) for cdai", async () => {
       await send(backingOracle, "setDirectPrice", [address(1), etherMantissa(5e12)]);
       await send(backingOracle, "setDirectPrice", [address(2), etherMantissa(8)]);
-      await readAndVerifyProxyPrice(slDai, 8);
-      await readAndVerifyProxyPrice(slUsdc, 5e12);
-      await readAndVerifyProxyPrice(slUsdt, 5e12);
+      await readAndVerifyProxyPrice(gDai, 8);
+      await readAndVerifyProxyPrice(gUsdc, 5e12);
+      await readAndVerifyProxyPrice(gUsdt, 5e12);
     });
 
     it("proxies for whitelisted tokens", async () => {
@@ -116,7 +116,7 @@ describe('PriceOracleProxy', () => {
     });
 
     it("returns 0 for token without a price", async () => {
-      let unlistedToken = await makeSLToken({comptroller: slEth.comptroller});
+      let unlistedToken = await makeGToken({comptroller: gEth.comptroller});
 
       await readAndVerifyProxyPrice(unlistedToken, 0);
     });
@@ -124,13 +124,13 @@ describe('PriceOracleProxy', () => {
     it("correctly handle setting SAI price", async () => {
       await send(backingOracle, "setDirectPrice", [daiOracleKey, etherMantissa(0.01)]);
 
-      await readAndVerifyProxyPrice(slDai, 0.01);
-      await readAndVerifyProxyPrice(slSai, 0.01);
+      await readAndVerifyProxyPrice(gDai, 0.01);
+      await readAndVerifyProxyPrice(gSai, 0.01);
 
       await send(oracle, "setSaiPrice", [etherMantissa(0.05)]);
 
-      await readAndVerifyProxyPrice(slDai, 0.01);
-      await readAndVerifyProxyPrice(slSai, 0.05);
+      await readAndVerifyProxyPrice(gDai, 0.01);
+      await readAndVerifyProxyPrice(gSai, 0.05);
 
       await expect(send(oracle, "setSaiPrice", [1])).rejects.toRevert("revert SAI price may only be set once");
     });

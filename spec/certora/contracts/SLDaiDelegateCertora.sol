@@ -1,8 +1,8 @@
 pragma solidity ^0.5.16;
 
-import "../../../contracts/SLDaiDelegate.sol";
+import "../../../contracts/GDaiDelegate.sol";
 
-contract SLDaiDelegateCertora is SLDaiDelegate {
+contract GDaiDelegateCertora is GDaiDelegate {
     function getCashOf(address account) public view returns (uint) {
         return EIP20Interface(underlying).balanceOf(account);
     }

@@ -1,13 +1,13 @@
 pragma solidity ^0.5.16;
 
-import "./SLErc20.sol";
+import "./GErc20.sol";
 
 /**
- * @title SashimiLending's SLErc20Delegate Contract
- * @notice SLTokens which wrap an EIP-20 underlying and are delegated to
- * @author SashimiLending
+ * @title GandalfLending's GErc20Delegate Contract
+ * @notice GTokens which wrap an EIP-20 underlying and are delegated to
+ * @author GandalfLending
  */
-contract SLErc20Delegate is SLErc20, SLDelegateInterface {
+contract GErc20Delegate is GErc20, GDelegateInterface {
     /**
      * @notice Construct an empty delegate
      */

@@ -51,27 +51,27 @@ Test "Queuing and execute a transaction for setPendingAdmin"
     Assert Equal (Timelock Admin) (User Jared Address)
     Assert Equal (Timelock PendingAdmin) (Address Zero)
 
-Test "Accept slToken admin from Timelock"
+Test "Accept gToken admin from Timelock"
     FreezeTime 90
     -- Admin:Geoff Delay:1 week
     Timelock Deploy Geoff 604800
     Assert Equal (Timelock Admin) (User Geoff Address)
     NewComptroller
-    NewSLToken ZRX slZRX
-    Assert Equal (SLToken slZRX Admin) (Address Root)
-    Assert Equal (SLToken slZRX PendingAdmin) (Address Zero)
-    From Root (SLToken slZRX SetPendingAdmin (Timelock Address))
-    Assert Equal (SLToken slZRX PendingAdmin) (Timelock Address)
+    NewGToken ZRX gZRX
+    Assert Equal (GToken gZRX Admin) (Address Root)
+    Assert Equal (GToken gZRX PendingAdmin) (Address Zero)
+    From Root (GToken gZRX SetPendingAdmin (Timelock Address))
+    Assert Equal (GToken gZRX PendingAdmin) (Timelock Address)
     -- eta = 1 week (604800) + blockTimestamp (~100) = 604900
-    Assert False (Timelock QueuedTransaction (Timelock TxHash (SLToken slZRX Address) 0 604900 "_acceptAdmin()" ""))
-    From Geoff (Timelock QueueTransaction (SLToken slZRX Address) 0 604900 "_acceptAdmin()" "")
-    Assert True (Timelock QueuedTransaction (Timelock TxHash (SLToken slZRX Address) 0 604900 "_acceptAdmin()" ""))
+    Assert False (Timelock QueuedTransaction (Timelock TxHash (GToken gZRX Address) 0 604900 "_acceptAdmin()" ""))
+    From Geoff (Timelock QueueTransaction (GToken gZRX Address) 0 604900 "_acceptAdmin()" "")
+    Assert True (Timelock QueuedTransaction (Timelock TxHash (GToken gZRX Address) 0 604900 "_acceptAdmin()" ""))
     --  Now execute after delay time
     FreezeTime 604900
-    From Geoff (Timelock ExecuteTransaction (SLToken slZRX Address) 0 604900 "_acceptAdmin()" "")
-    Assert False (Timelock QueuedTransaction (Timelock TxHash (SLToken slZRX Address) 0 604900 "_acceptAdmin()" ""))
-    Assert Equal (SLToken slZRX Admin) (Timelock Address)
-    Assert Equal (SLToken slZRX PendingAdmin) (Address Zero)
+    From Geoff (Timelock ExecuteTransaction (GToken gZRX Address) 0 604900 "_acceptAdmin()" "")
+    Assert False (Timelock QueuedTransaction (Timelock TxHash (GToken gZRX Address) 0 604900 "_acceptAdmin()" ""))
+    Assert Equal (GToken gZRX Admin) (Timelock Address)
+    Assert Equal (GToken gZRX PendingAdmin) (Address Zero)
 
 Test "Accept unitroller admin from Timelock"
     -- Admin:Geoff Delay:1 week
@@ -97,44 +97,44 @@ Test "Accept unitroller admin from Timelock"
 
 Test "Reduce reserves for CErc20 from Timelock and send reserves to external address"
     NewComptroller
-    ListedSLToken ZRX slZRX initialExchangeRate:1e9
-    Prep Geoff 50e18 ZRX slZRX
-    Mint Geoff 50e18 slZRX
-    Assert Equal (Erc20 slZRX TokenBalance Geoff) (Exactly 500e8)
-    Assert Equal (SLToken slZRX UnderlyingBalance Geoff) (Exactly 50e18)
-    Assert Equal (SLToken slZRX ExchangeRate) (Exactly 1e9)
-    BorrowAndRepayWithInterest ZRX slZRX 10e18 5e18 interestRate:0.000001 blocks:500000 reserveRate:0.2
+    ListedGToken ZRX gZRX initialExchangeRate:1e9
+    Prep Geoff 50e18 ZRX gZRX
+    Mint Geoff 50e18 gZRX
+    Assert Equal (Erc20 gZRX TokenBalance Geoff) (Exactly 500e8)
+    Assert Equal (GToken gZRX UnderlyingBalance Geoff) (Exactly 50e18)
+    Assert Equal (GToken gZRX ExchangeRate) (Exactly 1e9)
+    BorrowAndRepayWithInterest ZRX gZRX 10e18 5e18 interestRate:0.000001 blocks:500000 reserveRate:0.2
     -- We've accrued 10% interest for 5 blocks, or 50% of the amount,
     --   thus, we should have accrued 5e18 of interest for the protocol
     --   The reserves should get 20% of this, or 1e18, and the rest
     --   is due pro-rata to all holders. We just have one, so
     --   let's check that account is given correct new balance.
     Timelock Deploy Jared 604800
-    Assert Equal (Erc20 ZRX TokenBalance slZRX) (Exactly 55e18)
+    Assert Equal (Erc20 ZRX TokenBalance gZRX) (Exactly 55e18)
     Assert Equal (Erc20 ZRX TokenBalance (Timelock Address)) (Exactly 0e18)
-    Assert Equal (Erc20 slZRX TokenBalance Geoff) (Exactly 500e8)
-    Assert Equal (SLToken slZRX Reserves) (Exactly 1e18)
-    Assert Equal (SLToken slZRX UnderlyingBalance Geoff) (Exactly 54e18)
+    Assert Equal (Erc20 gZRX TokenBalance Geoff) (Exactly 500e8)
+    Assert Equal (GToken gZRX Reserves) (Exactly 1e18)
+    Assert Equal (GToken gZRX UnderlyingBalance Geoff) (Exactly 54e18)
     -- (55.0e18+0.0e18-1.0e18)/500.0e8
-    Assert Equal (SLToken slZRX ExchangeRate) (Exactly 1.08e9)
+    Assert Equal (GToken gZRX ExchangeRate) (Exactly 1.08e9)
     -- Set Timelock as admin
-    From Root (SLToken slZRX SetPendingAdmin (Timelock Address))
+    From Root (GToken gZRX SetPendingAdmin (Timelock Address))
     -- Queue Transactions
     FreezeTime 90
-    From Jared (Timelock QueueTransaction (SLToken slZRX Address) 0 604900 "_acceptAdmin()" "")
-    From Jared (Timelock QueueTransaction (SLToken slZRX Address) 0 604900 "_reduceReserves(uint256)" "1000000000000000000")
+    From Jared (Timelock QueueTransaction (GToken gZRX Address) 0 604900 "_acceptAdmin()" "")
+    From Jared (Timelock QueueTransaction (GToken gZRX Address) 0 604900 "_reduceReserves(uint256)" "1000000000000000000")
     From Jared (Timelock QueueTransaction (Erc20 ZRX Address) 0 604900 "transfer(address,uint256)" "0x0000000000000000000000000000000000000001" "1000000000000000000")
     FreezeTime 604900
-    From Jared (Timelock ExecuteTransaction (SLToken slZRX Address) 0 604900 "_acceptAdmin()" "")
+    From Jared (Timelock ExecuteTransaction (GToken gZRX Address) 0 604900 "_acceptAdmin()" "")
     -- Now, let's pull out all of our reserves (1e18)
-    From Jared (Timelock ExecuteTransaction (SLToken slZRX Address) 0 604900 "_reduceReserves(uint256)" "1000000000000000000")
-    Assert Equal (Erc20 ZRX TokenBalance slZRX) (Exactly 54e18)
+    From Jared (Timelock ExecuteTransaction (GToken gZRX Address) 0 604900 "_reduceReserves(uint256)" "1000000000000000000")
+    Assert Equal (Erc20 ZRX TokenBalance gZRX) (Exactly 54e18)
     Assert Equal (Erc20 ZRX TokenBalance (Timelock Address)) (Exactly 1e18)
-    Assert Equal (Erc20 slZRX TokenBalance Geoff) (Exactly 500e8)
-    Assert Equal (SLToken slZRX Reserves) (Exactly 0e18)
-    Assert Equal (SLToken slZRX UnderlyingBalance Geoff) (Exactly 54e18)
+    Assert Equal (Erc20 gZRX TokenBalance Geoff) (Exactly 500e8)
+    Assert Equal (GToken gZRX Reserves) (Exactly 0e18)
+    Assert Equal (GToken gZRX UnderlyingBalance Geoff) (Exactly 54e18)
     -- (54.0e18+0.0e18-0.0e18)/500.0e8
-    Assert Equal (SLToken slZRX ExchangeRate) (Exactly 1.08e9)
+    Assert Equal (GToken gZRX ExchangeRate) (Exactly 1.08e9)
     Assert Equal (Erc20 ZRX TokenBalance "0x0000000000000000000000000000000000000001") (Exactly 0e18)
     From Jared (Timelock ExecuteTransaction (Erc20 ZRX Address) 0 604900 "transfer(address,uint256)" "0x0000000000000000000000000000000000000001" "1000000000000000000")
     Assert Equal (Erc20 ZRX TokenBalance (Timelock Address)) (Exactly 0e18)
@@ -142,12 +142,12 @@ Test "Reduce reserves for CErc20 from Timelock and send reserves to external add
 
 Test "Reduce reserves for CEther from Timelock and send reserves to external address"
     NewComptroller
-    ListedEtherToken slETH initialExchangeRate:1e9
-    CallMintEth Geoff 50e18 slETH
-    Assert Equal (Erc20 slETH TokenBalance Geoff) (Exactly 500e8)
-    Assert Equal (SLToken slETH UnderlyingBalance Geoff) (Exactly 50e18)
-    Assert Equal (SLToken slETH ExchangeRate) (Exactly 1e9)
-    BorrowAndRepayEthWithInterest slETH 10e18 5e18 interestRate:0.000001 blocks:500000 reserveRate:0.2
+    ListedEtherToken gETH initialExchangeRate:1e9
+    CallMintEth Geoff 50e18 gETH
+    Assert Equal (Erc20 gETH TokenBalance Geoff) (Exactly 500e8)
+    Assert Equal (GToken gETH UnderlyingBalance Geoff) (Exactly 50e18)
+    Assert Equal (GToken gETH ExchangeRate) (Exactly 1e9)
+    BorrowAndRepayEthWithInterest gETH 10e18 5e18 interestRate:0.000001 blocks:500000 reserveRate:0.2
     -- We've accrued 10% interest for 5 blocks, or 50% of the amount,
     --   thus, we should have accrued 5e18 of interest for the protocol
     --   The reserves should get 20% of this, or 1e18, and the rest
@@ -155,30 +155,30 @@ Test "Reduce reserves for CEther from Timelock and send reserves to external add
     --   let's check that account is given correct new balance.
     FreezeTime 90
     Timelock Deploy Jared 604800
-    Assert Equal (EtherBalance slETH) (Exactly 55e18)
+    Assert Equal (EtherBalance gETH) (Exactly 55e18)
     Assert Equal (EtherBalance (Timelock Address)) (Exactly 0e18)
-    Assert Equal (Erc20 slETH TokenBalance Geoff) (Exactly 500e8)
-    Assert Equal (SLToken slETH Reserves) (Exactly 1e18)
-    Assert Equal (SLToken slETH UnderlyingBalance Geoff) (Exactly 54e18)
+    Assert Equal (Erc20 gETH TokenBalance Geoff) (Exactly 500e8)
+    Assert Equal (GToken gETH Reserves) (Exactly 1e18)
+    Assert Equal (GToken gETH UnderlyingBalance Geoff) (Exactly 54e18)
     -- (55.0e18+0.0e18-1.0e18)/500.0e8
-    Assert Equal (SLToken slETH ExchangeRate) (Exactly 1.08e9)
+    Assert Equal (GToken gETH ExchangeRate) (Exactly 1.08e9)
     -- Set Timelock as admin
-    From Root (SLToken slETH SetPendingAdmin (Timelock Address))
+    From Root (GToken gETH SetPendingAdmin (Timelock Address))
     -- Queue Transactions
-    From Jared (Timelock QueueTransaction (SLToken slETH Address) 0 604900 "_acceptAdmin()" "")
-    From Jared (Timelock QueueTransaction (SLToken slETH Address) 0 604900 "_reduceReserves(uint256)" "1000000000000000000")
+    From Jared (Timelock QueueTransaction (GToken gETH Address) 0 604900 "_acceptAdmin()" "")
+    From Jared (Timelock QueueTransaction (GToken gETH Address) 0 604900 "_reduceReserves(uint256)" "1000000000000000000")
     From Jared (Timelock QueueTransaction Jared 1000000000000000000 604900 "" "")
     FreezeTime 604900
-    From Jared (Timelock ExecuteTransaction (SLToken slETH Address) 0 604900 "_acceptAdmin()" "")
+    From Jared (Timelock ExecuteTransaction (GToken gETH Address) 0 604900 "_acceptAdmin()" "")
     -- Now, let's pull out all of our reserves (1e18)
-    From Jared (Timelock ExecuteTransaction (SLToken slETH Address) 0 604900 "_reduceReserves(uint256)" "1000000000000000000")
+    From Jared (Timelock ExecuteTransaction (GToken gETH Address) 0 604900 "_reduceReserves(uint256)" "1000000000000000000")
     Assert Equal (EtherBalance (Timelock Address)) 1e18
-    Assert Equal (EtherBalance slETH) (Exactly 54e18)
-    Assert Equal (Erc20 slETH TokenBalance Geoff) (Exactly 500e8)
-    Assert Equal (SLToken slETH Reserves) (Exactly 0e18)
-    Assert Equal (SLToken slETH UnderlyingBalance Geoff) (Exactly 54e18)
+    Assert Equal (EtherBalance gETH) (Exactly 54e18)
+    Assert Equal (Erc20 gETH TokenBalance Geoff) (Exactly 500e8)
+    Assert Equal (GToken gETH Reserves) (Exactly 0e18)
+    Assert Equal (GToken gETH UnderlyingBalance Geoff) (Exactly 54e18)
     -- (54.0e18+0.0e18-0.0e18)/500.0e8
-    Assert Equal (SLToken slETH ExchangeRate) (Exactly 1.08e9)
+    Assert Equal (GToken gETH ExchangeRate) (Exactly 1.08e9)
     Expect Changes (EtherBalance Jared) 1e18
     Trx GasPrice 0 (From Jared (Timelock ExecuteTransaction Jared 1000000000000000000 604900 "" ""))
     Assert Equal (EtherBalance (Timelock Address)) (Exactly 0e18)

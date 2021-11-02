@@ -18,14 +18,14 @@ Gate (Erc20 REP Address) (Erc20 Deploy Standard REP "Augur")
 Gate (Erc20 USDC Address) (Erc20 Deploy Standard USDC "USD Coin" 6)
 
 -- Now deploy our cTokens
-Gate (SLToken slZRX Address) (SLToken Deploy CErc20 slZRX "Test 0x 📈" (Erc20 ZRX Address) (Comptroller Address) (InterestRateModel InterestRateModel Address) 0.2e9 8)
-Gate (SLToken slBAT Address) (SLToken Deploy CErc20 slBAT "Test Basic Attention Token 📈" (Erc20 BAT Address) (Comptroller Address) (InterestRateModel InterestRateModel Address) 0.2e9 8)
-Gate (SLToken slDAI Address) (SLToken Deploy CErc20 slDAI "Test Dai 📈" (Erc20 DAI Address) (Comptroller Address) (InterestRateModel InterestRateModel Address) 0.2e9 8)
-Gate (SLToken slREP Address) (SLToken Deploy CErc20 slREP "Test Augur 📈" (Erc20 REP Address) (Comptroller Address) (InterestRateModel InterestRateModel Address) 0.2e9 8)
-Gate (SLToken slETH Address) (SLToken Deploy CEther slETH "Test Ether 📈" (Comptroller Address) (InterestRateModel InterestRateModel Address) 0.2e9 8)
-Gate (SLToken slUSDC Address) (SLToken Deploy CErc20 slUSDC "Test USD Coin 📈" (Erc20 USDC Address) (Comptroller Address) (InterestRateModel InterestRateModel Address) 2e-4 8)
+Gate (GToken gZRX Address) (GToken Deploy CErc20 gZRX "Test 0x 📈" (Erc20 ZRX Address) (Comptroller Address) (InterestRateModel InterestRateModel Address) 0.2e9 8)
+Gate (GToken gBAT Address) (GToken Deploy CErc20 gBAT "Test Basic Attention Token 📈" (Erc20 BAT Address) (Comptroller Address) (InterestRateModel InterestRateModel Address) 0.2e9 8)
+Gate (GToken gDAI Address) (GToken Deploy CErc20 gDAI "Test Dai 📈" (Erc20 DAI Address) (Comptroller Address) (InterestRateModel InterestRateModel Address) 0.2e9 8)
+Gate (GToken gREP Address) (GToken Deploy CErc20 gREP "Test Augur 📈" (Erc20 REP Address) (Comptroller Address) (InterestRateModel InterestRateModel Address) 0.2e9 8)
+Gate (GToken gETH Address) (GToken Deploy CEther gETH "Test Ether 📈" (Comptroller Address) (InterestRateModel InterestRateModel Address) 0.2e9 8)
+Gate (GToken gUSDC Address) (GToken Deploy CErc20 gUSDC "Test USD Coin 📈" (Erc20 USDC Address) (Comptroller Address) (InterestRateModel InterestRateModel Address) 2e-4 8)
 
 -- Deploy Maximillion
-Gate (Maximillion Address) (Maximillion Deploy slETH)
+Gate (Maximillion Address) (Maximillion Deploy gETH)
 
-Print "Deployed Comptroller and cTokens: slETH, slBAT, slDAI, slREP, slUSDC and slZRX"
+Print "Deployed Comptroller and cTokens: gETH, gBAT, gDAI, gREP, gUSDC and gZRX"

@@ -134,12 +134,12 @@ contract PriceOracle {
     bool public constant isPriceOracle = true;
 
     /**
-     * @notice Get the underlying price of a slToken asset
-     * @param slToken The slToken to get the underlying price of
+     * @notice Get the underlying price of a gToken asset
+     * @param gToken The gToken to get the underlying price of
      * @return The underlying asset price mantissa (scaled by 1e18).
      *  Zero means the price is unavailable.
      */
-    function getUnderlyingPrice(address slToken)
+    function getUnderlyingPrice(address gToken)
         external
         view
         returns (uint256);
@@ -166,17 +166,17 @@ contract ChainlinkOracleView is Ownable, PriceOracle {
     }
 
     /**
-     * @notice Get the underlying price of a slToken
+     * @notice Get the underlying price of a gToken
      * @dev Implements the PriceOracle interface for Compound v2.
-     * @param slToken The slToken address for price retrieval
-     * @return Price denominated in USD, with 18 decimals, for the given slToken address. Comptroller needs prices in the format: ${raw price} * 1e(36 - baseUnit)
+     * @param gToken The gToken address for price retrieval
+     * @return Price denominated in USD, with 18 decimals, for the given gToken address. Comptroller needs prices in the format: ${raw price} * 1e(36 - baseUnit)
      */
-    function getUnderlyingPrice(address slToken)
+    function getUnderlyingPrice(address gToken)
         public
         view
         returns (uint256)
     {
-        TokenConfig memory config = tokenConfig[address(slToken)];
+        TokenConfig memory config = tokenConfig[address(gToken)];
 
         (, int256 chainlinkPrice, , , ) = AggregatorV3Interface(
             config
@@ -221,26 +221,26 @@ contract ChainlinkOracleView is Ownable, PriceOracle {
     }
 
     function setTokenConfigs(
-        address[] calldata slTokenAddress,
+        address[] calldata gTokenAddress,
         address[] calldata chainlinkAggregatorAddress,
         uint256[] calldata chainlinkPriceBase,
         uint256[] calldata underlyingTokenDecimals
     ) external onlyOwner {
         require(
-            slTokenAddress.length == chainlinkAggregatorAddress.length &&
-                slTokenAddress.length == chainlinkPriceBase.length &&
-                slTokenAddress.length == underlyingTokenDecimals.length,
+            gTokenAddress.length == chainlinkAggregatorAddress.length &&
+                gTokenAddress.length == chainlinkPriceBase.length &&
+                gTokenAddress.length == underlyingTokenDecimals.length,
             "Arguments must have same length"
         );
 
-        for (uint256 i = 0; i < slTokenAddress.length; i++) {
-            tokenConfig[slTokenAddress[i]] = TokenConfig({
+        for (uint256 i = 0; i < gTokenAddress.length; i++) {
+            tokenConfig[gTokenAddress[i]] = TokenConfig({
                 chainlinkAggregatorAddress: chainlinkAggregatorAddress[i],
                 chainlinkPriceBase: chainlinkPriceBase[i],
                 underlyingTokenDecimals: underlyingTokenDecimals[i]
             });
             emit TokenConfigUpdated(
-                slTokenAddress[i],
+                gTokenAddress[i],
                 chainlinkAggregatorAddress[i],
                 chainlinkPriceBase[i],
                 underlyingTokenDecimals[i]
@@ -249,7 +249,7 @@ contract ChainlinkOracleView is Ownable, PriceOracle {
     }
 
     event TokenConfigUpdated(
-        address slTokenAddress,
+        address gTokenAddress,
         address chainlinkAggregatorAddress,
         uint256 chainlinkPriceBase,
         uint256 underlyingTokenDecimals

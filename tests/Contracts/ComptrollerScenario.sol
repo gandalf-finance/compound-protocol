@@ -16,11 +16,11 @@ contract ComptrollerScenario is Comptroller {
         blockNumber = number;
     }
 
-    function membershipLength(SLToken slToken) public view returns (uint) {
-        return accountAssets[address(slToken)].length;
+    function membershipLength(GToken gToken) public view returns (uint) {
+        return accountAssets[address(gToken)].length;
     }
 
-    function unlist(SLToken slToken) public {
-        markets[address(slToken)].isListed = false;
+    function unlist(GToken gToken) public {
+        markets[address(gToken)].isListed = false;
     }
 }

@@ -11,8 +11,8 @@ contract ComptrollerScenarioG1 is ComptrollerG1 {
 
     constructor() ComptrollerG1() public {}
 
-    function membershipLength(SLToken slToken) public view returns (uint) {
-        return accountAssets[address(slToken)].length;
+    function membershipLength(GToken gToken) public view returns (uint) {
+        return accountAssets[address(gToken)].length;
     }
 
     function fastForward(uint blocks) public returns (uint) {
@@ -36,15 +36,15 @@ contract ComptrollerScenarioG1 is ComptrollerG1 {
 
     function getHypotheticalAccountLiquidity(
         address account,
-        address slTokenModify,
+        address gTokenModify,
         uint redeemTokens,
         uint borrowAmount) public view returns (uint, uint, uint) {
         (Error err, uint liquidity, uint shortfall) =
-            super.getHypotheticalAccountLiquidityInternal(account, SLToken(slTokenModify), redeemTokens, borrowAmount);
+            super.getHypotheticalAccountLiquidityInternal(account, GToken(gTokenModify), redeemTokens, borrowAmount);
         return (uint(err), liquidity, shortfall);
     }
 
-    function unlist(SLToken slToken) public {
-        markets[address(slToken)].isListed = false;
+    function unlist(GToken gToken) public {
+        markets[address(gToken)].isListed = false;
     }
 }

@@ -6,7 +6,7 @@ const {
 const {
   makeComptroller,
   makePriceOracle
-} = require('../Utils/SashimiLending');
+} = require('../Utils/GandalfLending');
 
 describe('Unitroller', () => {
   let root, accounts;

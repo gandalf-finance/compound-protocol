@@ -1,9 +1,9 @@
 import { Contract } from '../Contract';
 import { Callable, Sendable } from '../Invokation';
-import { SLTokenMethods } from './SLToken';
+import { GTokenMethods } from './GToken';
 import { encodedNumber } from '../Encoding';
 
-interface SLErc20DelegatorMethods extends SLTokenMethods {
+interface GErc20DelegatorMethods extends GTokenMethods {
   implementation(): Callable<string>;
   _setImplementation(
     implementation_: string,
@@ -12,17 +12,17 @@ interface SLErc20DelegatorMethods extends SLTokenMethods {
   ): Sendable<void>;
 }
 
-interface SLErc20DelegatorScenarioMethods extends SLErc20DelegatorMethods {
+interface GErc20DelegatorScenarioMethods extends GErc20DelegatorMethods {
   setTotalBorrows(amount: encodedNumber): Sendable<void>;
   setTotalReserves(amount: encodedNumber): Sendable<void>;
 }
 
-export interface SLErc20Delegator extends Contract {
-  methods: SLErc20DelegatorMethods;
+export interface GErc20Delegator extends Contract {
+  methods: GErc20DelegatorMethods;
   name: string;
 }
 
-export interface SLErc20DelegatorScenario extends Contract {
-  methods: SLErc20DelegatorMethods;
+export interface GErc20DelegatorScenario extends Contract {
+  methods: GErc20DelegatorMethods;
   name: string;
 }

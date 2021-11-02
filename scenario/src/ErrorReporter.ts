@@ -20,7 +20,7 @@ class NoErrorReporterType implements ErrorReporter {
   }
 }
 
-class SLTokenErrorReporterType implements ErrorReporter {
+class GTokenErrorReporterType implements ErrorReporter {
   getError(error: any): string | null {
     if (error === null) {
       return null;
@@ -94,5 +94,5 @@ export function formatResult(errorReporter: ErrorReporter, result: any): string 
 
 // Singleton instances
 export const NoErrorReporter = new NoErrorReporterType();
-export const SLTokenErrorReporter = new SLTokenErrorReporterType();
+export const GTokenErrorReporter = new GTokenErrorReporterType();
 export const ComptrollerErrorReporter = new ComptrollerErrorReporterType();

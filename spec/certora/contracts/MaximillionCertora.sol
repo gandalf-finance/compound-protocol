@@ -3,10 +3,10 @@ pragma solidity ^0.5.16;
 import "../../../contracts/Maximillion.sol";
 
 contract MaximillionCertora is Maximillion {
-    constructor(SLEther slEther_) public Maximillion(slEther_) {}
+    constructor(GEther gEther_) public Maximillion(gEther_) {}
 
     function borrowBalance(address account) external returns (uint) {
-        return slEther.borrowBalanceCurrent(account);
+        return gEther.borrowBalanceCurrent(account);
     }
 
     function etherBalance(address account) external returns (uint) {

@@ -1,7 +1,7 @@
 pragma solidity ^0.5.16;
 
-import "../../contracts/SLErc20.sol";
-import "../../contracts/SLToken.sol";
+import "../../contracts/GErc20.sol";
+import "../../contracts/GToken.sol";
 import "../../contracts/PriceOracle.sol";
 
 interface V1PriceOracleInterface {
@@ -18,20 +18,20 @@ contract PriceOracleProxy is PriceOracle {
     /// @notice Address of the guardian, which may set the SAI price once
     address public guardian;
 
-    /// @notice Address of the slEther contract, which has a constant price
-    address public slEthAddress;
+    /// @notice Address of the gEther contract, which has a constant price
+    address public gEthAddress;
 
-    /// @notice Address of the slUSDC contract, which we hand pick a key for
-    address public slUsdcAddress;
+    /// @notice Address of the gUSDC contract, which we hand pick a key for
+    address public gUsdcAddress;
 
-    /// @notice Address of the slUSDT contract, which uses the slUSDC price
-    address public slUsdtAddress;
+    /// @notice Address of the gUSDT contract, which uses the gUSDC price
+    address public gUsdtAddress;
 
-    /// @notice Address of the slSAI contract, which may have its price set
-    address public slSaiAddress;
+    /// @notice Address of the gSAI contract, which may have its price set
+    address public gSaiAddress;
 
-    /// @notice Address of the slDAI contract, which we hand pick a key for
-    address public slDaiAddress;
+    /// @notice Address of the gDAI contract, which we hand pick a key for
+    address public gDaiAddress;
 
     /// @notice Handpicked key for USDC
     address public constant usdcOracleKey = address(1);
@@ -45,57 +45,57 @@ contract PriceOracleProxy is PriceOracle {
     /**
      * @param guardian_ The address of the guardian, which may set the SAI price once
      * @param v1PriceOracle_ The address of the v1 price oracle, which will continue to operate and hold prices for collateral assets
-     * @param slEthAddress_ The address of slETH, which will return a constant 1e18, since all prices relative to ether
-     * @param slUsdcAddress_ The address of cUSDC, which will be read from a special oracle key
-     * @param slSaiAddress_ The address of cSAI, which may be read directly from storage
-     * @param slDaiAddress_ The address of cDAI, which will be read from a special oracle key
-     * @param slUsdtAddress_ The address of cUSDT, which uses the cUSDC price
+     * @param gEthAddress_ The address of gETH, which will return a constant 1e18, since all prices relative to ether
+     * @param gUsdcAddress_ The address of cUSDC, which will be read from a special oracle key
+     * @param gSaiAddress_ The address of cSAI, which may be read directly from storage
+     * @param gDaiAddress_ The address of cDAI, which will be read from a special oracle key
+     * @param gUsdtAddress_ The address of cUSDT, which uses the cUSDC price
      */
     constructor(address guardian_,
                 address v1PriceOracle_,
-                address slEthAddress_,
-                address slUsdcAddress_,
-                address slSaiAddress_,
-                address slDaiAddress_,
-                address slUsdtAddress_) public {
+                address gEthAddress_,
+                address gUsdcAddress_,
+                address gSaiAddress_,
+                address gDaiAddress_,
+                address gUsdtAddress_) public {
         guardian = guardian_;
         v1PriceOracle = V1PriceOracleInterface(v1PriceOracle_);
 
-        slEthAddress = slEthAddress_;
-        slUsdcAddress = slUsdcAddress_;
-        slSaiAddress = slSaiAddress_;
-        slDaiAddress = slDaiAddress_;
-        slUsdtAddress = slUsdtAddress_;
+        gEthAddress = gEthAddress_;
+        gUsdcAddress = gUsdcAddress_;
+        gSaiAddress = gSaiAddress_;
+        gDaiAddress = gDaiAddress_;
+        gUsdtAddress = gUsdtAddress_;
     }
 
     /**
-     * @notice Get the underlying price of a listed slToken asset
-     * @param slToken The slToken to get the underlying price of
+     * @notice Get the underlying price of a listed gToken asset
+     * @param gToken The gToken to get the underlying price of
      * @return The underlying asset price mantissa (scaled by 1e18)
      */
-    function getUnderlyingPrice(SLToken slToken) public view returns (uint) {
-        address slTokenAddress = address(slToken);
+    function getUnderlyingPrice(GToken gToken) public view returns (uint) {
+        address gTokenAddress = address(gToken);
 
-        if (slTokenAddress == slEthAddress) {
+        if (gTokenAddress == gEthAddress) {
             // ether always worth 1
             return 1e18;
         }
 
-        if (slTokenAddress == slUsdcAddress || slTokenAddress == slUsdtAddress) {
+        if (gTokenAddress == gUsdcAddress || gTokenAddress == gUsdtAddress) {
             return v1PriceOracle.assetPrices(usdcOracleKey);
         }
 
-        if (slTokenAddress == slDaiAddress) {
+        if (gTokenAddress == gDaiAddress) {
             return v1PriceOracle.assetPrices(daiOracleKey);
         }
 
-        if (slTokenAddress == slSaiAddress) {
+        if (gTokenAddress == gSaiAddress) {
             // use the frozen SAI price if set, otherwise use the DAI price
             return saiPrice > 0 ? saiPrice : v1PriceOracle.assetPrices(daiOracleKey);
         }
 
         // otherwise just read from v1 oracle
-        address underlying = SLErc20(slTokenAddress).underlying();
+        address underlying = GErc20(gTokenAddress).underlying();
         return v1PriceOracle.assetPrices(underlying);
     }
 

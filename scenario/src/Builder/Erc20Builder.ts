@@ -27,7 +27,7 @@ const FaucetTokenHarness = getContract("FaucetToken");
 const FaucetTokenNonStandardHarness = getContract("FaucetNonStandardToken");
 const FaucetTokenReEntrantHarness = getContract("FaucetTokenReEntrantHarness");
 const EvilTokenHarness = getContract("EvilToken");
-const WBTSLTokenHarness = getContract("WBTSLToken");
+const WBTGTokenHarness = getContract("WBTGToken");
 const FeeTokenHarness = getContract("FeeToken");
 
 export interface TokenData {
@@ -120,7 +120,7 @@ export async function buildErc20(world: World, from: string, event: Event): Prom
         #### ReEntrant
 
         * "ReEntrant symbol:<String> name:string fun:<String> funSig:<String> ...funArgs:<Value>" - A token that loves to call back to spook its caller
-          * E.g. "Erc20 Deploy ReEntrant PHREAK PHREAK "transfer" "mint(uint256)" 0 - A token that will call back to a SLToken's mint function
+          * E.g. "Erc20 Deploy ReEntrant PHREAK PHREAK "transfer" "mint(uint256)" 0 - A token that will call back to a GToken's mint function
 
         Note: valid functions: totalSupply, balanceOf, transfer, transferFrom, approve, allowance
       `,
@@ -209,12 +209,12 @@ export async function buildErc20(world: World, from: string, event: Event): Prom
         let decimals = 8;
 
         return {
-          invokation: await WBTSLTokenHarness.deploy<Erc20>(world, from, []),
+          invokation: await WBTGTokenHarness.deploy<Erc20>(world, from, []),
           description: "WBTC",
           name: name.val,
           symbol: symbol.val,
           decimals: decimals,
-          contract: 'WBTSLToken'
+          contract: 'WBTGToken'
         };
       }
     ),

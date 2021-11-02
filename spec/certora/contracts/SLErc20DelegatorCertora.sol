@@ -1,12 +1,12 @@
 pragma solidity ^0.5.16;
 
-import "../../../contracts/SLErc20Delegator.sol";
+import "../../../contracts/GErc20Delegator.sol";
 import "../../../contracts/EIP20Interface.sol";
 
-import "./SLTokenCollateral.sol";
+import "./GTokenCollateral.sol";
 
-contract SLErc20DelegatorCertora is SLErc20Delegator {
-    SLTokenCollateral public otherToken;
+contract GErc20DelegatorCertora is GErc20Delegator {
+    GTokenCollateral public otherToken;
 
     constructor(address underlying_,
                 ComptrollerInterface comptroller_,
@@ -17,7 +17,7 @@ contract SLErc20DelegatorCertora is SLErc20Delegator {
                 uint8 decimals_,
                 address payable admin_,
                 address implementation_,
-                bytes memory becomeImplementationData) public SLErc20Delegator(underlying_, comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_, admin_, implementation_, becomeImplementationData) {
+                bytes memory becomeImplementationData) public GErc20Delegator(underlying_, comptroller_, interestRateModel_, initialExchangeRateMantissa_, name_, symbol_, decimals_, admin_, implementation_, becomeImplementationData) {
         comptroller;       // touch for Certora slot deduction
         interestRateModel; // touch for Certora slot deduction
     }
