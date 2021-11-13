@@ -47,8 +47,8 @@ contract GErc20 is GToken, GErc20Interface {
      * @param mintAmount The amount of the underlying asset to supply
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function mint(uint mintAmount) external returns (uint) {
-        (uint err,) = mintInternal(mintAmount);
+    function mint(uint mintAmount,string calldata channel) external returns (uint) {
+        (uint err,) = mintInternal(mintAmount,channel);
         return err;
     }
 
@@ -77,8 +77,8 @@ contract GErc20 is GToken, GErc20Interface {
       * @param borrowAmount The amount of the underlying asset to borrow
       * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
-    function borrow(uint borrowAmount) external returns (uint) {
-        return borrowInternal(borrowAmount);
+    function borrow(uint borrowAmount,string calldata channel) external returns (uint) {
+        return borrowInternal(borrowAmount, channel);
     }
 
     /**

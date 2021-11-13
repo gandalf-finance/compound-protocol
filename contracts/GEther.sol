@@ -41,8 +41,8 @@ contract GEther is GToken {
      * @notice Sender supplies assets into the market and receives gTokens in exchange
      * @dev Reverts upon any failure
      */
-    function mint() external payable {
-        (uint err,) = mintInternal(msg.value);
+    function mint(string calldata channel) external payable {
+        (uint err,) = mintInternal(msg.value, channel);
         requireNoError(err, "mint failed");
     }
 
@@ -71,8 +71,8 @@ contract GEther is GToken {
       * @param borrowAmount The amount of the underlying asset to borrow
       * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
-    function borrow(uint borrowAmount) external returns (uint) {
-        return borrowInternal(borrowAmount);
+    function borrow(uint borrowAmount,string calldata channel) external returns (uint) {
+        return borrowInternal(borrowAmount, channel);
     }
 
     /**
@@ -110,7 +110,7 @@ contract GEther is GToken {
      * @notice Send Ether to GEther to mint
      */
     function () external payable {
-        (uint err,) = mintInternal(msg.value);
+        (uint err,) = mintInternal(msg.value,"");
         requireNoError(err, "mint failed");
     }
 

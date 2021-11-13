@@ -133,7 +133,7 @@ contract GTokenInterface is GTokenStorage {
     /**
      * @notice Event emitted when tokens are minted
      */
-    event Mint(address minter, uint mintAmount, uint mintTokens);
+    event Mint(address minter, uint mintAmount, uint mintTokens, string channel);
 
     /**
      * @notice Event emitted when tokens are redeemed
@@ -143,7 +143,7 @@ contract GTokenInterface is GTokenStorage {
     /**
      * @notice Event emitted when underlying is borrowed
      */
-    event Borrow(address borrower, uint borrowAmount, uint accountBorrows, uint totalBorrows);
+    event Borrow(address borrower, uint borrowAmount, uint accountBorrows, uint totalBorrows, string channel);
 
     /**
      * @notice Event emitted when a borrow is repaid
