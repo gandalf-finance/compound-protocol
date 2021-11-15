@@ -84,7 +84,7 @@ contract GEtherHarness is GEther {
     }
 
     function harnessMintFresh(address account, uint mintAmount) public returns (uint) {
-        (uint err,) = super.mintFresh(account, mintAmount);
+        (uint err,) = super.mintFresh(account, mintAmount,"");
         return err;
     }
 
@@ -106,7 +106,7 @@ contract GEtherHarness is GEther {
     }
 
     function harnessBorrowFresh(address payable account, uint borrowAmount) public returns (uint) {
-        return borrowFresh(account, borrowAmount);
+        return borrowFresh(account, borrowAmount,"");
     }
 
     function harnessRepayBorrowFresh(address payer, address account, uint repayBorrowAmount) public payable returns (uint) {

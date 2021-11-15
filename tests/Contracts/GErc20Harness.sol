@@ -95,7 +95,7 @@ contract GErc20Harness is GErc20Immutable {
     }
 
     function harnessMintFresh(address account, uint mintAmount) public returns (uint) {
-        (uint err,) = super.mintFresh(account, mintAmount);
+        (uint err,) = super.mintFresh(account, mintAmount, "");
         return err;
     }
 
@@ -117,7 +117,7 @@ contract GErc20Harness is GErc20Immutable {
     }
 
     function harnessBorrowFresh(address payable account, uint borrowAmount) public returns (uint) {
-        return borrowFresh(account, borrowAmount);
+        return borrowFresh(account, borrowAmount, "");
     }
 
     function harnessRepayBorrowFresh(address payer, address account, uint repayAmount) public returns (uint) {
@@ -318,7 +318,7 @@ contract GErc20DelegateHarness is GErc20Delegate {
     }
 
     function harnessMintFresh(address account, uint mintAmount) public returns (uint) {
-        (uint err,) = super.mintFresh(account, mintAmount);
+        (uint err,) = super.mintFresh(account, mintAmount,"");
         return err;
     }
 
@@ -340,7 +340,7 @@ contract GErc20DelegateHarness is GErc20Delegate {
     }
 
     function harnessBorrowFresh(address payable account, uint borrowAmount) public returns (uint) {
-        return borrowFresh(account, borrowAmount);
+        return borrowFresh(account, borrowAmount,"");
     }
 
     function harnessRepayBorrowFresh(address payer, address account, uint repayAmount) public returns (uint) {
