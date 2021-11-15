@@ -29,7 +29,7 @@ async function preMint(gToken, minter, mintAmount, mintTokens, exchangeRate) {
 }
 
 async function mintExplicit(gToken, minter, mintAmount) {
-  return send(gToken, 'mint', [], {from: minter, value: mintAmount});
+  return send(gToken, 'mint', [""], {from: minter, value: mintAmount});
 }
 
 async function mintFallback(gToken, minter, mintAmount) {

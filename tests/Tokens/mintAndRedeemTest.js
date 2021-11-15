@@ -122,7 +122,8 @@ describe('GToken', function () {
       expect(result).toHaveLog('Mint', {
         minter,
         mintAmount: mintAmount.toString(),
-        mintTokens: mintTokens.toString()
+        mintTokens: mintTokens.toString(),
+        channel:""
       });
       expect(result).toHaveLog(['Transfer', 1], {
         from: gToken._address,

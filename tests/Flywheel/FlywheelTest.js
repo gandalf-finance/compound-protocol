@@ -531,7 +531,7 @@ describe('Flywheel', () => {
       for(let from of claimAccts) {
         expect(await send(gLOW.underlying, 'harnessSetBalance', [from, mintAmount], { from })).toSucceed();
         send(gLOW.underlying, 'approve', [gLOW._address, mintAmount], { from });
-        send(gLOW, 'mint', [mintAmount], { from });
+        send(gLOW, 'mint', [mintAmount,""], { from });
       }
 
       await pretendBorrow(gLOW, root, 1, 1, etherExp(10));
@@ -550,7 +550,7 @@ describe('Flywheel', () => {
       for(let from of claimAccts) {
         expect(await send(gLOW.underlying, 'harnessSetBalance', [from, mintAmount], { from })).toSucceed();
         send(gLOW.underlying, 'approve', [gLOW._address, mintAmount], { from });
-        send(gLOW, 'mint', [mintAmount], { from });
+        send(gLOW, 'mint', [mintAmount,""], { from });
       }
       await pretendBorrow(gLOW, root, 1, 1, etherExp(10));
       await send(comptroller, 'refreshPlatformTokenSpeeds');
@@ -572,7 +572,7 @@ describe('Flywheel', () => {
       for(let from of claimAccts) {
         expect(await send(gLOW.underlying, 'harnessSetBalance', [from, mintAmount], { from })).toSucceed();
         send(gLOW.underlying, 'approve', [gLOW._address, mintAmount], { from });
-        send(gLOW, 'mint', [mintAmount], { from });
+        send(gLOW, 'mint', [mintAmount,""], { from });
       }
       await pretendBorrow(gLOW, root, 1, 1, etherExp(10));
       await send(comptroller, 'refreshPlatformTokenSpeeds');

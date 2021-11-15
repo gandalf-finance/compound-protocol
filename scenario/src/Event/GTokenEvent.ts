@@ -64,13 +64,13 @@ async function accrueInterest(world: World, from: string, gToken: GToken): Promi
 async function mint(world: World, from: string, gToken: GToken, amount: NumberV | NothingV): Promise<World> {
   let invokation;
   let showAmount;
-
+  let channel = "";
   if (amount instanceof NumberV) {
     showAmount = amount.show();
-    invokation = await invoke(world, gToken.methods.mint(amount.encode()), from, GTokenErrorReporter);
+    invokation = await invoke(world, gToken.methods.mint(amount.encode(), channel), from, GTokenErrorReporter);
   } else {
     showAmount = showTrxValue(world);
-    invokation = await invoke(world, gToken.methods.mint(), from, GTokenErrorReporter);
+    invokation = await invoke(world, gToken.methods.mint(channel), from, GTokenErrorReporter);
   }
 
   world = addAction(
@@ -107,7 +107,7 @@ async function redeemUnderlying(world: World, from: string, gToken: GToken, amou
 }
 
 async function borrow(world: World, from: string, gToken: GToken, amount: NumberV): Promise<World> {
-  let invokation = await invoke(world, gToken.methods.borrow(amount.encode()), from, GTokenErrorReporter);
+  let invokation = await invoke(world, gToken.methods.borrow(amount.encode(),""), from, GTokenErrorReporter);
 
   world = addAction(
     world,

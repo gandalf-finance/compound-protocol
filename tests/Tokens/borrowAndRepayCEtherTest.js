@@ -39,7 +39,7 @@ async function borrowFresh(gToken, borrower, borrowAmount) {
 
 async function borrow(gToken, borrower, borrowAmount, opts = {}) {
   await send(gToken, 'harnessFastForward', [1]);
-  return send(gToken, 'borrow', [borrowAmount], {from: borrower});
+  return send(gToken, 'borrow', [borrowAmount,""], {from: borrower});
 }
 
 async function preRepay(gToken, benefactor, borrower, repayAmount) {
@@ -138,7 +138,8 @@ describe('GEther', function () {
         borrower: borrower,
         borrowAmount: borrowAmount.toString(),
         accountBorrows: borrowAmount.toString(),
-        totalBorrows: beforeProtocolBorrows.add(borrowAmount).toString()
+        totalBorrows: beforeProtocolBorrows.add(borrowAmount).toString(),
+        channel:""
       });
     });
 

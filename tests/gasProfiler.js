@@ -56,7 +56,7 @@ const recordGasCost = (totalFee, key, filename, opcodes = {}) => {
 
 async function mint(gToken, minter, mintAmount, exchangeRate) {
   expect(await preApprove(gToken, minter, mintAmount, {})).toSucceed();
-  return send(gToken, 'mint', [mintAmount], { from: minter });
+  return send(gToken, 'mint', [mintAmount,""], { from: minter });
 }
 
 /// GAS PROFILER: saves a digest of the gas prices of common GToken operations

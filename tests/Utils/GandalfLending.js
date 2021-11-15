@@ -349,7 +349,7 @@ async function quickMint(gToken, minter, mintAmount, opts = {}) {
   if (dfn(opts.exchangeRate)) {
     expect(await send(gToken, 'harnessSetExchangeRate', [etherMantissa(opts.exchangeRate)])).toSucceed();
   }
-  return send(gToken, 'mint', [mintAmount], { from: minter });
+  return send(gToken, 'mint', [mintAmount,""], { from: minter });
 }
 
 

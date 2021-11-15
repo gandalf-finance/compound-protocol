@@ -16,11 +16,11 @@ export interface GTokenMethods {
   exchangeRateCurrent(): Callable<number>;
   getCash(): Callable<number>;
   accrueInterest(): Sendable<number>;
-  mint(): Sendable<number>;
-  mint(amount: encodedNumber): Sendable<number>;
+  mint(channel:string): Sendable<number>;
+  mint(amount: encodedNumber,channel:string): Sendable<number>;
   redeem(amount: encodedNumber): Sendable<number>;
   redeemUnderlying(amount: encodedNumber): Sendable<number>;
-  borrow(amount: encodedNumber): Sendable<number>;
+  borrow(amount: encodedNumber,channel:string): Sendable<number>;
   repayBorrow(): Sendable<number>;
   repayBorrow(amount: encodedNumber): Sendable<number>;
   repayBorrowBehalf(amount: string): Sendable<number>;

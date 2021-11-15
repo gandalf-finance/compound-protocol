@@ -113,7 +113,7 @@ describe('Comptroller', () => {
       await enterMarkets([gToken], from);
       await send(gToken.underlying, 'harnessSetBalance', [from, balance], {from});
       await send(gToken.underlying, 'approve', [gToken._address, balance], {from});
-      await send(gToken, 'mint', [amount], {from});
+      await send(gToken, 'mint', [amount,""], {from});
       const {0: error, 1: liquidity, 2: shortfall} = await call(gToken.comptroller, 'getHypotheticalAccountLiquidity', [from, gToken._address, 0, 0]);
       expect(error).toEqualNumber(0);
       expect(liquidity).toEqualNumber(amount * collateralFactor * exchangeRate * underlyingPrice);

@@ -24,8 +24,8 @@ describe('Spinarama', () => {
       await send(gToken.underlying, 'harnessSetBalance', [from, 100], {from});
       await send(gToken.underlying, 'approve', [gToken._address, -1], {from});
       await minerStop();
-      const p1 = send(gToken, 'mint', [1], {from});
-      const p2 = send(gToken, 'mint', [2], {from});
+      const p1 = send(gToken, 'mint', [1,""], {from});
+      const p2 = send(gToken, 'mint', [2,""], {from});
       await minerStart();
       expect(await p1).toSucceed();
       expect(await p2).toSucceed();
@@ -37,8 +37,8 @@ describe('Spinarama', () => {
       await send(gToken.underlying, 'harnessSetBalance', [from, 100], {from});
       await send(gToken.underlying, 'approve', [gToken._address, 10], {from});
       await minerStop();
-      const p1 = send(gToken, 'mint', [11], {from});
-      const p2 = send(gToken, 'mint', [10], {from});
+      const p1 = send(gToken, 'mint', [11,""], {from});
+      const p2 = send(gToken, 'mint', [10,""], {from});
       await expect(minerStart()).rejects.toRevert("revert Insufficient allowance");
       try {
         await p1;
@@ -57,7 +57,7 @@ describe('Spinarama', () => {
       await send(gToken.underlying, 'harnessSetBalance', [from, 100], {from});
       await send(gToken.underlying, 'approve', [gToken._address, 10], {from});
       await minerStop();
-      const p1 = send(gToken, 'mint', [10], {from});
+      const p1 = send(gToken, 'mint', [10,""], {from});
       const p2 = send(gToken, 'redeemUnderlying', [10], {from});
       await minerStart();
       expect(await p1).toSucceed();
@@ -76,7 +76,7 @@ describe('Spinarama', () => {
       await send(gToken.underlying, 'approve', [gToken._address, 10], {from});
       await minerStop();
       const p1 = send(gToken, 'redeem', [10], {from});
-      const p2 = send(gToken, 'mint', [10], {from});
+      const p2 = send(gToken, 'mint', [10,""], {from});
       await minerStart();
       expect(await p1).toSucceed();
       expect(await p2).toSucceed();
@@ -95,8 +95,8 @@ describe('Spinarama', () => {
       await send(gToken2.underlying, 'approve', [gToken2._address, 10], {from});
       await send(gToken2, 'harnessSetExchangeRate', [etherMantissa(1)]);
       expect(await enterMarkets([gToken1, gToken2], from)).toSucceed();
-      expect(await send(gToken1, 'mint', [10], {from})).toSucceed();
-      expect(await send(gToken2, 'borrow', [2], {from})).toSucceed();
+      expect(await send(gToken1, 'mint', [10,""], {from})).toSucceed();
+      expect(await send(gToken2, 'borrow', [2,""], {from})).toSucceed();
       await minerStop();
       const p1 = send(gToken2, 'repayBorrow', [1], {from});
       const p2 = send(gToken2, 'repayBorrow', [1], {from});
