@@ -78,8 +78,8 @@ contract GErc20Delegator is GTokenInterface, GErc20Interface, GDelegatorInterfac
      * @param mintAmount The amount of the underlying asset to supply
      * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
      */
-    function mint(uint mintAmount) external returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("mint(uint256)", mintAmount));
+    function mint(uint mintAmount,string calldata channel) external returns (uint) {
+        bytes memory data = delegateToImplementation(abi.encodeWithSignature("mint(uint256,string)", mintAmount, channel));
         return abi.decode(data, (uint));
     }
 
@@ -110,8 +110,8 @@ contract GErc20Delegator is GTokenInterface, GErc20Interface, GDelegatorInterfac
       * @param borrowAmount The amount of the underlying asset to borrow
       * @return uint 0=success, otherwise a failure (see ErrorReporter.sol for details)
       */
-    function borrow(uint borrowAmount) external returns (uint) {
-        bytes memory data = delegateToImplementation(abi.encodeWithSignature("borrow(uint256)", borrowAmount));
+    function borrow(uint borrowAmount,string calldata channel) external returns (uint) {
+        bytes memory data = delegateToImplementation(abi.encodeWithSignature("borrow(uint256,string)", borrowAmount,channel));
         return abi.decode(data, (uint));
     }
 
