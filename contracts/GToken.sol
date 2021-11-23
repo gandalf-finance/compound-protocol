@@ -790,7 +790,7 @@ contract GToken is GTokenInterface, Exponential, TokenErrorReporter {
         totalBorrows = vars.totalBorrowsNew;
 
         /* We emit a Borrow event */
-        emit Borrow(borrower, borrowAmount, vars.accountBorrowsNew, vars.totalBorrowsNew, channel);
+        emit Borrow(borrower, borrowAmount, vars.accountBorrowsNew, borrowIndex, vars.totalBorrowsNew, channel);
 
         /* We call the defense hook */
         comptroller.borrowVerify(address(this), borrower, borrowAmount);
@@ -907,7 +907,7 @@ contract GToken is GTokenInterface, Exponential, TokenErrorReporter {
         totalBorrows = vars.totalBorrowsNew;
 
         /* We emit a RepayBorrow event */
-        emit RepayBorrow(payer, borrower, vars.actualRepayAmount, vars.accountBorrowsNew, vars.totalBorrowsNew);
+        emit RepayBorrow(payer, borrower, vars.actualRepayAmount, vars.accountBorrowsNew, borrowIndex, vars.totalBorrowsNew);
 
         /* We call the defense hook */
         comptroller.repayBorrowVerify(address(this), payer, borrower, vars.actualRepayAmount, vars.borrowerIndex);

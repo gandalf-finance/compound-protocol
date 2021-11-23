@@ -143,12 +143,12 @@ contract GTokenInterface is GTokenStorage {
     /**
      * @notice Event emitted when underlying is borrowed
      */
-    event Borrow(address borrower, uint borrowAmount, uint accountBorrows, uint totalBorrows, string channel);
+    event Borrow(address borrower, uint borrowAmount, uint accountBorrows, uint accountBorrowIndex, uint totalBorrows, string channel);
 
     /**
      * @notice Event emitted when a borrow is repaid
      */
-    event RepayBorrow(address payer, address borrower, uint repayAmount, uint accountBorrows, uint totalBorrows);
+     event RepayBorrow(address payer, address borrower, uint repayAmount, uint accountBorrows, uint accountBorrowIndex, uint totalBorrows);
 
     /**
      * @notice Event emitted when a borrow is liquidated
