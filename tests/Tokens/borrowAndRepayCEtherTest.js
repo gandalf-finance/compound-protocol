@@ -139,6 +139,7 @@ describe('GEther', function () {
         borrowAmount: borrowAmount.toString(),
         accountBorrows: borrowAmount.toString(),
         totalBorrows: beforeProtocolBorrows.add(borrowAmount).toString(),
+        accountBorrowIndex: "1000000000000000000",
         channel:""
       });
     });
@@ -251,6 +252,7 @@ describe('GEther', function () {
             borrower: borrower,
             repayAmount: repayAmount.toString(),
             accountBorrows: "0",
+            accountBorrowIndex: "1000000000000000000",
             totalBorrows: "0"
           });
         });
