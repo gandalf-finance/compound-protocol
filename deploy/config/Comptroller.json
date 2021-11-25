@@ -1,0 +1,9 @@
+{
+    "name": "Comptroller",
+    "config": {
+        "newCloseFactorMantissa": "500000000000000000",
+        "sashimiRate_": "0",
+        "newLiquidationIncentiveMantissa": "1080000000000000000",
+        "newMaxAssets": "20"
+    }
+}

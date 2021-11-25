@@ -1,0 +1,74 @@
+{
+    "GErc20Delegator_gDai": {
+        "underlying_": "0xeF68495DCAfb6cD18735d69f29A979766abeE7e5",
+        "comptroller_": "",
+        "interestRateModel_": "JumpRateModelV2_0",
+        "initialExchangeRateMantissa_": "200000000000000000000000000",
+        "name_": "gDai",
+        "symbol_": "gDai",
+        "decimals_": "8",
+        "admin_": "",
+        "newReserveFactorMantissa": "200000000000000000",
+        "newCollateralFactorMantissa": "850000000000000000"
+    },
+    "GErc20Delegator_gUSDT": {
+        "underlying_": "0x3F280eE5876CE8B15081947E0f189E336bb740A5",
+        "comptroller_": "",
+        "interestRateModel_": "JumpRateModelV2_0",
+        "initialExchangeRateMantissa_": "200000000000000000000000000",
+        "name_": "gUSDT",
+        "symbol_": "gUSDT",
+        "decimals_": "8",
+        "admin_": "",
+        "newReserveFactorMantissa": "200000000000000000",
+        "newCollateralFactorMantissa": "550000000000000000"
+    },
+    "GErc20Delegator_gUSDC": {
+        "underlying_": "0x2190D7C6975A92CaEEe85AE5E47e46331A599224",
+        "comptroller_": "",
+        "interestRateModel_": "JumpRateModelV2_0",
+        "initialExchangeRateMantissa_": "20000000000000000",
+        "name_": "gUSDC",
+        "symbol_": "gUSDC",
+        "decimals_": "8",
+        "admin_": "",
+        "newReserveFactorMantissa": "50000000000000000",
+        "newCollateralFactorMantissa": "850000000000000000"
+    },
+    "GErc20Delegator_gETH": {
+        "underlying_": "0x86b8AC6E084B8fF4E851716Ca8c3F8E5BAdb099e",
+        "comptroller_": "",
+        "interestRateModel_": "JumpRateModelV2_1",
+        "initialExchangeRateMantissa_": "20000000000000000",
+        "name_": "gETH",
+        "symbol_": "gETH",
+        "decimals_": "8",
+        "admin_": "",
+        "newReserveFactorMantissa": "50000000000000000",
+        "newCollateralFactorMantissa": "750000000000000000"
+    },
+    "GErc20Delegator_gBUSD": {
+        "underlying_": "0xeD24FC36d5Ee211Ea25A80239Fb8C4Cfd80f12Ee",
+        "comptroller_": "",
+        "interestRateModel_": "JumpRateModelV2_0",
+        "initialExchangeRateMantissa_": "20000000000000000",
+        "name_": "gBUSD",
+        "symbol_": "gBUSD",
+        "decimals_": "8",
+        "admin_": "",
+        "newReserveFactorMantissa": "50000000000000000",
+        "newCollateralFactorMantissa": "550000000000000000"
+    },
+    "GErc20Delegator_gWBTC": {
+        "underlying_": "0x6ce8dA28E2f864420840cF74474eFf5fD80E65B8",
+        "comptroller_": "",
+        "interestRateModel_": "JumpRateModelV2_2",
+        "initialExchangeRateMantissa_": "200000000000000000000000000",
+        "name_": "gBTCB",
+        "symbol_": "gBTCB",
+        "decimals_": "8",
+        "admin_": "",
+        "newReserveFactorMantissa": "100000000000000000",
+        "newCollateralFactorMantissa": "750000000000000000"
+    }
+}

@@ -1,0 +1,10 @@
+{
+    "WhitePaperInterestRateModel_0": {
+        "baseRatePerYear": "20000000000000000",
+        "multiplierPerYear": "100000000000000000"
+    },
+    "WhitePaperInterestRateModel_1": {
+        "baseRatePerYear": "20000000000000000",
+        "multiplierPerYear": "300000000000000000"
+    }
+}

@@ -1,0 +1,62 @@
+{
+    "GErc20Delegator_gDAIK": {
+        "underlying_": "0x13F90Ab146df35fe8685fDed6bfd969bB5f8F17F",
+        "comptroller_": "",
+        "interestRateModel_": "JumpRateModelV2_0",
+        "initialExchangeRateMantissa_": "200000000000000000000000000",
+        "name_": "gDAIK",
+        "symbol_": "gDAIK",
+        "decimals_": "8",
+        "admin_": "",
+        "newReserveFactorMantissa": "200000000000000000",
+        "newCollateralFactorMantissa": "850000000000000000"
+    },
+    "GErc20Delegator_gUSDT": {
+        "underlying_": "0x3C4b091C21a67B2097366ae167050aC42dcc90A4",
+        "comptroller_": "",
+        "interestRateModel_": "JumpRateModelV2_0",
+        "initialExchangeRateMantissa_": "200000000000000000000000000",
+        "name_": "gUSDT",
+        "symbol_": "gUSDT",
+        "decimals_": "8",
+        "admin_": "",
+        "newReserveFactorMantissa": "200000000000000000",
+        "newCollateralFactorMantissa": "550000000000000000"
+    },
+    "GErc20Delegator_gUSDC": {
+        "underlying_": "0xBCE1c2ad576b28Ae6bDc1fA4dBA6a9130598Cd7b",
+        "comptroller_": "",
+        "interestRateModel_": "JumpRateModelV2_0",
+        "initialExchangeRateMantissa_": "20000000000000000",
+        "name_": "gUSDC",
+        "symbol_": "gUSDC",
+        "decimals_": "8",
+        "admin_": "",
+        "newReserveFactorMantissa": "50000000000000000",
+        "newCollateralFactorMantissa": "850000000000000000"
+    },
+    "GErc20Delegator_gETHK": {
+        "underlying_": "0xBCE1c2ad576b28Ae6bDc1fA4dBA6a9130598Cd7b",
+        "comptroller_": "",
+        "interestRateModel_": "JumpRateModelV2_1",
+        "initialExchangeRateMantissa_": "20000000000000000",
+        "name_": "gETHK",
+        "symbol_": "gETHK",
+        "decimals_": "8",
+        "admin_": "",
+        "newReserveFactorMantissa": "50000000000000000",
+        "newCollateralFactorMantissa": "750000000000000000"
+    },
+    "GErc20Delegator_gBTCK": {
+        "underlying_": "0x2E0a68203FA35E45B456cbb00F7744A44b43Bc0C",
+        "comptroller_": "",
+        "interestRateModel_": "JumpRateModelV2_2",
+        "initialExchangeRateMantissa_": "200000000000000000000000000",
+        "name_": "gBTCK",
+        "symbol_": "gBTCK",
+        "decimals_": "8",
+        "admin_": "",
+        "newReserveFactorMantissa": "100000000000000000",
+        "newCollateralFactorMantissa": "750000000000000000"
+    }
+}

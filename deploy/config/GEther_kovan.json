@@ -1,0 +1,13 @@
+{
+    "name": "gEther",
+    "config": {
+        "WhitePaperInterestRateModel": "JumpRateModelV2_1",
+        "INITIALEXCHANGERATEMANTISSA_": "200000000000000000000000000",
+        "NAME_": "gEther",
+        "SYMBOL_": "gEther",
+        "DECIMALS_": 8,
+        "ADMIN_": "",
+        "newReserveFactorMantissa": "200000000000000000",
+        "newCollateralFactorMantissa": "750000000000000000"
+    }
+}

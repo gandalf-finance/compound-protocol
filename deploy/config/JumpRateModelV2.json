@@ -1,0 +1,23 @@
+{
+    "JumpRateModelV2_0": {
+        "baseRatePerYear": "0",
+        "multiplierPerYear": "57500000000000000",
+        "jumpMultiplierPerYear": "3000000000000000000",
+        "kink_": "800000000000000000",
+        "owner_": ""
+    },
+    "JumpRateModelV2_1": {
+        "baseRatePerYear": "23000000000000000",
+        "multiplierPerYear": "115000000000000000",
+        "jumpMultiplierPerYear": "1150000000000000000",
+        "kink_": "800000000000000000",
+        "owner_": ""
+    },
+    "JumpRateModelV2_2": {
+        "baseRatePerYear": "23000000000000000",
+        "multiplierPerYear": "283750000000000000",
+        "jumpMultiplierPerYear": "3000000000000000000",
+        "kink_": "800000000000000000",
+        "owner_": ""
+    }
+}
